@@ -55,6 +55,9 @@ public enum ListingType {
                 if (info.getTitle() != null) {
                     builder.append("    'title' => '").append(escape(info.getTitle())).append("',\r\n");
                 }
+                if (info.getThumb() != null) {
+                    builder.append("    'thumb' => '").append(escape(info.getThumb())).append("',\r\n");
+                }
                 builder.append("    'version' => '").append(escape(info.getVersion())).append("',\r\n");
                 builder.append("    'priority' => ").append(info.getPriority()).append(",\r\n");
                 builder.append("    'location' => '").append(escape(info.getLocation())).append("',\r\n");

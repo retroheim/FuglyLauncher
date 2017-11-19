@@ -41,6 +41,8 @@ public class PackTableModel extends AbstractTableModel {
                 return "Game Version";
             case 4:
                 return "Location";
+            case 5:
+                return "Thumbnail";
             default:
                 return null;
         }
@@ -72,7 +74,7 @@ public class PackTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 5;
+        return 6;
     }
 
     @Override
@@ -92,6 +94,8 @@ public class PackTableModel extends AbstractTableModel {
                 return config != null ? config.getGameVersion() : "?";
             case 4:
                 return pack.getLocation();
+            case 5:
+                return config != null ? config.getThumb() : "?";
             default:
                 return null;
         }

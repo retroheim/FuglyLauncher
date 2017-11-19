@@ -12,6 +12,7 @@ import lombok.Data;
 public class BaseManifest {
 
     private String title;
+    private String thumb;
     private String name;
     private String version;
 

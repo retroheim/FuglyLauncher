@@ -47,6 +47,7 @@ class PackagesHandler extends AbstractHandler {
                 ManifestInfo info = new ManifestInfo();
                 info.setName(manifest.getName());
                 info.setTitle(manifest.getTitle());
+                info.setThumb(manifest.getThumb());
                 info.setVersion(manifest.getVersion());
                 info.setLocation(file.getName());
                 packages.add(info);

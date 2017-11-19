@@ -99,8 +99,10 @@ public class InstanceTableModel extends AbstractTableModel {
                 instance = instances.get(rowIndex);
                 if (!instance.isLocal()) {
                     return downloadIcon;
+                } else if (instance.getThumb()!=null) {
+                	return SwingHelper.createIcon(instance.getThumb(), 16, 16);
                 } else if (instance.getManifestURL() != null) {
-                    return instanceIcon;
+                	return instanceIcon;
                 } else {
                     return customInstanceIcon;
                 }

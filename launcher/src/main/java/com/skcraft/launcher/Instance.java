@@ -26,6 +26,7 @@ import java.util.Date;
 public class Instance implements Comparable<Instance> {
 
     private String title;
+    private String thumb;
     private String name;
     private String version;
     private boolean updatePending;

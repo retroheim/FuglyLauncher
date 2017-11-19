@@ -26,6 +26,7 @@ public class BuilderConfigDialog extends JDialog {
 
     private final JTextField nameText = new JTextField(20);
     private final JTextField titleText = new JTextField(30);
+    private final JTextField thumbText = new JTextField(30);
     private final JTextField gameVersionText = new JTextField(10);
     private final JTextArea launchFlagsArea = new JTextArea(10, 40);
     private final JTextArea userFilesIncludeArea = new JTextArea(15, 40);
@@ -119,6 +120,9 @@ public class BuilderConfigDialog extends JDialog {
         container.add(new JLabel("Title:"));
         container.add(titleText, "span");
 
+        container.add(new JLabel("Thumbnail:"));
+        container.add(thumbText, "span");
+
         container.add(new JLabel("Game Version:"));
         container.add(gameVersionText, "span");
 
@@ -201,6 +205,7 @@ public class BuilderConfigDialog extends JDialog {
     private void copyFrom() {
         SwingHelper.setTextAndResetCaret(nameText, config.getName());
         SwingHelper.setTextAndResetCaret(titleText, config.getTitle());
+        SwingHelper.setTextAndResetCaret(thumbText, config.getThumb());
         SwingHelper.setTextAndResetCaret(gameVersionText, config.getGameVersion());
         SwingHelper.setTextAndResetCaret(launchFlagsArea, SwingHelper.listToLines(config.getLaunchModifier().getFlags()));
         SwingHelper.setTextAndResetCaret(userFilesIncludeArea, SwingHelper.listToLines(config.getUserFiles().getInclude()));
@@ -212,6 +217,7 @@ public class BuilderConfigDialog extends JDialog {
     private void copyTo() {
         config.setName(nameText.getText().trim());
         config.setTitle(Strings.emptyToNull(titleText.getText().trim()));
+        config.setThumb(Strings.emptyToNull(thumbText.getText()));
         config.setGameVersion(gameVersionText.getText().trim());
 
         LaunchModifier launchModifier = config.getLaunchModifier();

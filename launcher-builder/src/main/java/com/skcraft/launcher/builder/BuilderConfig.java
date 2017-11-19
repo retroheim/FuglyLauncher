@@ -22,6 +22,7 @@ public class BuilderConfig {
 
     private String name;
     private String title;
+    private String thumb;
     private String gameVersion;
     @JsonProperty("launch")
     private LaunchModifier launchModifier = new LaunchModifier();
@@ -43,6 +44,7 @@ public class BuilderConfig {
     public void update(Manifest manifest) {
         manifest.updateName(getName());
         manifest.updateTitle(getTitle());
+        manifest.updateThumb(getThumb());
         manifest.updateGameVersion(getGameVersion());
         manifest.setLaunchModifier(getLaunchModifier());
     }

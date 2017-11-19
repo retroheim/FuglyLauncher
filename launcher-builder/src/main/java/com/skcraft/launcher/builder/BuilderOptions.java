@@ -27,6 +27,8 @@ public class BuilderOptions {
     private String name;
     @Parameter(names = "--title")
     private String title;
+    @Parameter(names = "--thumb")
+    private String thumb;
     @Parameter(names = "--mc-version")
     private String gameVersion;
 

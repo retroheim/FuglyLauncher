@@ -82,6 +82,12 @@ public class Manifest extends BaseManifest {
         }
     }
 
+    public void updateThumb(String thumb) {
+        if (thumb != null) {
+            setThumb(thumb);
+        }
+    }
+
     public void updateGameVersion(String gameVersion) {
         if (gameVersion != null) {
             setGameVersion(gameVersion);

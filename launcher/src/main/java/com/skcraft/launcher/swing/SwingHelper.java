@@ -318,6 +318,19 @@ public final class SwingHelper {
         }
     }
 
+    public static Icon createIcon(String url, int width, int height) {
+        try {
+            URL imageurl = new URL(url);
+            Image image = new ImageIcon(imageurl).getImage();
+            if (image != null) {
+                return new ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH));
+            }
+        } catch (MalformedURLException e) {
+        }
+
+        return new EmptyIcon(width, height);
+    }
+
     public static BufferedImage readBufferedImage(Class<?> clazz, String path) {
         InputStream in = null;
         try {
@@ -343,7 +356,7 @@ public final class SwingHelper {
      * Focus a component.
      *
      * <p>The focus call happens in {@link javax.swing.SwingUtilities#invokeLater(Runnable)}.</p>
-     * 
+     *
      * @param component the component
      */
     public static void focusLater(@NonNull final Component component) {
