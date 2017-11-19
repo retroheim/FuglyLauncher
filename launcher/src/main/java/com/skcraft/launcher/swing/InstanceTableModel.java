@@ -11,6 +11,8 @@ import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.util.SharedLocale;
 
+import java.awt.BorderLayout;
+
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 
@@ -23,9 +25,9 @@ public class InstanceTableModel extends AbstractTableModel {
 
     public InstanceTableModel(InstanceList instances) {
         this.instances = instances;
-        instanceIcon = SwingHelper.createIcon(Launcher.class, "instance_icon.png", 16, 16);
-        customInstanceIcon = SwingHelper.createIcon(Launcher.class, "custom_instance_icon.png", 16, 16);
-        downloadIcon = SwingHelper.createIcon(Launcher.class, "download_icon.png", 14, 14);
+        instanceIcon = SwingHelper.createIcon(Launcher.class, "instance_icon.png", 16*4, 16*4);
+        customInstanceIcon = SwingHelper.createIcon(Launcher.class, "custom_instance_icon.png", 16*4, 16*4);
+        downloadIcon = SwingHelper.createIcon(Launcher.class, "download_icon.png", 14*4, 14*4);
     }
 
     public void update() {
@@ -37,8 +39,6 @@ public class InstanceTableModel extends AbstractTableModel {
     public String getColumnName(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return "";
-            case 1:
                 return SharedLocale.tr("launcher.modpackColumn");
             default:
                 return null;
@@ -49,9 +49,7 @@ public class InstanceTableModel extends AbstractTableModel {
     public Class<?> getColumnClass(int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return ImageIcon.class;
-            case 1:
-                return String.class;
+                return InstanceTableCellModel.class;
             default:
                 return null;
         }
@@ -61,9 +59,6 @@ public class InstanceTableModel extends AbstractTableModel {
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         switch (columnIndex) {
             case 0:
-                instances.get(rowIndex).setSelected((boolean) (Boolean) value);
-                break;
-            case 1:
             default:
                 break;
         }
@@ -73,8 +68,6 @@ public class InstanceTableModel extends AbstractTableModel {
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return false;
-            case 1:
                 return false;
             default:
                 return false;
@@ -88,7 +81,7 @@ public class InstanceTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 2;
+        return 1;
     }
 
     @Override
@@ -96,19 +89,20 @@ public class InstanceTableModel extends AbstractTableModel {
         Instance instance;
         switch (columnIndex) {
             case 0:
+            	Icon icon;
                 instance = instances.get(rowIndex);
                 if (!instance.isLocal()) {
-                    return downloadIcon;
+                    icon = downloadIcon;
                 } else if (instance.getThumb()!=null) {
-                	return SwingHelper.createIcon(instance.getThumb(), 16, 16);
+                	icon = SwingHelper.createIcon(instance.getThumb(), 16*4, 16*4);
                 } else if (instance.getManifestURL() != null) {
-                	return instanceIcon;
+                	icon = instanceIcon;
                 } else {
-                    return customInstanceIcon;
+                	icon = customInstanceIcon;
                 }
-            case 1:
-                instance = instances.get(rowIndex);
-                return instance.getTitle();
+                if (icon!=null) {
+                    return new InstanceTableCellModel(instance.getTitle(), icon);
+                }
             default:
                 return null;
         }
