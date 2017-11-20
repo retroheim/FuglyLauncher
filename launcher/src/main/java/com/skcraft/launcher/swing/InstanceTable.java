@@ -10,17 +10,18 @@ import javax.swing.table.TableModel;
 
 public class InstanceTable extends DefaultTable {
 
-    public InstanceTable() {
-        super();
-        setTableHeader(null);
-    }
+	public InstanceTable() {
+		super();
+		setTableHeader(null);
+		setRowHeight(128);
+	}
 
-    @Override
-    public void setModel(TableModel dataModel) {
-        super.setModel(dataModel);
-        try {
-            ;//getColumnModel().getColumn(0).setCellRenderer(new InstanceTableCellFactory());
-        } catch (ArrayIndexOutOfBoundsException e) {
-        }
-    }
+	@Override
+	public void setModel(final TableModel dataModel) {
+		super.setModel(dataModel);
+		try {
+			getColumnModel().getColumn(0).setCellRenderer(new InstanceTableCellFactory());
+		} catch (final ArrayIndexOutOfBoundsException e) {
+		}
+	}
 }

@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.io.Files;
 import com.skcraft.launcher.launch.JavaProcessBuilder;
 import com.skcraft.launcher.model.modpack.LaunchModifier;
+import com.sun.prism.Image;
+
 import lombok.Data;
 
 import java.io.File;
@@ -40,6 +42,7 @@ public class Instance implements Comparable<Instance> {
     @JsonIgnore private int priority;
     @JsonIgnore private boolean selected;
     @JsonIgnore private boolean local;
+    @JsonIgnore private java.awt.Image iconCache;
 
     /**
      * Get the tile of the instance, which might be the same as the

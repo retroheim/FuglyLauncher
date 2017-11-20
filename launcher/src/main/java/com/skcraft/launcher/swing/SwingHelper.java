@@ -293,9 +293,25 @@ public final class SwingHelper {
     public static Image createImage(Class<?> clazz, String name) {
         URL resource = clazz.getResource(name);
         if (resource != null) {
+            try {
+                return ImageIO.read(resource);
+            } catch (IOException e) {
+			}
+        }
+        log.log(Level.WARNING, "Failed to read image from resource: " + name);
+        return null;
+    }
+
+    public static Image createImage(String url) {
+        URL resource = null;
+        try {
+    		resource = new URL(url);
+        } catch (MalformedURLException e) {
+    	}
+        if (resource != null) {
             return Toolkit.getDefaultToolkit().createImage(resource);
         } else {
-            log.log(Level.WARNING, "Failed to read image from resource: " + name);
+            log.log(Level.WARNING, "Failed to read image from url: " + url);
             return null;
         }
     }
@@ -316,19 +332,6 @@ public final class SwingHelper {
         } else {
             return new EmptyIcon(width, height);
         }
-    }
-
-    public static Icon createIcon(String url, int width, int height) {
-        try {
-            URL imageurl = new URL(url);
-            Image image = new ImageIcon(imageurl).getImage();
-            if (image != null) {
-                return new ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH));
-            }
-        } catch (MalformedURLException e) {
-        }
-
-        return new EmptyIcon(width, height);
     }
 
     public static BufferedImage readBufferedImage(Class<?> clazz, String path) {
