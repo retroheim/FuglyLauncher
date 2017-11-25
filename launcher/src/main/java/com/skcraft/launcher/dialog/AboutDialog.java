@@ -34,6 +34,7 @@ public class AboutDialog extends JDialog {
                 "launcher platform that anyone can use."), "wrap, gapbottom unrel");
         container.add(new JLabel("<html>SKCraft does not necessarily endorse the version of<br>" +
                 "the launcher that you are using."), "wrap, gapbottom unrel");
+        container.add(new JLabel("<html>Fruit LauncherはSKCraft Launcherをベースに作成されています。"), "wrap, gapbottom unrel");
 
         JButton okButton = new JButton("OK");
         JButton sourceCodeButton = new JButton("Website");

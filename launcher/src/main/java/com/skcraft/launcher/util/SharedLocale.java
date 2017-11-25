@@ -9,9 +9,14 @@ package com.skcraft.launcher.util;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
@@ -96,11 +101,32 @@ public class SharedLocale {
         try {
             SharedLocale.locale = locale;
             bundle = ResourceBundle.getBundle(baseName, locale,
-                    SharedLocale.class.getClassLoader());
+                    SharedLocale.class.getClassLoader(), new ResourceBundleUtf8Control());
             return true;
         } catch (MissingResourceException e) {
             log.log(Level.SEVERE, "Failed to load resource bundle", e);
             return false;
+        }
+    }
+
+    public static class ResourceBundleUtf8Control extends ResourceBundle.Control {
+        @Override
+        public ResourceBundle newBundle(final String baseName, final Locale locale, final String format,
+            final ClassLoader loader, final boolean reload)
+            throws IllegalAccessException, InstantiationException, IOException {
+            final String bundleName = toBundleName(baseName, locale);
+            final String resourceName = toResourceName(bundleName, "properties");
+
+            InputStream is = loader.getResourceAsStream(resourceName);
+            InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+            BufferedReader reader = new BufferedReader(isr);
+            try {
+                return new PropertyResourceBundle(reader);
+            } finally {
+				is.close();
+				isr.close();
+				reader.close();
+			}
         }
     }
 }
