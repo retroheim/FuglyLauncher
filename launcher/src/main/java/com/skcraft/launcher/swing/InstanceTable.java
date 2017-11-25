@@ -13,7 +13,7 @@ public class InstanceTable extends DefaultTable {
 	public InstanceTable() {
 		super();
 		setTableHeader(null);
-		setRowHeight(128);
+		setRowHeight(64);
 	}
 
 	@Override

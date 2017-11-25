@@ -1,28 +1,86 @@
 package com.skcraft.launcher.swing;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Polygon;
 import java.awt.RenderingHints;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.skcraft.launcher.Instance;
+import com.skcraft.launcher.Launcher;
+
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.java.Log;
+import net.teamfruit.skcraft.ImageSizes;
 
+@Log
 public class InstanceTableCellPanel extends JPanel {
+	private static class DefaultIcons {
+		public static final Image loadingIcon = SwingHelper.createImage(Launcher.class, "loading_icon.png");
+		public static final Image instanceIcon = SwingHelper.createImage(Launcher.class, "instance_icon.png");
+		public static final Image customInstanceIcon = SwingHelper.createImage(Launcher.class, "custom_instance_icon.png");
+		public static final Image downloadIcon = SwingHelper.createImage(Launcher.class, "download_icon.png");
+		public static final Image instanceTitleIcon = SwingHelper.createImage(Launcher.class, "instance_title_icon.png");
+		public static final Image instancePlayIcon = SwingHelper.createImage(Launcher.class, "instance_play_icon.png");
+	}
+
+	private static final @Nonnull ExecutorService threadpool = new ThreadPoolExecutor(3, 3,
+			4L, TimeUnit.SECONDS,
+			new LinkedBlockingQueue<Runnable>(),
+			new ThreadFactoryBuilder().setNameFormat("thumbnail-download-%d").build());
+
 	private final JTable table;
 	private @Getter @Setter String title;
+	private @Getter @Setter boolean selected;
 	private @Getter @Setter Image thumb;
+	private @Getter Instance instance;
 
 	public InstanceTableCellPanel(final JTable table) {
 		SwingHelper.removeOpaqueness(this);
 		this.table = table;
+	}
+
+	public void setInstance(final Instance instance) {
+		this.instance = instance;
+
+		if (!instance.isLocal())
+			setThumb(DefaultIcons.downloadIcon);
+		else if (instance.getThumb()!=null) {
+			if (instance.getIconCache()!=null)
+				setThumb(instance.getIconCache());
+			else {
+				setThumb(DefaultIcons.loadingIcon);
+				threadpool.execute(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							final Image thumb = SwingHelper.createImage("https://i.gyazo.com/18740a42fbce0032a095b7945f1eef86.png");
+							setThumb(thumb);
+							instance.setIconCache(thumb);
+						} catch (final Exception e) {
+							setThumb(DefaultIcons.instanceIcon);
+						}
+						InstanceTableCellPanel.this.table.repaint();
+					}
+				});
+			}
+		} else if (instance.getManifestURL()!=null)
+			setThumb(DefaultIcons.instanceIcon);
+		else
+			setThumb(DefaultIcons.customInstanceIcon);
 	}
 
 	@Override
@@ -30,31 +88,42 @@ public class InstanceTableCellPanel extends JPanel {
 		final Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		final int panel_width = getWidth();
 		final int panel_height = getHeight();
 		if (this.thumb!=null) {
 			final int img_width = this.thumb.getWidth(this.table);
 			final int img_height = this.thumb.getHeight(this.table);
-			final int newwidth = panel_height*img_width/img_height;
-			g2d.drawImage(this.thumb, (panel_width-newwidth)/2, 0, newwidth, panel_height, this.table);
+			final Dimension img_size = ImageSizes.LIMIT.size(img_width, img_height, panel_width, panel_height);
+			g2d.drawImage(this.thumb, (panel_width-img_size.width)/2, (panel_height-img_size.height)/2, img_size.width, img_size.height, this.table);
 		}
 		if (this.title!=null) {
 			final Font font = new Font(Font.DIALOG, Font.BOLD, 13);
 			g2d.setFont(font);
 			final FontMetrics fontmatrics = g2d.getFontMetrics();
-			g2d.translate(0, -10);
-			final Polygon polygon = new Polygon();
+			g2d.translate(0, -5);
+			final int height_padding = 5;
 			final int pol_w = fontmatrics.stringWidth(this.title)+30;
-			final int pol_h = fontmatrics.getHeight()+30;
-			final int pol_delta = 10;
-			polygon.addPoint(panel_width, panel_height);
-			polygon.addPoint(panel_width-pol_w-pol_delta, panel_height);
-			polygon.addPoint(panel_width-pol_w, panel_height-pol_h);
-			polygon.addPoint(panel_width, panel_height-pol_h);
-			g2d.setColor(new Color(0f, 0f, 0f, 0.75f));
-			g2d.fillPolygon(polygon);
+			final int pol_h = fontmatrics.getHeight()+height_padding;
+
+			final Image titleicon = DefaultIcons.instanceTitleIcon;
+			final int title_width = titleicon.getWidth(this.table);
+			final int title_height = titleicon.getHeight(this.table);
+
+			final int title_newwidth = pol_h*title_width/title_height;
+			final int title_newheight = pol_h;
+			g2d.drawImage(titleicon, panel_width-pol_w, panel_height-title_newheight, title_newwidth, title_newheight, this.table);
+
 			g2d.setColor(Color.WHITE);
-			g2d.drawString(this.title, panel_width-pol_w+15, panel_height-fontmatrics.getDescent()-15);
+			g2d.drawString(this.title, panel_width-pol_w+20, panel_height-fontmatrics.getDescent()-height_padding/2);
+			g2d.translate(0, 5);
+		}
+		if (this.selected) {
+			g2d.setColor(new Color(0f, 0f, 1f, 0.75f));
+			final int inset = 2;
+			g2d.drawRect(0+inset, 0+inset, panel_width-1-inset*2, panel_height-1-inset*2);
+
+			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.table);
 		}
 	}
 }
