@@ -145,21 +145,17 @@ public class LauncherFrame extends JFrame {
             }
         });
 
-        this.instancesTable.addMouseListener(new MouseAdapter() {
-        	@Override
-        	public void mouseClicked(final MouseEvent e) {
-        		super.mouseClicked(e);
-        	}
-        });
 		final Cursor cursorhand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 		final Cursor cursornormal = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 		this.instancesTable.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
-				final int i = LauncherFrame.this.instancesTable.rowAtPoint(e.getPoint());
-				final int j = LauncherFrame.this.instancesTable.getSelectedRow();
-				if (i==j)
-					LauncherFrame.this.launchButton.doClick();
+				if (e.getButton()==MouseEvent.BUTTON1) {
+					final int i = LauncherFrame.this.instancesTable.rowAtPoint(e.getPoint());
+					final int j = LauncherFrame.this.instancesTable.getSelectedRow();
+					if (i==j)
+						LauncherFrame.this.launchButton.doClick();
+				}
 			}
 		});
 		this.instancesTable.addMouseMotionListener(new MouseAdapter() {
