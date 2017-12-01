@@ -148,14 +148,18 @@ public class LauncherFrame extends JFrame {
 		final Cursor cursorhand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 		final Cursor cursornormal = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
 		this.instancesTable.addMouseListener(new MouseAdapter() {
+			private int lastSelected;
+
 			@Override
 			public void mouseClicked(final MouseEvent e) {
+				final int i = LauncherFrame.this.instancesTable.rowAtPoint(e.getPoint());
 				if (e.getButton()==MouseEvent.BUTTON1) {
-					final int i = LauncherFrame.this.instancesTable.rowAtPoint(e.getPoint());
-					final int j = LauncherFrame.this.instancesTable.getSelectedRow();
+					final int j = this.lastSelected;
+					log.info(i+"*"+j);
 					if (i==j)
 						LauncherFrame.this.launchButton.doClick();
 				}
+				this.lastSelected = LauncherFrame.this.instancesTable.getSelectedRow();
 			}
 		});
 		this.instancesTable.addMouseMotionListener(new MouseAdapter() {
