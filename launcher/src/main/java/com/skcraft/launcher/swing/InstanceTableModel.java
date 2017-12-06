@@ -6,27 +6,27 @@
 
 package com.skcraft.launcher.swing;
 
+import javax.swing.table.AbstractTableModel;
+
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.util.SharedLocale;
-
-import javax.swing.table.AbstractTableModel;
 
 public class InstanceTableModel extends AbstractTableModel {
 
     private final InstanceList instances;
 
-    public InstanceTableModel(InstanceList instances) {
+    public InstanceTableModel(final InstanceList instances) {
         this.instances = instances;
     }
 
     public void update() {
-        instances.sort();
+        this.instances.sort();
         fireTableDataChanged();
     }
 
     @Override
-    public String getColumnName(int columnIndex) {
+    public String getColumnName(final int columnIndex) {
         switch (columnIndex) {
             case 0:
                 return SharedLocale.tr("launcher.modpackColumn");
@@ -36,7 +36,7 @@ public class InstanceTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Class<?> getColumnClass(int columnIndex) {
+    public Class<?> getColumnClass(final int columnIndex) {
         switch (columnIndex) {
             case 0:
                 return Instance.class;
@@ -46,7 +46,7 @@ public class InstanceTableModel extends AbstractTableModel {
     }
 
     @Override
-    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+    public void setValueAt(final Object value, final int rowIndex, final int columnIndex) {
         switch (columnIndex) {
             case 0:
             default:
@@ -55,7 +55,7 @@ public class InstanceTableModel extends AbstractTableModel {
     }
 
     @Override
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
+    public boolean isCellEditable(final int rowIndex, final int columnIndex) {
         switch (columnIndex) {
             case 0:
                 return false;
@@ -66,7 +66,7 @@ public class InstanceTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return instances.size();
+        return this.instances.size();
     }
 
     @Override
@@ -75,10 +75,10 @@ public class InstanceTableModel extends AbstractTableModel {
     }
 
     @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
+    public Instance getValueAt(final int rowIndex, final int columnIndex) {
         switch (columnIndex) {
             case 0:
-            	return instances.get(rowIndex);
+            	return this.instances.get(rowIndex);
             default:
                 return null;
         }

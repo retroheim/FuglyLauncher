@@ -31,6 +31,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
@@ -42,7 +44,9 @@ import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
 import com.skcraft.launcher.swing.ActionListeners;
+import com.skcraft.launcher.swing.InstanceCellFactory;
 import com.skcraft.launcher.swing.InstanceTable;
+import com.skcraft.launcher.swing.InstanceTableCellPanel;
 import com.skcraft.launcher.swing.InstanceTableModel;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
 import com.skcraft.launcher.swing.SwingHelper;
@@ -69,6 +73,7 @@ public class LauncherFrame extends JFrame {
     @Getter
     private final JScrollPane instanceScroll = new JScrollPane(this.instancesTable);
     private WebpagePanel webView;
+    private JPanel selectedPane;
     private JPanel splitPane;
     private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
     private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
@@ -110,6 +115,10 @@ public class LauncherFrame extends JFrame {
         this.webView = createNewsPanel();
 
         this.splitPane = new JPanel(new BorderLayout(4, 4));
+
+        this.selectedPane = new JPanel(new BorderLayout());
+        this.selectedPane.setPreferredSize(new Dimension(250, 64));
+
         this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
 
         this.launcher.getUpdateManager().addPropertyChangeListener(new PropertyChangeListener() {
@@ -126,6 +135,7 @@ public class LauncherFrame extends JFrame {
         this.launchButton.setFont(this.launchButton.getFont().deriveFont(Font.BOLD));
         this.splitPane.add(this.webView, BorderLayout.CENTER);
         this.splitPane.add(this.instanceScroll, BorderLayout.EAST);
+        this.splitPane.add(this.selectedPane, BorderLayout.SOUTH);
         this.splitPane.setOpaque(false);
         container.add(this.splitPane, "grow, wrap, span 5, gapbottom unrel, w null:680, h null:350");
         // SwingHelper.flattenJSplitPane(this.splitPane);
@@ -170,6 +180,22 @@ public class LauncherFrame extends JFrame {
 					LauncherFrame.this.instancesTable.setCursor(cursorhand);
 				else
 					LauncherFrame.this.instancesTable.setCursor(cursornormal);
+			}
+		});
+		this.instancesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			private final InstanceCellFactory factory = new InstanceCellFactory();
+
+			@Override
+			public void valueChanged(final ListSelectionEvent e) {
+		        if (!e.getValueIsAdjusting()) {
+		        	final int index = LauncherFrame.this.instancesTable.getSelectionModel().getLeadSelectionIndex();
+		        	final Instance instance = LauncherFrame.this.instancesModel.getValueAt(index, 0);
+		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(LauncherFrame.this.instancesTable, instance, true);
+		    		LauncherFrame.this.selectedPane.removeAll();
+		    		LauncherFrame.this.selectedPane.add(tablecell, BorderLayout.CENTER);
+		    		LauncherFrame.this.selectedPane.revalidate();
+		    		LauncherFrame.this.selectedPane.repaint();
+		        }
 			}
 		});
 
