@@ -155,7 +155,7 @@ public class LauncherFrame extends JFrame {
 				final int i = LauncherFrame.this.instancesTable.rowAtPoint(e.getPoint());
 				if (e.getButton()==MouseEvent.BUTTON1) {
 					final int j = this.lastSelected;
-					log.info(i+"*"+j);
+					// log.info(i+"*"+j);
 					if (i==j)
 						LauncherFrame.this.launchButton.doClick();
 				}

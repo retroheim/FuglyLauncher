@@ -14,8 +14,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.skcraft.launcher.Instance;
@@ -42,15 +42,15 @@ public class InstanceTableCellPanel extends JPanel {
 			new LinkedBlockingQueue<Runnable>(),
 			new ThreadFactoryBuilder().setNameFormat("thumbnail-download-%d").build());
 
-	private final JTable table;
+	private final JComponent parent;
 	private @Getter @Setter String title;
 	private @Getter @Setter boolean selected;
 	private @Getter @Setter Image thumb;
 	private @Getter Instance instance;
 
-	public InstanceTableCellPanel(final JTable table) {
+	public InstanceTableCellPanel(final JComponent parent) {
 		SwingHelper.removeOpaqueness(this);
-		this.table = table;
+		this.parent = parent;
 	}
 
 	public void setInstance(final Instance instance) {
@@ -73,7 +73,7 @@ public class InstanceTableCellPanel extends JPanel {
 						} catch (final Exception e) {
 							setThumb(DefaultIcons.instanceIcon);
 						}
-						InstanceTableCellPanel.this.table.repaint();
+						InstanceTableCellPanel.this.parent.repaint();
 					}
 				});
 			}
@@ -92,10 +92,10 @@ public class InstanceTableCellPanel extends JPanel {
 		final int panel_width = getWidth();
 		final int panel_height = getHeight();
 		if (this.thumb!=null) {
-			final int img_width = this.thumb.getWidth(this.table);
-			final int img_height = this.thumb.getHeight(this.table);
+			final int img_width = this.thumb.getWidth(this.parent);
+			final int img_height = this.thumb.getHeight(this.parent);
 			final Dimension img_size = ImageSizes.LIMIT.size(img_width, img_height, panel_width, panel_height);
-			g2d.drawImage(this.thumb, (panel_width-img_size.width)/2, (panel_height-img_size.height)/2, img_size.width, img_size.height, this.table);
+			g2d.drawImage(this.thumb, (panel_width-img_size.width)/2, (panel_height-img_size.height)/2, img_size.width, img_size.height, this.parent);
 		}
 		if (this.title!=null) {
 			final Font font = new Font(Font.DIALOG, Font.BOLD, 13);
@@ -107,12 +107,12 @@ public class InstanceTableCellPanel extends JPanel {
 			final int pol_h = fontmatrics.getHeight()+height_padding;
 
 			final Image titleicon = DefaultIcons.instanceTitleIcon;
-			final int title_width = titleicon.getWidth(this.table);
-			final int title_height = titleicon.getHeight(this.table);
+			final int title_width = titleicon.getWidth(this.parent);
+			final int title_height = titleicon.getHeight(this.parent);
 
 			final int title_newwidth = pol_h*title_width/title_height;
 			final int title_newheight = pol_h;
-			g2d.drawImage(titleicon, panel_width-pol_w, panel_height-title_newheight, title_newwidth, title_newheight, this.table);
+			g2d.drawImage(titleicon, panel_width-pol_w, panel_height-title_newheight, title_newwidth, title_newheight, this.parent);
 
 			g2d.setColor(Color.WHITE);
 			g2d.drawString(this.title, panel_width-pol_w+20, panel_height-fontmatrics.getDescent()-height_padding/2);
@@ -123,7 +123,7 @@ public class InstanceTableCellPanel extends JPanel {
 			final int inset = 2;
 			g2d.drawRect(0+inset, 0+inset, panel_width-1-inset*2, panel_height-1-inset*2);
 
-			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.table);
+			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
 		}
 	}
 }
