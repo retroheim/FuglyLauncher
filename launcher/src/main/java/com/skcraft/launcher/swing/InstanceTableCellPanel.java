@@ -94,7 +94,7 @@ public class InstanceTableCellPanel extends JPanel {
 		if (this.thumb!=null) {
 			final int img_width = this.thumb.getWidth(this.parent);
 			final int img_height = this.thumb.getHeight(this.parent);
-			final Dimension img_size = ImageSizes.LIMIT.size(img_width, img_height, panel_width, panel_height);
+			final Dimension img_size = ImageSizes.OUTER.size(img_width, img_height, panel_width, panel_height);
 			g2d.drawImage(this.thumb, (panel_width-img_size.width)/2, (panel_height-img_size.height)/2, img_size.width, img_size.height, this.parent);
 		}
 		if (this.title!=null) {

@@ -47,7 +47,7 @@ public enum ImageSizes {
 				maxw *= -1;
 			if (h<0)
 				maxh *= -1;
-			final boolean b = w/maxw<h/maxh;
+			final boolean b = (float)w/maxw<(float)h/maxh;
 			return new Dimension(b ? maxw : w*maxh/h, b ? h*maxw/w : maxh);
 		}
 	},
