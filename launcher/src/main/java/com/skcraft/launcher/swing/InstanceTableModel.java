@@ -12,9 +12,11 @@ import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.util.SharedLocale;
 
+import lombok.Getter;
+
 public class InstanceTableModel extends AbstractTableModel {
 
-    private final InstanceList instances;
+    private @Getter final InstanceList instances;
 
     public InstanceTableModel(final InstanceList instances) {
         this.instances = instances;
@@ -78,6 +80,7 @@ public class InstanceTableModel extends AbstractTableModel {
     public Instance getValueAt(final int rowIndex, final int columnIndex) {
         switch (columnIndex) {
             case 0:
+            	if (rowIndex<this.instances.size())
             	return this.instances.get(rowIndex);
             default:
                 return null;

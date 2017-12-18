@@ -44,6 +44,7 @@ public class InstanceTableCellPanel extends JPanel {
 
 	private final JComponent parent;
 	private @Getter @Setter String title;
+	private @Getter @Setter boolean showPlayIcon;
 	private @Getter @Setter boolean selected;
 	private @Getter @Setter Image thumb;
 	private @Getter Instance instance;
@@ -53,6 +54,7 @@ public class InstanceTableCellPanel extends JPanel {
 		if (parent==null)
 			parent = this;
 		this.parent = parent;
+		setPreferredSize(new Dimension(250, 64));
 	}
 
 	public void setInstance(final Instance instance) {
@@ -124,8 +126,8 @@ public class InstanceTableCellPanel extends JPanel {
 			g2d.setColor(new Color(0f, 0f, 1f, 0.75f));
 			final int inset = 2;
 			g2d.drawRect(0+inset, 0+inset, panel_width-1-inset*2, panel_height-1-inset*2);
-
-			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
 		}
+		if (this.selected||this.showPlayIcon)
+			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
 	}
 }

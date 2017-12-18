@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -40,12 +41,14 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import com.skcraft.concurrency.ObservableFuture;
+import com.skcraft.launcher.Configuration;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
+import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
 import com.skcraft.launcher.swing.InstanceCellFactory;
 import com.skcraft.launcher.swing.InstanceTable;
@@ -112,12 +115,15 @@ public class LauncherFrame extends JFrame {
     }
 
     private void initComponents() {
+    	setResizable(false);
+
         final JPanel container = createContainerPanel();
         container.setBackground(Color.WHITE);
         container.setLayout(new BorderLayout());
 
         this.webView = createNewsPanel();
         this.webView.setBrowserBorder(BorderFactory.createEmptyBorder());
+        this.webView.setPreferredSize(new Dimension(250, 250));
         final JScrollPane webViewScroll = this.webView.getDocumentScroll();
         webViewScroll.getVerticalScrollBar().setUI(new WebpageScrollBarUI(webViewScroll));
         webViewScroll.getHorizontalScrollBar().setUI(new WebpageScrollBarUI(webViewScroll));
@@ -127,7 +133,7 @@ public class LauncherFrame extends JFrame {
 
         this.selectedPane = new JPanel(new BorderLayout());
         this.selectedPane.setOpaque(false);
-        this.selectedPane.setPreferredSize(new Dimension(250, 64));
+        this.selectedPane.setPreferredSize(new Dimension(250, 60));
 
         this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
 
@@ -145,18 +151,26 @@ public class LauncherFrame extends JFrame {
 
         this.updateCheck.setSelected(true);
         this.instancesTable.setModel(this.instancesModel);
+
         this.instanceScroll.setPreferredSize(new Dimension(250, this.instanceScroll.getPreferredSize().height));
         this.instanceScroll.getVerticalScrollBar().setUI(new WebpageScrollBarUI(this.instanceScroll));
         this.instanceScroll.getHorizontalScrollBar().setUI(new WebpageScrollBarUI(this.instanceScroll));
         this.instanceScroll.setBorder(BorderFactory.createEmptyBorder());
+
         this.launchButton.setFont(this.launchButton.getFont().deriveFont(Font.BOLD));
         final JButton expandButton = new JButton(">");
         final JPanel buttons = new JPanel(new GridLayout(3, 1));
+        this.refreshButton.setIcon(SwingHelper.createIcon(Launcher.class, "refresh_icon.png", 20, 20));
+        this.refreshButton.setText(null);
         buttons.add(this.refreshButton);
         // buttons.add(this.updateCheck);
         // buttons.add(this.selfUpdateButton);
+        this.optionsButton.setIcon(SwingHelper.createIcon(Launcher.class, "settings_icon.png", 20, 20));
+        this.optionsButton.setText(null);
         buttons.add(this.optionsButton);
         // buttons.add(this.launchButton);
+        expandButton.setIcon(SwingHelper.createIcon(Launcher.class, "expand_icon.png", 20, 20));
+        expandButton.setText(null);
         buttons.add(expandButton);
         buttons.setOpaque(false);
         final JPanel leftBottomPane = new JPanel(new BorderLayout());
@@ -174,6 +188,7 @@ public class LauncherFrame extends JFrame {
         this.splitPane.add(leftPane, BorderLayout.CENTER);
         this.splitPane.add(rightPane, BorderLayout.EAST);
         this.splitPane.setOpaque(false);
+
         expandButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
@@ -221,6 +236,11 @@ public class LauncherFrame extends JFrame {
 						LauncherFrame.this.launchButton.doClick();
 				}
 				this.lastSelected = LauncherFrame.this.instancesTable.getSelectedRow();
+				final Instance instance = LauncherFrame.this.instancesModel.getValueAt(this.lastSelected, 0);
+	        	final Configuration config = LauncherFrame.this.launcher.getConfig();
+	        	if (instance!=null)
+	        		config.setSelectedInstance(instance.getName());
+	        	Persistence.commitAndForget(config);
 			}
 		});
 		this.instancesTable.addMouseMotionListener(new MouseAdapter() {
@@ -243,7 +263,9 @@ public class LauncherFrame extends JFrame {
 		        	if (index<0)
 		        		index = 0;
 		        	final Instance instance = LauncherFrame.this.instancesModel.getValueAt(index, 0);
+
 		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(null, instance, false);
+		        	tablecell.setShowPlayIcon(true);
 		    		LauncherFrame.this.selectedPane.removeAll();
 		    		LauncherFrame.this.selectedPane.add(tablecell, BorderLayout.CENTER);
 		    		LauncherFrame.this.selectedPane.revalidate();
@@ -454,8 +476,20 @@ public class LauncherFrame extends JFrame {
             @Override
             public void run() {
                 LauncherFrame.this.instancesModel.update();
-                if (LauncherFrame.this.instancesTable.getRowCount() > 0)
-					LauncherFrame.this.instancesTable.setRowSelectionInterval(0, 0);
+                if (LauncherFrame.this.instancesTable.getRowCount() > 0) {
+                    final String selectedInstance = LauncherFrame.this.launcher.getConfig().getSelectedInstance();
+                	int index = 0;
+                    if (selectedInstance!=null) {
+                    	final InstanceList list = LauncherFrame.this.instancesModel.getInstances();
+                    	for (final ListIterator<Instance> itr = list.getInstances().listIterator(); itr.hasNext();) {
+                    		final int i = itr.nextIndex();
+                    		final Instance instance = itr.next();
+                    		if (selectedInstance.equals(instance.getName()))
+                    			index = i;
+                    	}
+                    }
+					LauncherFrame.this.instancesTable.setRowSelectionInterval(index, index);
+                }
                 requestFocus();
             }
         }, SwingExecutor.INSTANCE);

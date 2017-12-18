@@ -61,7 +61,7 @@ public class LaunchSupervisor {
             if (options.getSession() != null) {
                 session = options.getSession();
             } else {
-                session = LoginDialog.showLoginRequest(window, launcher);
+                session = LoginDialog.showLoginRequest(options, launcher);
                 if (session == null) {
                     return;
                 }
