@@ -9,6 +9,7 @@ package com.skcraft.launcher.dialog;
 import static com.skcraft.launcher.util.SharedLocale.*;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -22,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -51,6 +53,7 @@ import com.skcraft.launcher.swing.InstanceTableModel;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.swing.WebpagePanel;
+import com.skcraft.launcher.swing.WebpageScrollBarUI;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
@@ -110,13 +113,20 @@ public class LauncherFrame extends JFrame {
 
     private void initComponents() {
         final JPanel container = createContainerPanel();
-        container.setLayout(new MigLayout("fill, insets dialog", "[][]push[][]", "[grow][]"));
+        container.setBackground(Color.WHITE);
+        container.setLayout(new MigLayout("fill, ins 0", "[][]push[][]", "[grow][]"));
 
         this.webView = createNewsPanel();
+        this.webView.setBrowserBorder(BorderFactory.createEmptyBorder());
+        final JScrollPane webViewScroll = this.webView.getDocumentScroll();
+        webViewScroll.getVerticalScrollBar().setUI(new WebpageScrollBarUI(webViewScroll));
+        webViewScroll.getHorizontalScrollBar().setUI(new WebpageScrollBarUI(webViewScroll));
+        // this.webView.getDocumentScroll().getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
 
-        this.splitPane = new JPanel(new BorderLayout(4, 4));
+        this.splitPane = new JPanel(new BorderLayout());
 
         this.selectedPane = new JPanel(new BorderLayout());
+        this.selectedPane.setOpaque(false);
         this.selectedPane.setPreferredSize(new Dimension(250, 64));
 
         this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
@@ -132,6 +142,7 @@ public class LauncherFrame extends JFrame {
         this.updateCheck.setSelected(true);
         this.instancesTable.setModel(this.instancesModel);
         this.instanceScroll.setPreferredSize(new Dimension(250, this.instanceScroll.getPreferredSize().height));
+        this.instanceScroll.setBorder(BorderFactory.createEmptyBorder());
         this.launchButton.setFont(this.launchButton.getFont().deriveFont(Font.BOLD));
         this.splitPane.add(this.webView, BorderLayout.CENTER);
         this.splitPane.add(this.instanceScroll, BorderLayout.EAST);
@@ -188,9 +199,11 @@ public class LauncherFrame extends JFrame {
 			@Override
 			public void valueChanged(final ListSelectionEvent e) {
 		        if (!e.getValueIsAdjusting()) {
-		        	final int index = LauncherFrame.this.instancesTable.getSelectionModel().getLeadSelectionIndex();
+		        	int index = LauncherFrame.this.instancesTable.getSelectionModel().getLeadSelectionIndex();
+		        	if (index<0)
+		        		index = 0;
 		        	final Instance instance = LauncherFrame.this.instancesModel.getValueAt(index, 0);
-		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(LauncherFrame.this.instancesTable, instance, true);
+		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(null, instance, false);
 		    		LauncherFrame.this.selectedPane.removeAll();
 		    		LauncherFrame.this.selectedPane.add(tablecell, BorderLayout.CENTER);
 		    		LauncherFrame.this.selectedPane.revalidate();

@@ -7,6 +7,8 @@
 package com.skcraft.launcher.swing;
 
 import com.skcraft.launcher.LauncherUtils;
+
+import lombok.Getter;
 import lombok.extern.java.Log;
 
 import javax.swing.*;
@@ -36,7 +38,7 @@ public final class WebpagePanel extends JPanel {
     private URL url;
     private boolean activated;
     private JEditorPane documentView;
-    private JScrollPane documentScroll;
+    private @Getter JScrollPane documentScroll;
     private JProgressBar progressBar;
     private Thread thread;
     private Border browserBorder;

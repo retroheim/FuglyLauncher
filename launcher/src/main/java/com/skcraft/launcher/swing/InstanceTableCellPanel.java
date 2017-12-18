@@ -48,8 +48,10 @@ public class InstanceTableCellPanel extends JPanel {
 	private @Getter @Setter Image thumb;
 	private @Getter Instance instance;
 
-	public InstanceTableCellPanel(final JComponent parent) {
+	public InstanceTableCellPanel(JComponent parent) {
 		SwingHelper.removeOpaqueness(this);
+		if (parent==null)
+			parent = this;
 		this.parent = parent;
 	}
 
