@@ -14,6 +14,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -60,7 +61,6 @@ import com.skcraft.launcher.util.SwingExecutor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
-import net.miginfocom.swing.MigLayout;
 
 /**
  * The main launcher frame.
@@ -96,7 +96,7 @@ public class LauncherFrame extends JFrame {
         this.instancesModel = new InstanceTableModel(launcher.getInstances());
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(400, 300));
+        setMinimumSize(new Dimension(500, 500));
         initComponents();
         pack();
         setLocationRelativeTo(null);
@@ -114,7 +114,7 @@ public class LauncherFrame extends JFrame {
     private void initComponents() {
         final JPanel container = createContainerPanel();
         container.setBackground(Color.WHITE);
-        container.setLayout(new MigLayout("fill, ins 0", "[][]push[][]", "[grow][]"));
+        container.setLayout(new BorderLayout());
 
         this.webView = createNewsPanel();
         this.webView.setBrowserBorder(BorderFactory.createEmptyBorder());
@@ -134,28 +134,61 @@ public class LauncherFrame extends JFrame {
         this.launcher.getUpdateManager().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("pendingUpdate"))
-					LauncherFrame.this.selfUpdateButton.setVisible((Boolean) evt.getNewValue());
+                if (evt.getPropertyName().equals("pendingUpdate")) {
+                	final boolean enabled = (Boolean) evt.getNewValue();
+					LauncherFrame.this.selfUpdateButton.setVisible(enabled);
+					if (enabled)
+						LauncherFrame.this.selfUpdateButton.doClick();
+                }
             }
         });
 
         this.updateCheck.setSelected(true);
         this.instancesTable.setModel(this.instancesModel);
         this.instanceScroll.setPreferredSize(new Dimension(250, this.instanceScroll.getPreferredSize().height));
+        this.instanceScroll.getVerticalScrollBar().setUI(new WebpageScrollBarUI(this.instanceScroll));
+        this.instanceScroll.getHorizontalScrollBar().setUI(new WebpageScrollBarUI(this.instanceScroll));
         this.instanceScroll.setBorder(BorderFactory.createEmptyBorder());
         this.launchButton.setFont(this.launchButton.getFont().deriveFont(Font.BOLD));
-        this.splitPane.add(this.webView, BorderLayout.CENTER);
-        this.splitPane.add(this.instanceScroll, BorderLayout.EAST);
-        this.splitPane.add(this.selectedPane, BorderLayout.SOUTH);
+        final JButton expandButton = new JButton(">");
+        final JPanel buttons = new JPanel(new GridLayout(3, 1));
+        buttons.add(this.refreshButton);
+        // buttons.add(this.updateCheck);
+        // buttons.add(this.selfUpdateButton);
+        buttons.add(this.optionsButton);
+        // buttons.add(this.launchButton);
+        buttons.add(expandButton);
+        buttons.setOpaque(false);
+        final JPanel leftBottomPane = new JPanel(new BorderLayout());
+        leftBottomPane.add(this.selectedPane, BorderLayout.CENTER);
+        leftBottomPane.add(buttons, BorderLayout.EAST);
+        leftBottomPane.setOpaque(false);
+        final JPanel leftPane = new JPanel(new BorderLayout());
+        leftPane.add(this.webView, BorderLayout.CENTER);
+        leftPane.add(leftBottomPane, BorderLayout.SOUTH);
+        leftPane.setOpaque(false);
+        final JPanel rightPane = new JPanel(new BorderLayout());
+        rightPane.add(this.instanceScroll, BorderLayout.CENTER);
+        rightPane.setVisible(false);
+        rightPane.setOpaque(false);
+        this.splitPane.add(leftPane, BorderLayout.CENTER);
+        this.splitPane.add(rightPane, BorderLayout.EAST);
         this.splitPane.setOpaque(false);
-        container.add(this.splitPane, "grow, wrap, span 5, gapbottom unrel, w null:680, h null:350");
-        // SwingHelper.flattenJSplitPane(this.splitPane);
-        container.add(this.refreshButton);
-        container.add(this.updateCheck);
-        container.add(this.selfUpdateButton);
-        container.add(this.optionsButton);
-        container.add(this.launchButton);
+        expandButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final boolean visible = !rightPane.isVisible();
+				rightPane.setVisible(visible);
 
+				final int totalWidth = getWidth();
+				final int rightWidth = rightPane.getWidth();
+				setMinimumSize(new Dimension(750-(visible?0:rightWidth), 500));
+				setSize(visible?totalWidth+rightWidth:totalWidth-rightWidth, getHeight());
+			}
+		});
+        // SwingHelper.flattenJSplitPane(this.splitPane);
+
+        container.add(this.splitPane, BorderLayout.CENTER);
         add(container, BorderLayout.CENTER);
 
         this.instancesModel.addTableModelListener(new TableModelListener() {
@@ -168,6 +201,13 @@ public class LauncherFrame extends JFrame {
 
 		final Cursor cursorhand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 		final Cursor cursornormal = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+		this.selectedPane.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(final MouseEvent e) {
+				LauncherFrame.this.launchButton.doClick();
+			}
+		});
+		this.selectedPane.setCursor(cursorhand);
 		this.instancesTable.addMouseListener(new MouseAdapter() {
 			private int lastSelected;
 

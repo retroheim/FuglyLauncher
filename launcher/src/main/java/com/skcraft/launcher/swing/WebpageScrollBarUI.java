@@ -17,7 +17,7 @@ public class WebpageScrollBarUI extends BasicScrollBarUI {
 	private static final int SCROLL_BAR_ALPHA_ROLLOVER = 100;
 	private static final int SCROLL_BAR_ALPHA = 50;
 	private static final int THUMB_SIZE = 8;
-	private static final Color THUMB_COLOR = Color.BLACK;
+	private static final Color THUMB_COLOR = Color.GRAY;
 
 	private JScrollPane sp;
 
@@ -79,6 +79,7 @@ public class WebpageScrollBarUI extends BasicScrollBarUI {
 		private static final long serialVersionUID = 1552427919226628689L;
 
 		private InvisibleScrollBarButton() {
+			setUI(null);
 			setOpaque(false);
 			setFocusable(false);
 			setFocusPainted(false);

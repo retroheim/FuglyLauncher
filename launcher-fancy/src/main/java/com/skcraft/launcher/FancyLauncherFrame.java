@@ -6,12 +6,14 @@
 
 package com.skcraft.launcher;
 
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+
 import com.skcraft.launcher.dialog.LauncherFrame;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.swing.WebpagePanel;
-import lombok.NonNull;
 
-import javax.swing.*;
+import lombok.NonNull;
 
 public class FancyLauncherFrame extends LauncherFrame {
 
@@ -20,10 +22,10 @@ public class FancyLauncherFrame extends LauncherFrame {
      *
      * @param launcher the launcher
      */
-    public FancyLauncherFrame(@NonNull Launcher launcher) {
+    public FancyLauncherFrame(@NonNull final Launcher launcher) {
         super(launcher);
 
-        setSize(800, 500);
+        //setSize(800, 500);
         setLocationRelativeTo(null);
 
         SwingHelper.removeOpaqueness(getInstancesTable());
@@ -38,7 +40,7 @@ public class FancyLauncherFrame extends LauncherFrame {
 
     @Override
     protected WebpagePanel createNewsPanel() {
-        WebpagePanel panel = super.createNewsPanel();
+        final WebpagePanel panel = super.createNewsPanel();
         panel.setBrowserBorder(BorderFactory.createEmptyBorder());
         return panel;
     }
