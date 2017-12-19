@@ -23,7 +23,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -44,14 +43,12 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import com.skcraft.concurrency.ObservableFuture;
-import com.skcraft.launcher.Configuration;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
-import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
 import com.skcraft.launcher.swing.InstanceCellFactory;
 import com.skcraft.launcher.swing.InstanceTable;
@@ -244,10 +241,12 @@ public class LauncherFrame extends JFrame {
 				}
 				this.lastSelected = LauncherFrame.this.instancesTable.getSelectedRow();
 				final Instance instance = LauncherFrame.this.instancesModel.getValueAt(this.lastSelected, 0);
+				/*
 	        	final Configuration config = LauncherFrame.this.launcher.getConfig();
 	        	if (instance!=null)
 	        		config.setSelectedInstance(instance.getName());
 	        	Persistence.commitAndForget(config);
+	        	*/
 			}
 		});
 		this.instancesTable.addMouseMotionListener(new MouseAdapter() {
@@ -484,8 +483,9 @@ public class LauncherFrame extends JFrame {
             public void run() {
                 LauncherFrame.this.instancesModel.update();
                 if (LauncherFrame.this.instancesTable.getRowCount() > 0) {
+                	final int index = 0;
+                	/*
                     final String selectedInstance = LauncherFrame.this.launcher.getConfig().getSelectedInstance();
-                	int index = 0;
                     if (selectedInstance!=null) {
                     	final InstanceList list = LauncherFrame.this.instancesModel.getInstances();
                     	for (final ListIterator<Instance> itr = list.getInstances().listIterator(); itr.hasNext();) {
@@ -495,6 +495,7 @@ public class LauncherFrame extends JFrame {
                     			index = i;
                     	}
                     }
+                    */
 					LauncherFrame.this.instancesTable.setRowSelectionInterval(index, index);
                 }
                 requestFocus();

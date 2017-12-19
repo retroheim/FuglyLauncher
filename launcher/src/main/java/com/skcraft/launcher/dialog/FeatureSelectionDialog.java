@@ -6,32 +6,53 @@
 
 package com.skcraft.launcher.dialog;
 
-import com.skcraft.launcher.model.modpack.Feature;
-import com.skcraft.launcher.swing.*;
-import com.skcraft.launcher.util.SharedLocale;
-import lombok.NonNull;
+import static javax.swing.BorderFactory.*;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Window;
 import java.util.List;
 
-import static javax.swing.BorderFactory.createEmptyBorder;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+
+import com.skcraft.launcher.model.modpack.Feature;
+import com.skcraft.launcher.swing.ActionListeners;
+import com.skcraft.launcher.swing.CheckboxTable;
+import com.skcraft.launcher.swing.FeatureTableModel;
+import com.skcraft.launcher.swing.LinedBoxPanel;
+import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.swing.TextFieldPopupMenu;
+import com.skcraft.launcher.util.SharedLocale;
+
+import lombok.NonNull;
 
 public class FeatureSelectionDialog extends JDialog {
 
     private final List<Feature> features;
     private final JPanel container = new JPanel(new BorderLayout());
-    private final JTextArea descText = new JTextArea(SharedLocale.tr("features.selectForInfo"));
-    private final JScrollPane descScroll = new JScrollPane(descText);
+    private final JEditorPane descText = new JEditorPane(new HTMLEditorKit().getContentType(), SharedLocale.tr("features.selectForInfo"));
+    private final JScrollPane descScroll = new JScrollPane(this.descText);
     private final CheckboxTable componentsTable = new CheckboxTable();
-    private final JScrollPane componentsScroll = new JScrollPane(componentsTable);
-    private final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, componentsScroll, descScroll);
+    private final JScrollPane componentsScroll = new JScrollPane(this.componentsTable);
+    private final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.componentsScroll, this.descScroll);
     private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
     private final JButton installButton = new JButton(SharedLocale.tr("features.install"));
 
-    public FeatureSelectionDialog(Window owner, @NonNull List<Feature> features) {
+    public FeatureSelectionDialog(final Window owner, @NonNull final List<Feature> features) {
         super(owner, ModalityType.DOCUMENT_MODAL);
 
         this.features = features;
@@ -45,53 +66,67 @@ public class FeatureSelectionDialog extends JDialog {
     }
 
     private void initComponents() {
-        componentsTable.setModel(new FeatureTableModel(features));
+        this.componentsTable.setModel(new FeatureTableModel(this.features));
 
-        descScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        this.descScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        descText.setFont(new JLabel().getFont());
-        descText.setEditable(false);
-        descText.setWrapStyleWord(true);
-        descText.setLineWrap(true);
-        SwingHelper.removeOpaqueness(descText);
-        descText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
+        this.descText.setOpaque(false);
+        this.descText.setBorder(null);
+        this.descText.setEditable(false);
+        final JLabel descTextLabel = new JLabel();
+        final Font descTextFont = new Font(Font.DIALOG, Font.PLAIN, descTextLabel.getFont().getSize());
+        final String descTextColor = "#"+Integer.toHexString(descTextLabel.getForeground().getRGB());
+        final String descTextBodyRule = String.format("body { font-family: %s; font-size: %spt; color: %s; }", descTextFont.getFamily(), descTextFont.getSize(), descTextColor);
+        ((HTMLDocument)this.descText.getDocument()).getStyleSheet().addRule(descTextBodyRule);
+        this.descText.setCaretColor(new JLabel().getForeground());
+        this.descText.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(final HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+					if (e.getURL() != null)
+						SwingHelper.openURL(e.getURL(), FeatureSelectionDialog.this);
+            }
+        });
 
-        splitPane.setDividerLocation(300);
-        splitPane.setDividerSize(6);
-        SwingHelper.flattenJSplitPane(splitPane);
+        SwingHelper.removeOpaqueness(this.descText);
+        this.descText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
 
-        container.setBorder(createEmptyBorder(12, 12, 12, 12));
-        container.add(splitPane, BorderLayout.CENTER);
+        this.splitPane.setDividerLocation(300);
+        this.splitPane.setDividerSize(6);
+        SwingHelper.flattenJSplitPane(this.splitPane);
 
-        buttonsPanel.addGlue();
-        buttonsPanel.addElement(installButton);
+        this.container.setBorder(createEmptyBorder(12, 12, 12, 12));
+        this.container.add(this.splitPane, BorderLayout.CENTER);
 
-        JLabel descLabel = new JLabel(SharedLocale.tr("features.intro"));
+        this.buttonsPanel.addGlue();
+        this.buttonsPanel.addElement(this.installButton);
+
+        final JLabel descLabel = new JLabel(SharedLocale.tr("features.intro"));
         descLabel.setBorder(createEmptyBorder(12, 12, 4, 12));
 
-        SwingHelper.equalWidth(installButton, new JButton(SharedLocale.tr("button.cancel")));
+        SwingHelper.equalWidth(this.installButton, new JButton(SharedLocale.tr("button.cancel")));
 
         add(descLabel, BorderLayout.NORTH);
-        add(container, BorderLayout.CENTER);
-        add(buttonsPanel, BorderLayout.SOUTH);
+        add(this.container, BorderLayout.CENTER);
+        add(this.buttonsPanel, BorderLayout.SOUTH);
 
-        componentsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
+        this.componentsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+			public void valueChanged(final ListSelectionEvent e) {
                 updateDescription();
             }
         });
 
-        installButton.addActionListener(ActionListeners.dispose(this));
+        this.installButton.addActionListener(ActionListeners.dispose(this));
     }
 
     private void updateDescription() {
-        Feature feature = features.get(componentsTable.getSelectedRow());
+        final Feature feature = this.features.get(this.componentsTable.getSelectedRow());
 
-        if (feature != null) {
-            descText.setText(feature.getDescription());
-        } else {
-            descText.setText(SharedLocale.tr("features.selectForInfo"));
-        }
+        if (feature != null)
+			this.descText.setText(feature.getDescription());
+		else
+			this.descText.setText(SharedLocale.tr("features.selectForInfo"));
     }
 
 }
