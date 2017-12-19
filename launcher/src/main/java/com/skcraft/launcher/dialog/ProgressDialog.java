@@ -13,6 +13,7 @@ import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.swing.TipsPanel;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 import lombok.extern.java.Log;
@@ -33,10 +34,12 @@ import static com.skcraft.launcher.util.SharedLocale.tr;
 public class ProgressDialog extends JDialog {
 
     private static WeakReference<ProgressDialog> lastDialogRef;
+    private static TipsPanel tipsPanel = new TipsPanel();
 
     private final String defaultTitle;
     private final String defaultMessage;
     private final JLabel label = new JLabel();
+    private final JPanel mainPanel = new JPanel(new BorderLayout());
     private final JPanel progressPanel = new JPanel(new BorderLayout(0, 5));
     private final JPanel textAreaPanel = new JPanel(new BorderLayout());
     private final JProgressBar progressBar = new JProgressBar();
@@ -73,14 +76,14 @@ public class ProgressDialog extends JDialog {
     private void setCompactSize() {
         detailsButton.setText(SharedLocale.tr("progress.details"));
         logButton.setVisible(false);
-        setMinimumSize(new Dimension(400, 100));
+        setMinimumSize(new Dimension(400, 100+200));
         pack();
     }
 
     private void setDetailsSize() {
         detailsButton.setText(SharedLocale.tr("progress.less"));
         logButton.setVisible(true);
-        setSize(400, 350);
+        setSize(400, 350+200);
     }
 
     private void initComponents() {
@@ -108,9 +111,13 @@ public class ProgressDialog extends JDialog {
         textAreaPanel.setBorder(BorderFactory.createEmptyBorder(10, 13, 0, 13));
         textAreaPanel.add(logScroll, BorderLayout.CENTER);
 
-        add(progressPanel, BorderLayout.NORTH);
-        add(textAreaPanel, BorderLayout.CENTER);
-        add(buttonsPanel, BorderLayout.SOUTH);
+        mainPanel.add(progressPanel, BorderLayout.NORTH);
+        mainPanel.add(textAreaPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
+
+        tipsPanel.setPreferredSize(new Dimension(400, 200));
+        add(tipsPanel, BorderLayout.NORTH);
+        add(mainPanel, BorderLayout.CENTER);
 
         textAreaPanel.setVisible(false);
         cancelButton.addActionListener(new ActionListener() {

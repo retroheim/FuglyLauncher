@@ -25,14 +25,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.ImageSizes;
+import net.teamfruit.skcraft.SizeData;
 
 @Log
 public class InstanceTableCellPanel extends JPanel {
-	private static class DefaultIcons {
-		public static final Image loadingIcon = SwingHelper.createImage(Launcher.class, "loading_icon.png");
+	public static class DefaultIcons {
 		public static final Image instanceIcon = SwingHelper.createImage(Launcher.class, "instance_icon.png");
 		public static final Image customInstanceIcon = SwingHelper.createImage(Launcher.class, "custom_instance_icon.png");
-		public static final Image downloadIcon = SwingHelper.createImage(Launcher.class, "download_icon.png");
+		public static final Image downloadIcon = SwingHelper.createImage(Launcher.class, "instance_download_icon.png");
 		public static final Image instanceTitleIcon = SwingHelper.createImage(Launcher.class, "instance_title_icon.png");
 		public static final Image instancePlayIcon = SwingHelper.createImage(Launcher.class, "instance_play_icon.png");
 	}
@@ -46,8 +46,14 @@ public class InstanceTableCellPanel extends JPanel {
 	private @Getter @Setter String title;
 	private @Getter @Setter boolean showPlayIcon;
 	private @Getter @Setter boolean selected;
-	private @Getter @Setter Image thumb;
+	private @Getter @Setter boolean notdownloaded;
+	private @Getter Image thumb;
 	private @Getter Instance instance;
+
+	public void setThumb(final Image thumb) {
+		this.thumb = thumb;
+		this.parent.repaint();
+	}
 
 	public InstanceTableCellPanel(JComponent parent) {
 		SwingHelper.removeOpaqueness(this);
@@ -61,12 +67,11 @@ public class InstanceTableCellPanel extends JPanel {
 		this.instance = instance;
 
 		if (!instance.isLocal())
-			setThumb(DefaultIcons.downloadIcon);
-		else if (instance.getThumb()!=null) {
+			this.notdownloaded = true;
+		if (instance.getThumb()!=null) {
 			if (instance.getIconCache()!=null)
 				setThumb(instance.getIconCache());
-			else {
-				setThumb(DefaultIcons.loadingIcon);
+			else
 				threadpool.execute(new Runnable() {
 					@Override
 					public void run() {
@@ -77,10 +82,8 @@ public class InstanceTableCellPanel extends JPanel {
 						} catch (final Exception e) {
 							setThumb(DefaultIcons.instanceIcon);
 						}
-						InstanceTableCellPanel.this.parent.repaint();
 					}
 				});
-			}
 		} else if (instance.getManifestURL()!=null)
 			setThumb(DefaultIcons.instanceIcon);
 		else
@@ -98,8 +101,8 @@ public class InstanceTableCellPanel extends JPanel {
 		if (this.thumb!=null) {
 			final int img_width = this.thumb.getWidth(this.parent);
 			final int img_height = this.thumb.getHeight(this.parent);
-			final Dimension img_size = ImageSizes.OUTER.size(img_width, img_height, panel_width, panel_height);
-			g2d.drawImage(this.thumb, (panel_width-img_size.width)/2, (panel_height-img_size.height)/2, img_size.width, img_size.height, this.parent);
+			final SizeData img_size = ImageSizes.OUTER.size(img_width, img_height, panel_width, panel_height);
+			g2d.drawImage(this.thumb, (int)((panel_width-img_size.getWidth())/2), (int)((panel_height-img_size.getHeight())/2), (int)img_size.getWidth(), (int)img_size.getHeight(), this.parent);
 		}
 		if (this.title!=null) {
 			final Font font = new Font(Font.DIALOG, Font.BOLD, 13);
@@ -129,5 +132,7 @@ public class InstanceTableCellPanel extends JPanel {
 		}
 		if (this.selected||this.showPlayIcon)
 			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
+		if (this.notdownloaded)
+			g2d.drawImage(DefaultIcons.downloadIcon, 0, 0, 40, 40, this.parent);
 	}
 }
