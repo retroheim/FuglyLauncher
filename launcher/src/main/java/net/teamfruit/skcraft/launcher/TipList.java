@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 import com.skcraft.concurrency.DefaultProgress;
 import com.skcraft.concurrency.ProgressObservable;
@@ -86,7 +87,7 @@ public class TipList {
 						.returnContent()
 						.asJson(TipInfoList.class);
 
-				if (tipInfos.getMinimumVersion()>Launcher.PROTOCOL_VERSION)
+				if (tipInfos.getMinimumVersion()>TipInfoList.MIN_VERSION)
 					throw new LauncherException("Update required", SharedLocale.tr("errors.updateRequiredError"));
 
                 for (final TipInfo tipInfo : tipInfos.getTips()) {
@@ -99,7 +100,7 @@ public class TipList {
                 }
 
 			} catch (final IOException e) {
-				throw new IOException("The list of tips could not be downloaded.", e);
+				log.log(Level.WARNING, "The list of tips could not be downloaded.", e);
 			} finally {
 				synchronized (TipList.this) {
 					TipList.this.tips.clear();

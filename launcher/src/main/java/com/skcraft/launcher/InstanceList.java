@@ -27,6 +27,7 @@ import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.util.HttpRequest;
 import com.skcraft.launcher.util.SharedLocale;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 
@@ -37,7 +38,7 @@ import lombok.extern.java.Log;
 public class InstanceList {
 
     private final Launcher launcher;
-    private final List<Instance> instances = new ArrayList<Instance>();
+    private final @Getter List<Instance> instances = new ArrayList<Instance>();
 
     /**
      * Create a new instance list.

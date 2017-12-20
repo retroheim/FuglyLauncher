@@ -40,6 +40,7 @@ import com.google.common.util.concurrent.Futures;
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.Configuration;
+import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.auth.Account;
 import com.skcraft.launcher.auth.AccountList;
@@ -69,7 +70,7 @@ import lombok.NonNull;
 public class LoginDialog extends JDialog {
 
     private final Launcher launcher;
-    private final LaunchOptions options;
+    private Instance instance;
     @Getter private final AccountList accounts;
     @Getter private Session session;
 
@@ -89,15 +90,15 @@ public class LoginDialog extends JDialog {
      *
      * @param owner the owner
      * @param launcher2
-     * @param options
      * @param launcher the launcher
+     * @param instance
      */
-    public LoginDialog(final Window owner, final LaunchOptions options, @NonNull final Launcher launcher) {
+    public LoginDialog(final Window owner, @NonNull final Launcher launcher, final Instance instance) {
         super(owner, ModalityType.DOCUMENT_MODAL);
 
         this.launcher = launcher;
-        this.options = options;
         this.accounts = launcher.getAccounts();
+        this.instance = instance;
 
         setTitle(SharedLocale.tr("login.title"));
         initComponents();
@@ -151,8 +152,10 @@ public class LoginDialog extends JDialog {
         this.buttonsPanel.addElement(this.loginButton);
         this.buttonsPanel.addElement(this.cancelButton);
 
-        final JPanel title = new InstanceCellFactory().getCellComponent(null, this.options.getInstance(), false);
-        add(title, BorderLayout.NORTH);
+        if (this.instance!=null) {
+	        final JPanel title = new InstanceCellFactory().getCellComponent(null, this.instance, false);
+	        add(title, BorderLayout.NORTH);
+        }
         add(this.formPanel, BorderLayout.CENTER);
         add(this.buttonsPanel, BorderLayout.SOUTH);
 
@@ -343,8 +346,14 @@ public class LoginDialog extends JDialog {
         dispose();
     }
 
+    public static Session showLoginRequest(final Window window, final Launcher launcher) {
+        final LoginDialog dialog = new LoginDialog(window, launcher, null);
+        dialog.setVisible(true);
+        return dialog.getSession();
+    }
+
     public static Session showLoginRequest(final LaunchOptions options, final Launcher launcher) {
-        final LoginDialog dialog = new LoginDialog(options.getWindow(), options, launcher);
+        final LoginDialog dialog = new LoginDialog(options.getWindow(), launcher, options.getInstance());
         dialog.setVisible(true);
         return dialog.getSession();
     }
