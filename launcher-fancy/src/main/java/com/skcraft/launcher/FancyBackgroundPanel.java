@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class FancyBackgroundPanel extends JPanel {
 
@@ -17,9 +18,10 @@ public class FancyBackgroundPanel extends JPanel {
 
     public FancyBackgroundPanel() {
         try {
-            background = ImageIO.read(FancyBackgroundPanel.class.getResourceAsStream("launcher_bg.jpg"));
+        	InputStream input = FancyBackgroundPanel.class.getResourceAsStream("launcher_bg.jpg");
+        	if (input!=null)
+        		background = ImageIO.read(input);
         } catch (IOException e) {
-            background = null;
         }
     }
 
