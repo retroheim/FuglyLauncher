@@ -28,6 +28,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.TipList;
+
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
@@ -60,6 +62,7 @@ public final class Launcher {
     @Getter private final File baseDir;
     @Getter private final Properties properties;
     @Getter private final InstanceList instances;
+    @Getter private final TipList tips;
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
     @Getter private final AssetsRoot assets;
@@ -91,6 +94,7 @@ public final class Launcher {
         this.baseDir = baseDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
         this.instances = new InstanceList(this);
+        this.tips = new TipList(this);
         this.assets = new AssetsRoot(new File(baseDir, "assets"));
         this.config = Persistence.load(new File(configDir, "config.json"), Configuration.class);
         this.accounts = Persistence.load(new File(configDir, "accounts.dat"), AccountList.class);
@@ -302,6 +306,21 @@ public final class Launcher {
         try {
             return HttpRequest.url(
                     String.format(getProperties().getProperty("newsUrl"),
+                            URLEncoder.encode(getVersion(), "UTF-8")));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Get the tips URL.
+     *
+     * @return the tips URL
+     */
+    public URL getTipsURL() {
+        try {
+            return HttpRequest.url(
+                    String.format(getProperties().getProperty("tipsUrl"),
                             URLEncoder.encode(getVersion(), "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);

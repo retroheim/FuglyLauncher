@@ -24,8 +24,8 @@ import com.skcraft.launcher.Launcher;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.java.Log;
-import net.teamfruit.skcraft.ImageSizes;
-import net.teamfruit.skcraft.SizeData;
+import net.teamfruit.skcraft.launcher.util.ImageSizes;
+import net.teamfruit.skcraft.launcher.util.SizeData;
 
 @Log
 public class InstanceTableCellPanel extends JPanel {

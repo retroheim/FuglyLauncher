@@ -56,6 +56,7 @@ import com.skcraft.launcher.swing.InstanceTableCellPanel;
 import com.skcraft.launcher.swing.InstanceTableModel;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
 import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.swing.TipsPanel;
 import com.skcraft.launcher.swing.WebpagePanel;
 import com.skcraft.launcher.swing.WebpageScrollBarUI;
 import com.skcraft.launcher.util.SharedLocale;
@@ -64,6 +65,7 @@ import com.skcraft.launcher.util.SwingExecutor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.TipList;
 
 /**
  * The main launcher frame.
@@ -109,6 +111,18 @@ public class LauncherFrame extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+            	final ObservableFuture<TipList> future = launcher.getInstanceTasks().reloadTips(LauncherFrame.this);
+            	future.addListener(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							TipsPanel.instance.updateTipList(future.get().getTipList());
+						} catch (final Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}, SwingExecutor.INSTANCE);
+
                 loadInstances();
             }
         });

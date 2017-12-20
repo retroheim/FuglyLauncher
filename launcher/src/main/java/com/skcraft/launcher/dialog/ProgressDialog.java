@@ -34,7 +34,6 @@ import static com.skcraft.launcher.util.SharedLocale.tr;
 public class ProgressDialog extends JDialog {
 
     private static WeakReference<ProgressDialog> lastDialogRef;
-    private static TipsPanel tipsPanel = new TipsPanel();
 
     private final String defaultTitle;
     private final String defaultMessage;
@@ -76,14 +75,14 @@ public class ProgressDialog extends JDialog {
     private void setCompactSize() {
         detailsButton.setText(SharedLocale.tr("progress.details"));
         logButton.setVisible(false);
-        setMinimumSize(new Dimension(400, 100+200));
+        setMinimumSize(new Dimension(400, 100));
         pack();
     }
 
     private void setDetailsSize() {
         detailsButton.setText(SharedLocale.tr("progress.less"));
         logButton.setVisible(true);
-        setSize(400, 350+200);
+        setSize(400, 350);
     }
 
     private void initComponents() {
@@ -115,8 +114,7 @@ public class ProgressDialog extends JDialog {
         mainPanel.add(textAreaPanel, BorderLayout.CENTER);
         mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
-        tipsPanel.setPreferredSize(new Dimension(400, 200));
-        add(tipsPanel, BorderLayout.NORTH);
+        add(TipsPanel.instance, BorderLayout.NORTH);
         add(mainPanel, BorderLayout.CENTER);
 
         textAreaPanel.setVisible(false);

@@ -1,4 +1,4 @@
-package net.teamfruit.skcraft;
+package net.teamfruit.skcraft.launcher.util;
 
 import lombok.Data;
 

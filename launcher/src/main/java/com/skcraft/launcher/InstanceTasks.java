@@ -13,6 +13,8 @@ import com.skcraft.launcher.update.HardResetter;
 import com.skcraft.launcher.update.Remover;
 import com.skcraft.launcher.util.SharedLocale;
 
+import net.teamfruit.skcraft.launcher.TipList;
+
 import java.awt.*;
 
 import static com.skcraft.launcher.util.SharedLocale.tr;
@@ -62,5 +64,15 @@ public class InstanceTasks {
 
         return future;
     }
+
+	public ObservableFuture<TipList> reloadTips(final Window window) {
+		final TipList.Enumerator loader = this.launcher.getTips().createEnumerator();
+		final ObservableFuture<TipList> future = new ObservableFuture<TipList>(this.launcher.getExecutor().submit(loader), loader);
+
+		ProgressDialog.showProgress(window, future, SharedLocale.tr("launcher.checkingTipTitle"), SharedLocale.tr("launcher.checkingTipStatus"));
+		SwingHelper.addErrorDialogCallback(window, future);
+
+		return future;
+	}
 
 }

@@ -1,11 +1,11 @@
 package com.skcraft.launcher.swing;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -14,50 +14,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
 import com.skcraft.launcher.Launcher;
 
-import lombok.Getter;
-import net.teamfruit.skcraft.ImageSizes;
-import net.teamfruit.skcraft.SizeData;
+import net.teamfruit.skcraft.launcher.Tip;
+import net.teamfruit.skcraft.launcher.util.ImageSizes;
+import net.teamfruit.skcraft.launcher.util.SizeData;
 
 public class TipsPanel extends JPanel {
 	public static class DefaultIcons {
 		public static final Image tipsIcon = SwingHelper.createImage(Launcher.class, "tips_icon.png");
 	}
 
-	private JLabel pic = new JLabel();
+	public static final TipsPanel instance = new TipsPanel();
+
 	private Timer tm;
-	private int x = -1;
+	private int x = 0;
 	private Random rnd = new Random();
 	private boolean random = true;
 	private Image thumb;
-	private String title = "SUSHI";
+	private String title;
 
 	//Images Path In Array
-	private final @Getter List<Image> list = new ArrayList<Image>();
-	{
-		for (final String link: new String[] {
-				"https://b.ppy.sh/thumb/133771.jpg", //0
-				"https://b.ppy.sh/thumb/165991.jpg", //1
-				"https://b.ppy.sh/thumb/128604.jpg", //2
-				"https://b.ppy.sh/thumb/155114.jpg", //3
-				"https://b.ppy.sh/thumb/136241.jpg", //4
-		})
-			this.list.add(SwingHelper.createImage(link));
+	private final List<Tip> list = new ArrayList<Tip>();
+
+	public void updateTipList(final List<Tip> tips) {
+		this.list.clear();
+		this.list.addAll(tips);
 	}
 
-	public TipsPanel() {
-		this.pic.setHorizontalAlignment(SwingConstants.CENTER);
-		this.pic.setVerticalAlignment(SwingConstants.CENTER);
-
+	private TipsPanel() {
 		//set a timer
-		this.tm = new Timer(4*1000, new ActionListener() {
+		this.tm = new Timer(5*1000, new ActionListener() {
 			{
 				next();
 			}
@@ -68,21 +58,28 @@ public class TipsPanel extends JPanel {
 			}
 
 			private void next() {
-				if (TipsPanel.this.random) {
-					TipsPanel.this.x = TipsPanel.this.rnd.nextInt(TipsPanel.this.list.size());
-					TipsPanel.this.thumb = TipsPanel.this.list.get(TipsPanel.this.x);
-					repaint();
-				} else {
-					if (++TipsPanel.this.x<0||TipsPanel.this.x>=TipsPanel.this.list.size())
-						TipsPanel.this.x = 0;
-					TipsPanel.this.thumb = TipsPanel.this.list.get(TipsPanel.this.x);
-					repaint();
+				if (TipsPanel.this.list.isEmpty()) {
+					setVisible(false);
+					return;
 				}
+				int x = TipsPanel.this.x;
+				if (TipsPanel.this.random)
+					x = TipsPanel.this.rnd.nextInt(TipsPanel.this.list.size());
+				else if (++x<0||x>=TipsPanel.this.list.size())
+					x = 0;
+				final Tip pretip = TipsPanel.this.list.get(TipsPanel.this.x);
+				pretip.getThumbImage().getWidth(TipsPanel.this);
+				TipsPanel.this.x = x;
+				final Tip tip = TipsPanel.this.list.get(x);
+				TipsPanel.this.title = tip.getDesc();
+				TipsPanel.this.thumb = tip.getThumbImage();
+				setVisible(true);
+				repaint();
 			}
 		});
 
-		setLayout(new GridBagLayout());
-		add(this.pic);
+		setPreferredSize(new Dimension(400, 200));
+		setVisible(false);
 
 		this.tm.start();
 	}
@@ -124,15 +121,5 @@ public class TipsPanel extends JPanel {
 			g2d.drawString(this.title, panel_width-pol_w+width_padding_left, panel_height-fontmatrics.getDescent()-height_padding/2);
 			g2d.translate(0, 5);
 		}
-	}
-
-	public static void main(final String[] args) {
-		final JFrame frame = new JFrame("");
-		final TipsPanel panel = new TipsPanel();
-		frame.add(panel);
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(250, 250);
-		frame.setVisible(true);
 	}
 }

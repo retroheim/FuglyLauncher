@@ -6,8 +6,6 @@
 
 package com.skcraft.launcher.swing;
 
-import java.util.List;
-
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 
@@ -44,10 +42,9 @@ public class InstanceComboBoxModel extends AbstractListModel<Instance> implement
 
 	@Override
 	public Object getSelectedItem() {
-		final List<Instance> list = this.instances.getInstances();
-		if (list.isEmpty())
+		if (this.instances.size()<=0)
 			return null;
-		return list.get(0);
+		return this.instances.get(0);
 	}
 
 }

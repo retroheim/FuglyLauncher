@@ -6,17 +6,7 @@
 
 package com.skcraft.launcher;
 
-import com.skcraft.concurrency.DefaultProgress;
-import com.skcraft.concurrency.ProgressObservable;
-import com.skcraft.launcher.model.modpack.ManifestInfo;
-import com.skcraft.launcher.model.modpack.PackageList;
-import com.skcraft.launcher.persistence.Persistence;
-import com.skcraft.launcher.util.HttpRequest;
-import com.skcraft.launcher.util.SharedLocale;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.extern.java.Log;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import static com.skcraft.launcher.LauncherUtils.*;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -27,7 +17,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static com.skcraft.launcher.LauncherUtils.concat;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+
+import com.skcraft.concurrency.DefaultProgress;
+import com.skcraft.concurrency.ProgressObservable;
+import com.skcraft.launcher.model.modpack.ManifestInfo;
+import com.skcraft.launcher.model.modpack.PackageList;
+import com.skcraft.launcher.persistence.Persistence;
+import com.skcraft.launcher.util.HttpRequest;
+import com.skcraft.launcher.util.SharedLocale;
+
+import lombok.NonNull;
+import lombok.extern.java.Log;
 
 /**
  * Stores the list of instances.
@@ -36,14 +37,14 @@ import static com.skcraft.launcher.LauncherUtils.concat;
 public class InstanceList {
 
     private final Launcher launcher;
-    @Getter private final List<Instance> instances = new ArrayList<Instance>();
+    private final List<Instance> instances = new ArrayList<Instance>();
 
     /**
      * Create a new instance list.
      *
      * @param launcher the launcher
      */
-    public InstanceList(@NonNull Launcher launcher) {
+    public InstanceList(@NonNull final Launcher launcher) {
         this.launcher = launcher;
     }
 
@@ -53,8 +54,8 @@ public class InstanceList {
      * @param index the index
      * @return the instance
      */
-    public synchronized Instance get(int index) {
-        return instances.get(index);
+    public synchronized Instance get(final int index) {
+        return this.instances.get(index);
     }
 
     /**
@@ -63,7 +64,7 @@ public class InstanceList {
      * @return the number of instances
      */
     public synchronized int size() {
-        return instances.size();
+        return this.instances.size();
     }
 
     /**
@@ -82,12 +83,10 @@ public class InstanceList {
      * @return a list of instances
      */
     public synchronized List<Instance> getSelected() {
-        List<Instance> selected = new ArrayList<Instance>();
-        for (Instance instance : instances) {
-            if (instance.isSelected()) {
-                selected.add(instance);
-            }
-        }
+        final List<Instance> selected = new ArrayList<Instance>();
+        for (final Instance instance : this.instances)
+			if (instance.isSelected())
+				selected.add(instance);
 
         return selected;
     }
@@ -96,7 +95,7 @@ public class InstanceList {
      * Sort the list of instances.
      */
     public synchronized void sort() {
-        Collections.sort(instances);
+        Collections.sort(this.instances);
     }
 
     public final class Enumerator implements Callable<InstanceList>, ProgressObservable {
@@ -108,16 +107,16 @@ public class InstanceList {
         @Override
         public InstanceList call() throws Exception {
             log.info("Enumerating instance list...");
-            progress = new DefaultProgress(0, SharedLocale.tr("instanceLoader.loadingLocal"));
+            this.progress = new DefaultProgress(0, SharedLocale.tr("instanceLoader.loadingLocal"));
 
-            List<Instance> local = new ArrayList<Instance>();
-            List<Instance> remote = new ArrayList<Instance>();
+            final List<Instance> local = new ArrayList<Instance>();
+            final List<Instance> remote = new ArrayList<Instance>();
 
-            File[] dirs = launcher.getInstancesDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-            if (dirs != null) {
-                for (File dir : dirs) {
-                    File file = new File(dir, "instance.json");
-                    Instance instance = Persistence.load(file, Instance.class);
+            final File[] dirs = InstanceList.this.launcher.getInstancesDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
+            if (dirs != null)
+				for (final File dir : dirs) {
+                    final File file = new File(dir, "instance.json");
+                    final Instance instance = Persistence.load(file, Instance.class);
                     instance.setDir(dir);
                     instance.setName(dir.getName());
                     instance.setSelected(true);
@@ -126,35 +125,33 @@ public class InstanceList {
 
                     log.info(instance.getName() + " local instance found at " + dir.getAbsolutePath());
                 }
-            }
 
-            progress = new DefaultProgress(0.3, SharedLocale.tr("instanceLoader.checkingRemote"));
+            this.progress = new DefaultProgress(0.3, SharedLocale.tr("instanceLoader.checkingRemote"));
 
             try {
-                URL packagesURL = launcher.getPackagesURL();
+                final URL packagesURL = InstanceList.this.launcher.getPackagesURL();
 
-                PackageList packages = HttpRequest
+                final PackageList packages = HttpRequest
                         .get(packagesURL)
                         .execute()
                         .expectResponseCode(200)
                         .returnContent()
                         .asJson(PackageList.class);
 
-                if (packages.getMinimumVersion() > Launcher.PROTOCOL_VERSION) {
-                    throw new LauncherException("Update required", SharedLocale.tr("errors.updateRequiredError"));
-                }
+                if (packages.getMinimumVersion() > Launcher.PROTOCOL_VERSION)
+					throw new LauncherException("Update required", SharedLocale.tr("errors.updateRequiredError"));
 
-                for (ManifestInfo manifest : packages.getPackages()) {
+                for (final ManifestInfo manifest : packages.getPackages()) {
                     boolean foundLocal = false;
 
-                    for (Instance instance : local) {
-                        if (instance.getName().equalsIgnoreCase(manifest.getName())) {
+                    for (final Instance instance : local)
+						if (instance.getName().equalsIgnoreCase(manifest.getName())) {
                             foundLocal = true;
 
                             instance.setTitle(manifest.getTitle());
                             instance.setThumb(manifest.getThumb());
                             instance.setPriority(manifest.getPriority());
-                            URL url = concat(packagesURL, manifest.getLocation());
+                            final URL url = concat(packagesURL, manifest.getLocation());
                             instance.setManifestURL(url);
 
                             log.info("(" + instance.getName() + ").setManifestURL(" + url + ")");
@@ -167,12 +164,11 @@ public class InstanceList {
                                 log.info(instance.getName() + " requires an update to " + manifest.getVersion());
                             }
                         }
-                    }
 
                     if (!foundLocal) {
-                        File dir = new File(launcher.getInstancesDir(), manifest.getName());
-                        File file = new File(dir, "instance.json");
-                        Instance instance = Persistence.load(file, Instance.class);
+                        final File dir = new File(InstanceList.this.launcher.getInstancesDir(), manifest.getName());
+                        final File file = new File(dir, "instance.json");
+                        final Instance instance = Persistence.load(file, Instance.class);
                         instance.setDir(dir);
                         instance.setTitle(manifest.getTitle());
                         instance.setThumb(manifest.getThumb());
@@ -189,15 +185,15 @@ public class InstanceList {
                                 "' at version " + instance.getVersion());
                     }
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IOException("The list of modpacks could not be downloaded.", e);
             } finally {
                 synchronized (InstanceList.this) {
-                    instances.clear();
-                    instances.addAll(local);
-                    instances.addAll(remote);
+                    InstanceList.this.instances.clear();
+                    InstanceList.this.instances.addAll(local);
+                    InstanceList.this.instances.addAll(remote);
 
-                    log.info(instances.size() + " instance(s) enumerated.");
+                    log.info(InstanceList.this.instances.size() + " instance(s) enumerated.");
                 }
             }
 
@@ -211,7 +207,7 @@ public class InstanceList {
 
         @Override
         public String getStatus() {
-            return progress.getStatus();
+            return this.progress.getStatus();
         }
     }
 }
