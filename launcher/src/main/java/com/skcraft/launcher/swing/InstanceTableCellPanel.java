@@ -45,7 +45,7 @@ public class InstanceTableCellPanel extends JPanel {
 	private final JComponent parent;
 	private @Getter @Setter String title;
 	private @Getter @Setter boolean showPlayIcon;
-	private @Getter @Setter boolean selected;
+	private @Getter @Setter boolean showSelected;
 	private @Getter @Setter boolean notdownloaded;
 	private @Getter Image thumb;
 	private @Getter Instance instance;
@@ -125,12 +125,12 @@ public class InstanceTableCellPanel extends JPanel {
 			g2d.drawString(this.title, panel_width-pol_w+20, panel_height-fontmatrics.getDescent()-height_padding/2);
 			g2d.translate(0, 5);
 		}
-		if (this.selected) {
+		if (this.showSelected) {
 			g2d.setColor(new Color(0f, 0f, 1f, 0.75f));
 			final int inset = 2;
 			g2d.drawRect(0+inset, 0+inset, panel_width-1-inset*2, panel_height-1-inset*2);
 		}
-		if (this.selected||this.showPlayIcon)
+		if (this.showPlayIcon)
 			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
 		if (this.notdownloaded)
 			g2d.drawImage(DefaultIcons.downloadIcon, 0, 0, 40, 40, this.parent);

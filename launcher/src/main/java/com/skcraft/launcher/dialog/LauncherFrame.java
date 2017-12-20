@@ -50,6 +50,8 @@ import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
 import com.skcraft.launcher.swing.ActionListeners;
+import com.skcraft.launcher.swing.BoardPanel;
+import com.skcraft.launcher.swing.DoubleClickToButtonAdapter;
 import com.skcraft.launcher.swing.InstanceCellFactory;
 import com.skcraft.launcher.swing.InstanceTable;
 import com.skcraft.launcher.swing.InstanceTableCellPanel;
@@ -81,7 +83,7 @@ public class LauncherFrame extends JFrame {
     @Getter
     private final JScrollPane instanceScroll = new JScrollPane(this.instancesTable);
     private WebpagePanel webView;
-    private JPanel selectedPane;
+    private BoardPanel<InstanceTableCellPanel> selectedPane;
     private JPanel splitPane;
     private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
     private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
@@ -145,7 +147,7 @@ public class LauncherFrame extends JFrame {
 
         this.splitPane = new JPanel(new BorderLayout());
 
-        this.selectedPane = new JPanel(new BorderLayout());
+        this.selectedPane = new BoardPanel<InstanceTableCellPanel>();
         this.selectedPane.setOpaque(false);
         this.selectedPane.setPreferredSize(new Dimension(250, 60));
 
@@ -234,35 +236,34 @@ public class LauncherFrame extends JFrame {
 
 		final Cursor cursorhand = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 		final Cursor cursornormal = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+		this.selectedPane.setCursor(cursorhand);
 		this.selectedPane.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(final MouseEvent e) {
 				LauncherFrame.this.launchButton.doClick();
 			}
-		});
-		this.selectedPane.setCursor(cursorhand);
-		this.instancesTable.addMouseListener(new MouseAdapter() {
-			private int lastSelected;
 
 			@Override
-			public void mouseClicked(final MouseEvent e) {
-				final int i = LauncherFrame.this.instancesTable.rowAtPoint(e.getPoint());
-				if (e.getButton()==MouseEvent.BUTTON1) {
-					final int j = this.lastSelected;
-					// log.info(i+"*"+j);
-					if (i==j)
-						LauncherFrame.this.launchButton.doClick();
+			public void mouseEntered(MouseEvent e) {
+				InstanceTableCellPanel panel = selectedPane.get();
+				if (panel!=null) {
+					panel.setShowSelected(true);
+					repaint();
 				}
-				this.lastSelected = LauncherFrame.this.instancesTable.getSelectedRow();
-				final Instance instance = LauncherFrame.this.instancesModel.getValueAt(this.lastSelected, 0);
-				/*
-	        	final Configuration config = LauncherFrame.this.launcher.getConfig();
-	        	if (instance!=null)
-	        		config.setSelectedInstance(instance.getName());
-	        	Persistence.commitAndForget(config);
-	        	*/
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				InstanceTableCellPanel panel = selectedPane.get();
+				if (panel!=null) {
+					panel.setShowSelected(false);
+					repaint();
+				}
 			}
 		});
+
+        instancesTable.addMouseListener(new DoubleClickToButtonAdapter(launchButton));
+
 		this.instancesTable.addMouseMotionListener(new MouseAdapter() {
 			@Override
 			public void mouseMoved(final MouseEvent e) {
@@ -286,10 +287,7 @@ public class LauncherFrame extends JFrame {
 
 		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(null, instance, false);
 		        	tablecell.setShowPlayIcon(true);
-		    		LauncherFrame.this.selectedPane.removeAll();
-		    		LauncherFrame.this.selectedPane.add(tablecell, BorderLayout.CENTER);
-		    		LauncherFrame.this.selectedPane.revalidate();
-		    		LauncherFrame.this.selectedPane.repaint();
+		    		LauncherFrame.this.selectedPane.set(tablecell);
 		        }
 			}
 		});
@@ -495,23 +493,9 @@ public class LauncherFrame extends JFrame {
         future.addListener(new Runnable() {
             @Override
             public void run() {
-                LauncherFrame.this.instancesModel.update();
-                if (LauncherFrame.this.instancesTable.getRowCount() > 0) {
-                	final int index = 0;
-                	/*
-                    final String selectedInstance = LauncherFrame.this.launcher.getConfig().getSelectedInstance();
-                    if (selectedInstance!=null) {
-                    	final InstanceList list = LauncherFrame.this.instancesModel.getInstances();
-                    	for (final ListIterator<Instance> itr = list.getInstances().listIterator(); itr.hasNext();) {
-                    		final int i = itr.nextIndex();
-                    		final Instance instance = itr.next();
-                    		if (selectedInstance.equals(instance.getName()))
-                    			index = i;
-                    	}
-                    }
-                    */
-					LauncherFrame.this.instancesTable.setRowSelectionInterval(index, index);
-                }
+                instancesModel.update();
+                if (instancesTable.getRowCount() > 0)
+					instancesTable.setRowSelectionInterval(0, 0);
                 requestFocus();
             }
         }, SwingExecutor.INSTANCE);

@@ -29,7 +29,8 @@ public class InstanceCellFactory implements TableCellRenderer, ListCellRenderer<
 		if (value instanceof Instance) {
 			final Instance instance = (Instance) value;
 			tablecell.setTitle(instance.getTitle());
-			tablecell.setSelected(isSelected);
+			tablecell.setShowPlayIcon(isSelected);
+			tablecell.setShowSelected(isSelected);
 			tablecell.setInstance(instance);
 		}
 
