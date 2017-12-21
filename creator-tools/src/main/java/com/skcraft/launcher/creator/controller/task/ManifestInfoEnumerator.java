@@ -25,7 +25,7 @@ public class ManifestInfoEnumerator implements Function<List<ManifestEntry>, Lis
 
     @Override
     public List<ManifestEntry> apply(List<ManifestEntry> entries) {
-        File[] files = searchDir.listFiles(f -> f.isFile() && f.getName().toLowerCase().endsWith(".json") && !f.getName().startsWith("packages."));
+        File[] files = searchDir.listFiles(f -> f.isFile() && f.getName().toLowerCase().endsWith(".json") && !f.getName().startsWith("packages.") && !f.getName().startsWith("tips."));
 
         if (files != null) {
             for (File file : files) {
