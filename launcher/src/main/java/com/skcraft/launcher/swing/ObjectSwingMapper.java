@@ -54,7 +54,6 @@ public class ObjectSwingMapper {
                 textComponent.setText(field.get());
             }
 
-            @SuppressWarnings("unchecked")
             @Override
             public void copyFromSwing() {
                 field.set(Strings.emptyToNull(textComponent.getText()));
@@ -71,7 +70,6 @@ public class ObjectSwingMapper {
                 spinner.setValue(field.get());
             }
 
-            @SuppressWarnings("unchecked")
             @Override
             public void copyFromSwing() {
                 field.set((Integer) spinner.getValue());
@@ -88,7 +86,6 @@ public class ObjectSwingMapper {
                 check.setSelected(field.get());
             }
 
-            @SuppressWarnings("unchecked")
             @Override
             public void copyFromSwing() {
                 field.set(check.isSelected());

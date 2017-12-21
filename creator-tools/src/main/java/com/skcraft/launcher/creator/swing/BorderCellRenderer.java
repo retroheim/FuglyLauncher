@@ -8,9 +8,12 @@ package com.skcraft.launcher.creator.swing;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+
+import com.skcraft.launcher.creator.model.creator.RecentEntry;
+
 import java.awt.*;
 
-public class BorderCellRenderer implements ListCellRenderer {
+public class BorderCellRenderer implements ListCellRenderer<RecentEntry> {
 
     private final Border border;
     private final DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
@@ -19,7 +22,7 @@ public class BorderCellRenderer implements ListCellRenderer {
         this.border = border;
     }
 
-    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+    public Component getListCellRendererComponent(JList<? extends RecentEntry> list, RecentEntry value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         renderer.setBorder(border);
         return renderer;

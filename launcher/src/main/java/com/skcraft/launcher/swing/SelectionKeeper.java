@@ -16,10 +16,10 @@ import javax.swing.event.ListSelectionListener;
 
 public class SelectionKeeper implements ListSelectionListener, ListDataListener {
 
-    private final JList list;
+    private final JList<Object> list;
     private Object lastSelected;
 
-    private SelectionKeeper(@NonNull JList list) {
+    private SelectionKeeper(@NonNull JList<Object> list) {
         this.list = list;
     }
 
@@ -41,7 +41,7 @@ public class SelectionKeeper implements ListSelectionListener, ListDataListener 
         }
     }
 
-    public static void attach(@NonNull JList list) {
+    public static void attach(@NonNull JList<Object> list) {
         SelectionKeeper s = new SelectionKeeper(list);
         list.addListSelectionListener(s);
         list.getModel().addListDataListener(s);

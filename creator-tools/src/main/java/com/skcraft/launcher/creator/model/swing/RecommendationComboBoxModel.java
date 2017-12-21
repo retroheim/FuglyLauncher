@@ -10,7 +10,7 @@ import com.skcraft.launcher.model.modpack.Feature.Recommendation;
 
 import javax.swing.*;
 
-public class RecommendationComboBoxModel extends AbstractListModel implements ComboBoxModel {
+public class RecommendationComboBoxModel extends AbstractListModel<Recommendation> implements ComboBoxModel<Recommendation> {
 
     private Recommendation selection;
 
@@ -20,7 +20,7 @@ public class RecommendationComboBoxModel extends AbstractListModel implements Co
     }
 
     @Override
-    public Object getSelectedItem() {
+    public Recommendation getSelectedItem() {
         return selection;
     }
 
@@ -30,7 +30,7 @@ public class RecommendationComboBoxModel extends AbstractListModel implements Co
     }
 
     @Override
-    public Object getElementAt(int index) {
+    public Recommendation getElementAt(int index) {
         if (index == 0) {
             return null;
         } else {

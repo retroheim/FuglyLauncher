@@ -26,7 +26,8 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
 
     private static final int CONSOLE_NUM_LINES = 10000;
 
-    private final Launcher launcher;
+    @SuppressWarnings("unused")
+	private final Launcher launcher;
     private ProcessConsoleFrame consoleFrame;
 
     public LaunchProcessHandler(@NonNull Launcher launcher) {

@@ -74,7 +74,7 @@ public class LoginDialog extends JDialog {
     @Getter private final AccountList accounts;
     @Getter private Session session;
 
-    private final JComboBox idCombo = new JComboBox();
+    private final JComboBox<Account> idCombo = new JComboBox<Account>();
     private final JPasswordField passwordText = new JPasswordField();
     private final JCheckBox rememberIdCheck = new JCheckBox(SharedLocale.tr("login.rememberId"));
     private final JCheckBox rememberPassCheck = new JCheckBox(SharedLocale.tr("login.rememberPassword"));
@@ -118,12 +118,10 @@ public class LoginDialog extends JDialog {
         });
     }
 
-    @SuppressWarnings("unchecked")
     private void removeListeners() {
-        this.idCombo.setModel(new DefaultComboBoxModel());
+        this.idCombo.setModel(new DefaultComboBoxModel<Account>());
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
         this.idCombo.setModel(getAccounts());
         updateSelection();

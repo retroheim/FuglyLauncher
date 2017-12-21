@@ -116,10 +116,10 @@ public class DownloadFrame extends JFrame {
     }
 
     private class UpdateProgress extends TimerTask {
-        private final Downloader downloader;
+        //private final Downloader downloader;
 
         public UpdateProgress(Downloader downloader) {
-            this.downloader = downloader;
+            //this.downloader = downloader;
         }
 
         @Override

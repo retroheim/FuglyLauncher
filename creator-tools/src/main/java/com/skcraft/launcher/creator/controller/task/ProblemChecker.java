@@ -36,7 +36,7 @@ public class ProblemChecker implements Callable<List<Problem>>, ProgressObservab
         boolean hasLoaders = hasFiles(loadersDir);
         boolean hasMods = hasFiles(modsDir);
 
-        String[] files;
+        //String[] files;
 
         if (new File(packDir, "_CLIENT").exists()) {
             problems.add(new Problem("Root _CLIENT", "There's a _CLIENT folder that's not in " +

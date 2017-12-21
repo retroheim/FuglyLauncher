@@ -6,7 +6,6 @@
 
 package com.skcraft.launcher.swing;
 
-import com.skcraft.launcher.LauncherUtils;
 import com.skcraft.launcher.util.LimitLinesDocumentListener;
 import com.skcraft.launcher.util.SimpleLogFormatter;
 
@@ -30,10 +29,10 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 public class MessageLog extends JPanel {
 
     private static final Logger rootLogger = Logger.getLogger("");
-    
+
     private final int numLines;
     private final boolean colorEnabled;
-    
+
     protected JTextComponent textComponent;
     protected Document document;
 
@@ -47,17 +46,17 @@ public class MessageLog extends JPanel {
     public MessageLog(int numLines, boolean colorEnabled) {
         this.numLines = numLines;
         this.colorEnabled = colorEnabled;
-        
+
         this.highlightedAttributes = new SimpleAttributeSet();
         StyleConstants.setForeground(highlightedAttributes, new Color(0xFF7F00));
-        
+
         this.errorAttributes = new SimpleAttributeSet();
         StyleConstants.setForeground(errorAttributes, new Color(0xFF0000));
         this.infoAttributes = new SimpleAttributeSet();
         this.debugAttributes = new SimpleAttributeSet();
 
         setLayout(new BorderLayout());
-        
+
         initComponents();
     }
 
@@ -84,17 +83,17 @@ public class MessageLog extends JPanel {
         caret.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
         document = textComponent.getDocument();
         document.addDocumentListener(new LimitLinesDocumentListener(numLines, true));
-        
+
         JScrollPane scrollText = new JScrollPane(textComponent);
         scrollText.setBorder(null);
         scrollText.setVerticalScrollBarPolicy(
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollText.setHorizontalScrollBarPolicy(
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        
+
         add(scrollText, BorderLayout.CENTER);
     }
-    
+
     public String getPastableText() {
         String text = textComponent.getText().replaceAll("[\r\n]+", "\n");
         text = text.replaceAll("Session ID is [A-Fa-f0-9]+", "Session ID is [redacted]");
@@ -104,10 +103,10 @@ public class MessageLog extends JPanel {
     public void clear() {
         textComponent.setText("");
     }
-    
+
     /**
      * Log a message given the {@link javax.swing.text.AttributeSet}.
-     * 
+     *
      * @param line line
      * @param attributes attribute set, or null for none
      */
@@ -120,7 +119,7 @@ public class MessageLog extends JPanel {
             }
         }
         final AttributeSet a = attributes;
-        
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -130,24 +129,24 @@ public class MessageLog extends JPanel {
                             (a != null && colorEnabled) ? a : defaultAttributes);
                     t.setCaretPosition(d.getLength());
                 } catch (BadLocationException ble) {
-                
+
                 }
             }
         });
     }
-    
+
     /**
      * Get an output stream that can be written to.
-     * 
+     *
      * @return output stream
      */
     public ConsoleOutputStream getOutputStream() {
         return getOutputStream((AttributeSet) null);
     }
-    
+
     /**
      * Get an output stream with the given attribute set.
-     * 
+     *
      * @param attributes attributes
      * @return output stream
      */
@@ -157,7 +156,7 @@ public class MessageLog extends JPanel {
 
     /**
      * Get an output stream using the give color.
-     * 
+     *
      * @param color color to use
      * @return output stream
      */
@@ -166,11 +165,11 @@ public class MessageLog extends JPanel {
         StyleConstants.setForeground(attributes, color);
         return getOutputStream(attributes);
     }
-    
+
     /**
      * Consume an input stream and print it to the dialog. The consumer
      * will be in a separate daemon thread.
-     * 
+     *
      * @param from stream to read
      */
     public void consume(InputStream from) {
@@ -180,7 +179,7 @@ public class MessageLog extends JPanel {
     /**
      * Consume an input stream and print it to the dialog. The consumer
      * will be in a separate daemon thread.
-     * 
+     *
      * @param from stream to read
      * @param color color to use
      */
@@ -191,17 +190,17 @@ public class MessageLog extends JPanel {
     /**
      * Consume an input stream and print it to the dialog. The consumer
      * will be in a separate daemon thread.
-     * 
+     *
      * @param from stream to read
      * @param attributes attributes
      */
     public void consume(InputStream from, AttributeSet attributes) {
         consume(from, getOutputStream(attributes));
     }
-    
+
     /**
      * Internal method to consume a stream.
-     * 
+     *
      * @param from stream to consume
      * @param outputStream console stream to write to
      */
@@ -238,7 +237,7 @@ public class MessageLog extends JPanel {
         loggerHandler = new ConsoleLoggerHandler();
         rootLogger.addHandler(loggerHandler);
     }
-    
+
     /**
      * Detach the handler on the global logger.
      */
@@ -278,7 +277,7 @@ public class MessageLog extends JPanel {
         @Override
         public void publish(LogRecord record) {
             Level level = record.getLevel();
-            Throwable t = record.getThrown();
+            /*Throwable t = */record.getThrown();
             AttributeSet attributes = defaultAttributes;
 
             if (level.intValue() >= Level.WARNING.intValue()) {
@@ -298,17 +297,17 @@ public class MessageLog extends JPanel {
         public void close() throws SecurityException {
         }
     }
-    
+
     /**
      * Used to send console messages to the console.
      */
     private class ConsoleOutputStream extends ByteArrayOutputStream {
         private AttributeSet attributes;
-        
+
         private ConsoleOutputStream(AttributeSet attributes) {
             this.attributes = attributes;
         }
-        
+
         @Override
         public void flush() {
             String data = toString();

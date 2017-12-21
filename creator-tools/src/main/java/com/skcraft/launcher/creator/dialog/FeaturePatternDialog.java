@@ -26,7 +26,7 @@ public class FeaturePatternDialog extends JDialog {
 
     private final JTextField nameText = new JTextField(20);
     private final JTextArea descArea = new JTextArea(3, 40);
-    private final JComboBox recommendationCombo = new JComboBox(new RecommendationComboBoxModel());
+    private final JComboBox<Recommendation> recommendationCombo = new JComboBox<Recommendation>(new RecommendationComboBoxModel());
     private final JCheckBox selectedCheck = new JCheckBox("Selected by default");
     private final JTextArea includeArea = new JTextArea(8, 40);
     private final JTextArea excludeArea = new JTextArea(3, 40);

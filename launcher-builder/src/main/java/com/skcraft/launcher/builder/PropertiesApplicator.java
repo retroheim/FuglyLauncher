@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class PropertiesApplicator {
 
-    private final Manifest manifest;
+    //private final Manifest manifest;
     private final Set<Feature> used = new HashSet<Feature>();
     private final List<FeaturePattern> features = new ArrayList<FeaturePattern>();
     @Getter @Setter
