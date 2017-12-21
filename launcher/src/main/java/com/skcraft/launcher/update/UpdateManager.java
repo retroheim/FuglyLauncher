@@ -57,6 +57,7 @@ public class UpdateManager {
             public void onSuccess(URL result) {
                 if (result != null) {
                     requestUpdate(result);
+                    propertySupport.firePropertyChange("readyUpdate", false, true);
                 }
             }
 
@@ -87,6 +88,7 @@ public class UpdateManager {
                             SharedLocale.tr("launcher.selfUpdateCompleteTitle"),
                             null,
                             JOptionPane.INFORMATION_MESSAGE);
+                    System.exit(0);
                 }
 
                 @Override
@@ -105,6 +107,5 @@ public class UpdateManager {
         propertySupport.firePropertyChange("pendingUpdate", getPendingUpdate(), url != null);
         this.pendingUpdateUrl = url;
     }
-
 
 }

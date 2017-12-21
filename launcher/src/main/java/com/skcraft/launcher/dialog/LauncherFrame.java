@@ -93,7 +93,7 @@ public class LauncherFrame extends JFrame {
     private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
     private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
     private final JButton optionsButton = new JButton(SharedLocale.tr("launcher.options"));
-    private final JButton selfUpdateButton = new JButton(SharedLocale.tr("launcher.updateLauncher"));
+    //private final JButton selfUpdateButton = new JButton(SharedLocale.tr("launcher.updateLauncher"));
     private final JCheckBox updateCheck = new JCheckBox(SharedLocale.tr("launcher.downloadUpdates"));
 
     /**
@@ -156,8 +156,16 @@ public class LauncherFrame extends JFrame {
         this.selectedPane.setOpaque(false);
         this.selectedPane.setPreferredSize(new Dimension(250, 60));
 
-        this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
+        //this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
 
+        this.launcher.getUpdateManager().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(final PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("readyUpdate"))
+					launcher.getUpdateManager().performUpdate(LauncherFrame.this);
+            }
+        });
+        /*
         this.launcher.getUpdateManager().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
@@ -169,6 +177,7 @@ public class LauncherFrame extends JFrame {
                 }
             }
         });
+        */
 
         this.updateCheck.setSelected(true);
         this.instancesTable.setModel(this.instancesModel);
@@ -322,12 +331,14 @@ public class LauncherFrame extends JFrame {
             }
         });
 
+        /*
         this.selfUpdateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 LauncherFrame.this.launcher.getUpdateManager().performUpdate(LauncherFrame.this);
             }
         });
+        */
 
         this.optionsButton.addActionListener(new ActionListener() {
             @Override
