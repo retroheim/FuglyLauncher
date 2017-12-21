@@ -27,11 +27,7 @@ subprojects {
 
     sourceCompatibility = 1.6
     targetCompatibility = 1.6
-
-    tasks.withType(Jar) {
-	    compileJava.options.encoding = 'UTF-8'
-	    compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-	}
+	compileJava.options.encoding = 'UTF-8'
 
     repositories {
         mavenCentral()
