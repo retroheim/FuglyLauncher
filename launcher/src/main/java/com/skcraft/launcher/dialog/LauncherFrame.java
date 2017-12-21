@@ -8,13 +8,17 @@ package com.skcraft.launcher.dialog;
 
 import static com.skcraft.launcher.util.SharedLocale.*;
 
+import java.awt.AlphaComposite;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -200,7 +204,23 @@ public class LauncherFrame extends JFrame {
         final JLabel instanceLabel = new JLabel(tr("launcher.instance"),SwingHelper.createIcon(Launcher.class, "package_icon.png", 20, 20),SwingConstants.LEFT);
         instanceLabel.setFont(new Font(instanceLabel.getFont().getName(), Font.PLAIN, 16));
         instanceLabel.setBorder(new EmptyBorder(3, 3, 3, 3));
-        final JPanel rightPane = new JPanel(new BorderLayout());
+        final JPanel rightPane = new JPanel(new BorderLayout()) {
+        	@Override
+        	protected void paintComponent(Graphics g) {
+        		if(!isOpaque()) {
+        			Graphics2D g2d = (Graphics2D) g.create();
+        			g2d.setRenderingHint(
+        		            RenderingHints.KEY_ANTIALIASING,
+        		            RenderingHints.VALUE_ANTIALIAS_ON);
+    		        g2d.setComposite(AlphaComposite.getInstance(
+    		        		AlphaComposite.SRC_OVER, 0.3f));
+	        		g2d.setColor(Color.BLACK);
+	        		g2d.fillRect(0, 0, getWidth(), getHeight());
+	        		g2d.dispose();
+        		}
+        		super.paintComponent(g);
+        	}
+        };
         rightPane.add(instanceLabel, BorderLayout.NORTH);
         rightPane.add(this.instanceScroll, BorderLayout.CENTER);
         rightPane.setVisible(false);

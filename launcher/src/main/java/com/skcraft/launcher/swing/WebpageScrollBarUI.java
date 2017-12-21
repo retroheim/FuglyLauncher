@@ -14,10 +14,12 @@ import javax.swing.JScrollPane;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 
 public class WebpageScrollBarUI extends BasicScrollBarUI {
-	private static final int SCROLL_BAR_ALPHA_ROLLOVER = 100;
-	private static final int SCROLL_BAR_ALPHA = 50;
+	private static final int TRACK_ALPHA = 255;
+	private static final int SCROLL_BAR_ALPHA_ROLLOVER = 200;
+	private static final int SCROLL_BAR_ALPHA = 150;
 	private static final int THUMB_SIZE = 8;
-	private static final Color THUMB_COLOR = Color.GRAY;
+	private static final Color THUMB_COLOR = Color.BLACK;
+	private static final Color TRACK_COLOR = Color.GRAY;
 
 	private JScrollPane sp;
 
@@ -44,6 +46,10 @@ public class WebpageScrollBarUI extends BasicScrollBarUI {
 
 	@Override
 	protected void paintTrack(final Graphics g, final JComponent c, final Rectangle trackBounds) {
+		final Graphics2D graphics2D = (Graphics2D) g.create();
+		graphics2D.setColor(new Color(TRACK_COLOR.getRed(), TRACK_COLOR.getGreen(), TRACK_COLOR.getBlue(), TRACK_ALPHA));
+		graphics2D.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, trackBounds.height);
+		graphics2D.dispose();
 	}
 
 	@Override
@@ -80,6 +86,7 @@ public class WebpageScrollBarUI extends BasicScrollBarUI {
 
 		private InvisibleScrollBarButton() {
 			setUI(null);
+			setVisible(false);
 			setOpaque(false);
 			setFocusable(false);
 			setFocusPainted(false);
