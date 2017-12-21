@@ -13,6 +13,7 @@ dependencies {
 
 processResources {
     filesMatching('**/*.properties') {
+    	filteringCharset = 'UTF-8'
         filter {
             it.replace('${project.version}', project.version)
         }

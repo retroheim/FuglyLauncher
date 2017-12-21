@@ -13,7 +13,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
     }
 }
 
@@ -23,10 +23,15 @@ subprojects {
     apply plugin: 'eclipse'
 
     group = 'com.skcraft'
-    version = '4.3-SNAPSHOT'
+    version = '1.0.1'
 
     sourceCompatibility = 1.6
     targetCompatibility = 1.6
+
+    tasks.withType(Jar) {
+	    compileJava.options.encoding = 'UTF-8'
+	    compileJava.options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+	}
 
     repositories {
         mavenCentral()
