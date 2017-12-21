@@ -8,16 +8,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nonnull;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 
@@ -30,23 +24,21 @@ import net.teamfruit.skcraft.launcher.util.SizeData;
 @Log
 public class InstanceTableCellPanel extends JPanel {
 	public static class DefaultIcons {
-		public static final Image instanceIcon = SwingHelper.createImage(Launcher.class, "instance_icon.png");
-		public static final Image customInstanceIcon = SwingHelper.createImage(Launcher.class, "custom_instance_icon.png");
-		public static final Image downloadIcon = SwingHelper.createImage(Launcher.class, "instance_download_icon.png");
-		public static final Image instanceTitleIcon = SwingHelper.createImage(Launcher.class, "instance_title_icon.png");
+		public static final Image instanceMissingThumbBackground = SwingHelper.createImage(Launcher.class, "instance_missing_thumb_background.png");
+		public static final Image instanceLoadingBackground = SwingHelper.createImage(Launcher.class, "instance_loading_background.png");
+		public static final Image instanceNoThumbInstanceIcon = SwingHelper.createImage(Launcher.class, "instance_no_thumb_background.png");
+		public static final Image instanceTitleBar = SwingHelper.createImage(Launcher.class, "instance_title_bar.png");
+		public static final Image instanceDownloadIcon = SwingHelper.createImage(Launcher.class, "instance_download_icon.png");
 		public static final Image instancePlayIcon = SwingHelper.createImage(Launcher.class, "instance_play_icon.png");
+		public static final Image instanceOnlineIcon = SwingHelper.createImage(Launcher.class, "instance_online_icon.png");
 	}
-
-	private static final @Nonnull ExecutorService threadpool = new ThreadPoolExecutor(3, 3,
-			4L, TimeUnit.SECONDS,
-			new LinkedBlockingQueue<Runnable>(),
-			new ThreadFactoryBuilder().setNameFormat("thumbnail-download-%d").build());
 
 	private final JComponent parent;
 	private @Getter @Setter String title;
 	private @Getter @Setter boolean showPlayIcon;
 	private @Getter @Setter boolean showSelected;
 	private @Getter @Setter boolean notdownloaded;
+	private @Getter @Setter boolean online;
 	private @Getter Image thumb;
 	private @Getter Instance instance;
 
@@ -66,28 +58,22 @@ public class InstanceTableCellPanel extends JPanel {
 	public void setInstance(final Instance instance) {
 		this.instance = instance;
 
-		if (!instance.isLocal())
-			this.notdownloaded = true;
-		if (instance.getThumb()!=null) {
+		this.notdownloaded = !instance.isLocal();
+		this.online = instance.getManifestURL()!=null;
+
+		if (instance.getThumb()==null)
+			setThumb(DefaultIcons.instanceNoThumbInstanceIcon);
+		else
 			if (instance.getIconCache()!=null)
 				setThumb(instance.getIconCache());
 			else
-				threadpool.execute(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							final Image thumb = SwingHelper.createImage("https://i.gyazo.com/18740a42fbce0032a095b7945f1eef86.png");
-							setThumb(thumb);
-							instance.setIconCache(thumb);
-						} catch (final Exception e) {
-							setThumb(DefaultIcons.instanceIcon);
-						}
-					}
-				});
-		} else if (instance.getManifestURL()!=null)
-			setThumb(DefaultIcons.instanceIcon);
-		else
-			setThumb(DefaultIcons.customInstanceIcon);
+				try {
+					final Image thumb = SwingHelper.createImage(instance.getThumb());
+					setThumb(thumb);
+					instance.setIconCache(thumb);
+				} catch (final Exception e) {
+					setThumb(DefaultIcons.instanceMissingThumbBackground);
+				}
 	}
 
 	@Override
@@ -98,11 +84,14 @@ public class InstanceTableCellPanel extends JPanel {
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		final int panel_width = getWidth();
 		final int panel_height = getHeight();
-		if (this.thumb!=null) {
-			final int img_width = this.thumb.getWidth(this.parent);
-			final int img_height = this.thumb.getHeight(this.parent);
+		{
+			Image thumb = DefaultIcons.instanceLoadingBackground;
+			if (this.thumb!=null&&this.thumb.getWidth(parent)>0)
+				thumb = this.thumb;
+			final int img_width = thumb.getWidth(this.parent);
+			final int img_height = thumb.getHeight(this.parent);
 			final SizeData img_size = ImageSizes.OUTER.size(img_width, img_height, panel_width, panel_height);
-			g2d.drawImage(this.thumb, (int)((panel_width-img_size.getWidth())/2), (int)((panel_height-img_size.getHeight())/2), (int)img_size.getWidth(), (int)img_size.getHeight(), this.parent);
+			g2d.drawImage(thumb, (int)((panel_width-img_size.getWidth())/2), (int)((panel_height-img_size.getHeight())/2), (int)img_size.getWidth(), (int)img_size.getHeight(), this.parent);
 		}
 		if (this.title!=null) {
 			final Font font = new Font(Font.DIALOG, Font.BOLD, 13);
@@ -113,7 +102,7 @@ public class InstanceTableCellPanel extends JPanel {
 			final int pol_w = fontmatrics.stringWidth(this.title)+30;
 			final int pol_h = fontmatrics.getHeight()+height_padding;
 
-			final Image titleicon = DefaultIcons.instanceTitleIcon;
+			final Image titleicon = DefaultIcons.instanceTitleBar;
 			final int title_width = titleicon.getWidth(this.parent);
 			final int title_height = titleicon.getHeight(this.parent);
 
@@ -125,14 +114,16 @@ public class InstanceTableCellPanel extends JPanel {
 			g2d.drawString(this.title, panel_width-pol_w+20, panel_height-fontmatrics.getDescent()-height_padding/2);
 			g2d.translate(0, 5);
 		}
+		if (this.online)
+			g2d.drawImage(DefaultIcons.instanceOnlineIcon, panel_width-20, 0, 20, 20, this.parent);
 		if (this.showSelected) {
 			g2d.setColor(new Color(0f, 0f, 1f, 0.75f));
 			final int inset = 2;
 			g2d.drawRect(0+inset, 0+inset, panel_width-1-inset*2, panel_height-1-inset*2);
 		}
-		if (this.showPlayIcon)
-			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
 		if (this.notdownloaded)
-			g2d.drawImage(DefaultIcons.downloadIcon, 0, 0, 40, 40, this.parent);
+			g2d.drawImage(DefaultIcons.instanceDownloadIcon, 0, 0, 40, 40, this.parent);
+		else if (this.showPlayIcon)
+			g2d.drawImage(DefaultIcons.instancePlayIcon, 0, 0, 40, 40, this.parent);
 	}
 }

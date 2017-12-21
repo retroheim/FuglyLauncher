@@ -25,7 +25,7 @@ import net.teamfruit.skcraft.launcher.util.SizeData;
 
 public class TipsPanel extends JPanel {
 	public static class DefaultIcons {
-		public static final Image tipsIcon = SwingHelper.createImage(Launcher.class, "tips_icon.png");
+		public static final Image tipsBar = SwingHelper.createImage(Launcher.class, "tips_bar.png");
 	}
 
 	public static final TipsPanel instance = new TipsPanel();
@@ -109,7 +109,7 @@ public class TipsPanel extends JPanel {
 			final int pol_w = fontmatrics.stringWidth(this.title)+width_padding_right;
 			final int pol_h = fontmatrics.getHeight()+height_padding;
 
-			final Image titleicon = DefaultIcons.tipsIcon;
+			final Image titleicon = DefaultIcons.tipsBar;
 			final int title_width = titleicon.getWidth(this);
 			final int title_height = titleicon.getHeight(this);
 
