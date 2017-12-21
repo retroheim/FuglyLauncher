@@ -15,6 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -70,9 +71,20 @@ public class DownloadFrame extends JFrame {
         progressPanel.add(progressBar, BorderLayout.CENTER);
         textAreaPanel.setBorder(BorderFactory.createEmptyBorder(10, 13, 0, 13));
 
-        add(progressPanel, BorderLayout.NORTH);
-        add(textAreaPanel, BorderLayout.CENTER);
-        add(buttonsPanel, BorderLayout.SOUTH);
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(progressPanel, BorderLayout.NORTH);
+        mainPanel.add(textAreaPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonsPanel, BorderLayout.SOUTH);
+
+        BufferedImage titleImage = SwingHelper.readIconImage(Bootstrap.class, "title.png");
+        if (titleImage!=null) {
+        	JPanel titlePanel = new JPanel(new GridBagLayout());
+            JLabel titleLabel = new JLabel(new ImageIcon(titleImage));
+            titlePanel.setBackground(new Color(27, 20, 100));
+            titlePanel.add(titleLabel);
+            add(titlePanel, BorderLayout.NORTH);
+        }
+        add(mainPanel, BorderLayout.CENTER);
 
         textAreaPanel.setVisible(false);
         cancelButton.addActionListener(new ActionListener() {
