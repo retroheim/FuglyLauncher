@@ -50,6 +50,7 @@ import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.Launcher;
+import com.skcraft.launcher.appicon.AppIcon;
 import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
@@ -112,7 +113,7 @@ public class LauncherFrame extends JFrame {
         pack();
         setLocationRelativeTo(null);
 
-        SwingHelper.setFrameIcon(this, Launcher.class, "icon.png");
+        AppIcon.setFrameIconSet(this, AppIcon.AppIconSet.getIconSetFromDirWithFormat(AppIcon.class, "icon_%s.png"));
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override

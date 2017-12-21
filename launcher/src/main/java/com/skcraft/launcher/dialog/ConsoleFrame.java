@@ -6,23 +6,30 @@
 
 package com.skcraft.launcher.dialog;
 
-import com.skcraft.launcher.Launcher;
-import com.skcraft.launcher.swing.LinedBoxPanel;
-import com.skcraft.launcher.swing.MessageLog;
-import com.skcraft.launcher.swing.SwingHelper;
-import com.skcraft.launcher.util.PastebinPoster;
-import com.skcraft.launcher.util.SharedLocale;
-import lombok.Getter;
-import lombok.NonNull;
+import static com.skcraft.launcher.util.SharedLocale.*;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import static com.skcraft.launcher.util.SharedLocale.tr;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
+
+import com.skcraft.launcher.appicon.AppIcon;
+import com.skcraft.launcher.appicon.AppIcon.AppIconSet;
+import com.skcraft.launcher.swing.LinedBoxPanel;
+import com.skcraft.launcher.swing.MessageLog;
+import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.util.PastebinPoster;
+import com.skcraft.launcher.util.SharedLocale;
+
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * A frame capable of showing messages.
@@ -31,8 +38,8 @@ public class ConsoleFrame extends JFrame {
 
     private static ConsoleFrame globalFrame;
 
-    @Getter private final Image trayRunningIcon;
-    @Getter private final Image trayClosedIcon;
+    @Getter private final AppIconSet trayRunningIcon;
+    @Getter private final AppIconSet trayClosedIcon;
 
     @Getter private final MessageLog messageLog;
     @Getter private LinedBoxPanel buttonsPanel;
@@ -51,18 +58,18 @@ public class ConsoleFrame extends JFrame {
 
     /**
      * Construct the frame.
-     * 
+     *
      * @param title the title of the window
      * @param numLines number of lines to show at a time
      * @param colorEnabled true to enable a colored console
      */
     public ConsoleFrame(@NonNull String title, int numLines, boolean colorEnabled) {
         messageLog = new MessageLog(numLines, colorEnabled);
-        trayRunningIcon = SwingHelper.createImage(Launcher.class, "tray_ok.png");
-        trayClosedIcon = SwingHelper.createImage(Launcher.class, "tray_closed.png");
+        trayRunningIcon = AppIconSet.getIconSetFromDirWithFormat(AppIcon.class, "icon_online_%s.png");
+        trayClosedIcon = AppIconSet.getIconSetFromDirWithFormat(AppIcon.class, "icon_offline_%s.png");
 
         setTitle(title);
-        setIconImage(trayRunningIcon);
+        AppIcon.setFrameIconSet(this, trayRunningIcon);
 
         setSize(new Dimension(650, 400));
         initComponents();
@@ -164,9 +171,8 @@ public class ConsoleFrame extends JFrame {
 
     public static void hideMessages() {
         ConsoleFrame frame = globalFrame;
-        if (frame != null) {
-            frame.setVisible(false);
-        }
+        if (frame != null)
+			frame.setVisible(false);
     }
 
 }

@@ -6,6 +6,8 @@
 
 package com.skcraft.launcher.dialog;
 
+import com.skcraft.launcher.appicon.AppIcon;
+import com.skcraft.launcher.appicon.AppIcon.AppIconSet;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
@@ -24,7 +26,7 @@ import static com.skcraft.launcher.util.SharedLocale.tr;
  * A version of the console window that can manage a process.
  */
 public class ProcessConsoleFrame extends ConsoleFrame {
-    
+
     private JButton killButton;
     private JButton minimizeButton;
     private TrayIcon trayIcon;
@@ -117,7 +119,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
         buttonsPanel.addGlue();
         buttonsPanel.addElement(killButton);
         buttonsPanel.addElement(minimizeButton);
-        
+
         killButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -131,7 +133,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
                 contextualClose();
             }
         });
-        
+
         if (!setupTrayIcon()) {
             minimizeButton.setEnabled(true);
         }
@@ -142,7 +144,11 @@ public class ProcessConsoleFrame extends ConsoleFrame {
             return false;
         }
 
-        trayIcon = new TrayIcon(getTrayRunningIcon());
+        Image icon = getTrayRunningIcon().getIcon();
+        if (icon==null)
+        	return false;
+
+        trayIcon = new TrayIcon(icon);
         trayIcon.setImageAutoSize(true);
         trayIcon.setToolTip(SharedLocale.tr("console.trayTooltip"));
 
@@ -152,7 +158,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
                 reshow();
             }
         });
-       
+
         PopupMenu popup = new PopupMenu();
         MenuItem item;
 
@@ -174,21 +180,21 @@ public class ProcessConsoleFrame extends ConsoleFrame {
                 performKill();
             }
         });
-       
+
         trayIcon.setPopupMenu(popup);
-       
+
         try {
             SystemTray tray = SystemTray.getSystemTray();
             tray.add(trayIcon);
             return true;
         } catch (AWTException e) {
         }
-        
+
         return false;
     }
 
     private synchronized void updateComponents() {
-        Image icon = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
+        AppIconSet iconSet = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
 
         killButton.setEnabled(hasProcess());
 
@@ -199,10 +205,12 @@ public class ProcessConsoleFrame extends ConsoleFrame {
         }
 
         if (trayIcon != null) {
-            trayIcon.setImage(icon);
+	        Image icon = iconSet.getIcon();
+        	if (icon!=null)
+        		trayIcon.setImage(icon);
         }
 
-        setIconImage(icon);
+        AppIcon.setFrameIconSet(this, iconSet);
     }
 
     private synchronized void contextualClose() {
