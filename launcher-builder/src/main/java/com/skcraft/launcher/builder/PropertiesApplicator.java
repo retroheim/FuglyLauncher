@@ -24,7 +24,7 @@ public class PropertiesApplicator {
     private FnPatternList userFiles;
 
     public PropertiesApplicator(Manifest manifest) {
-        this.manifest = manifest;
+        //this.manifest = manifest;
     }
 
     public void apply(ManifestEntry entry) {

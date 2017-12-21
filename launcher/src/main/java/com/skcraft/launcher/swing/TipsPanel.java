@@ -47,7 +47,7 @@ public class TipsPanel extends JPanel {
 
 	private TipsPanel() {
 		//set a timer
-		this.tm = new Timer(5*1000, new ActionListener() {
+		this.tm = new Timer(3*1000, new ActionListener() {
 			{
 				next();
 			}
