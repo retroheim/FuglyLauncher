@@ -13,6 +13,7 @@ dependencies {
 }
 
 processResources {
+	inputs.property 'project.version', project.version
     filesMatching('**/*.properties') {
         filter {
             it.replace('${project.version}', project.version)
