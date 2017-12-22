@@ -184,19 +184,8 @@ public class Bootstrap {
         }
     }
 
-    private static File getFileChooseDefaultDir() {
-        JFileChooser chooser = new JFileChooser();
-        FileSystemView fsv = chooser.getFileSystemView();
-        return fsv.getDefaultDirectory();
-    }
-
     private File getUserLauncherDir() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.contains("win")) {
-            return new File(getFileChooseDefaultDir(), getProperties().getProperty("homeFolderWindows"));
-        } else {
-            return new File(System.getProperty("user.home"), getProperties().getProperty("homeFolder"));
-        }
+        return OperatingSystem.getCurrentPlatform().getWorkingDirectory(getProperties().getProperty("homeFolder"));
     }
 
     private static boolean isPortableMode() {
