@@ -7,12 +7,14 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.MediaTracker;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.ListIterator;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -31,21 +33,29 @@ public class TipsPanel extends JPanel {
 	public static final TipsPanel instance = new TipsPanel();
 
 	private Timer tm;
-	private int x = 0;
-	private Random rnd = new Random();
-	private boolean random = true;
+	private int x = -1;
 	private Image thumb;
 	private String title;
 
 	//Images Path In Array
 	private final List<Tip> list = new ArrayList<Tip>();
+	private final MediaTracker mediaTracker;
 
 	public void updateTipList(final List<Tip> tips) {
 		this.list.clear();
 		this.list.addAll(tips);
+		Collections.shuffle(list);
+		for (ListIterator<Tip> itr = list.listIterator(); itr.hasNext();) {
+			int id = itr.nextIndex();
+			Tip tip = itr.next();
+			mediaTracker.addImage(tip.getThumbImage(), id);
+			mediaTracker.checkID(id, true);
+		}
 	}
 
 	private TipsPanel() {
+		mediaTracker = new MediaTracker(this);
+
 		//set a timer
 		this.tm = new Timer(5*1000, new ActionListener() {
 			{
@@ -58,18 +68,17 @@ public class TipsPanel extends JPanel {
 			}
 
 			private void next() {
-				if (TipsPanel.this.list.isEmpty()) {
+				int x = TipsPanel.this.x+1;
+
+				if (TipsPanel.this.list.isEmpty()||!mediaTracker.checkID(x, true)) {
 					setVisible(false);
 					return;
 				}
-				int x = TipsPanel.this.x;
-				if (TipsPanel.this.random)
-					x = TipsPanel.this.rnd.nextInt(TipsPanel.this.list.size());
-				else if (++x<0||x>=TipsPanel.this.list.size())
+
+				if (x<0||x>=TipsPanel.this.list.size())
 					x = 0;
-				final Tip pretip = TipsPanel.this.list.get(TipsPanel.this.x);
-				pretip.getThumbImage().getWidth(TipsPanel.this);
 				TipsPanel.this.x = x;
+
 				final Tip tip = TipsPanel.this.list.get(x);
 				TipsPanel.this.title = tip.getDesc();
 				TipsPanel.this.thumb = tip.getThumbImage();
@@ -96,7 +105,7 @@ public class TipsPanel extends JPanel {
 			final int img_width = this.thumb.getWidth(this);
 			final int img_height = this.thumb.getHeight(this);
 			final SizeData img_size = ImageSizes.OUTER.size(img_width, img_height, panel_width, panel_height);
-			g2d.drawImage(this.thumb, (int)((panel_width-img_size.getWidth())/2), (int)((panel_height-img_size.getHeight())/2), (int)img_size.getWidth(), (int)img_size.getHeight(), this);
+			g2d.drawImage(this.thumb, (int) ((panel_width-img_size.getWidth())/2), (int) ((panel_height-img_size.getHeight())/2), (int) img_size.getWidth(), (int) img_size.getHeight(), this);
 		}
 		if (this.title!=null) {
 			final Font font = new Font(Font.DIALOG, Font.BOLD, 14);
