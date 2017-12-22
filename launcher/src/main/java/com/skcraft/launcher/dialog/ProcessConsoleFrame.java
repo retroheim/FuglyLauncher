@@ -6,13 +6,13 @@
 
 package com.skcraft.launcher.dialog;
 
-import com.skcraft.launcher.appicon.AppIcon;
-import com.skcraft.launcher.appicon.AppIcon.AppIconSet;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
 import lombok.Getter;
 import lombok.Setter;
+import net.teamfruit.skcraft.launcher.appicon.AppIcon;
+import net.teamfruit.skcraft.launcher.appicon.AppIcon.IconSet;
 
 import javax.swing.*;
 import java.awt.*;
@@ -194,7 +194,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     }
 
     private synchronized void updateComponents() {
-        AppIconSet iconSet = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
+        IconSet iconSet = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
 
         killButton.setEnabled(hasProcess());
 

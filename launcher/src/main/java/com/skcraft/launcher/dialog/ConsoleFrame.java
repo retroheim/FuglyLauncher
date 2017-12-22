@@ -9,6 +9,7 @@ package com.skcraft.launcher.dialog;
 import static com.skcraft.launcher.util.SharedLocale.*;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,8 +21,6 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
-import com.skcraft.launcher.appicon.AppIcon;
-import com.skcraft.launcher.appicon.AppIcon.AppIconSet;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.MessageLog;
 import com.skcraft.launcher.swing.SwingHelper;
@@ -30,6 +29,8 @@ import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.appicon.AppIcon;
+import net.teamfruit.skcraft.launcher.appicon.AppIcon.IconSet;
 
 /**
  * A frame capable of showing messages.
@@ -38,8 +39,8 @@ public class ConsoleFrame extends JFrame {
 
     private static ConsoleFrame globalFrame;
 
-    @Getter private final AppIconSet trayRunningIcon;
-    @Getter private final AppIconSet trayClosedIcon;
+    @Getter private final IconSet trayRunningIcon;
+    @Getter private final IconSet trayClosedIcon;
 
     @Getter private final MessageLog messageLog;
     @Getter private LinedBoxPanel buttonsPanel;
@@ -65,8 +66,9 @@ public class ConsoleFrame extends JFrame {
      */
     public ConsoleFrame(@NonNull String title, int numLines, boolean colorEnabled) {
         messageLog = new MessageLog(numLines, colorEnabled);
-        trayRunningIcon = AppIconSet.getIconSetFromDirWithFormat(AppIcon.class, "icon_online_%s.png");
-        trayClosedIcon = AppIconSet.getIconSetFromDirWithFormat(AppIcon.class, "icon_offline_%s.png");
+        IconSet iconSet = AppIcon.getAppIconSet();
+        trayRunningIcon = AppIcon.getTaskIcon(iconSet, new Color(67, 181, 129));
+        trayClosedIcon = AppIcon.getTaskIcon(iconSet, new Color(152, 41, 41));
 
         setTitle(title);
         AppIcon.setFrameIconSet(this, trayRunningIcon);

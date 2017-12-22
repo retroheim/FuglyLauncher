@@ -50,7 +50,6 @@ import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.Launcher;
-import com.skcraft.launcher.appicon.AppIcon;
 import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
@@ -73,6 +72,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
+import net.teamfruit.skcraft.launcher.appicon.AppIcon;
 
 /**
  * The main launcher frame.
@@ -113,7 +113,7 @@ public class LauncherFrame extends JFrame {
         pack();
         setLocationRelativeTo(null);
 
-        AppIcon.setFrameIconSet(this, AppIcon.AppIconSet.getIconSetFromDirWithFormat(AppIcon.class, "icon_%s.png"));
+        AppIcon.setFrameIconSet(this, AppIcon.getAppIconSet());
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
