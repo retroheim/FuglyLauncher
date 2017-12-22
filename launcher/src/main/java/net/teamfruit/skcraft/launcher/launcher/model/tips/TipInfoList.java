@@ -2,9 +2,12 @@ package net.teamfruit.skcraft.launcher.launcher.model.tips;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TipInfoList {
 
     public static final int MIN_VERSION = 1;
