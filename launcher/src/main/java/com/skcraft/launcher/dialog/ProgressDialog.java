@@ -6,6 +6,31 @@
 
 package com.skcraft.launcher.dialog;
 
+import static com.skcraft.launcher.util.SharedLocale.*;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.ref.WeakReference;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -16,19 +41,8 @@ import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.swing.TipsPanel;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
+
 import lombok.extern.java.Log;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.lang.ref.WeakReference;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import static com.skcraft.launcher.util.SharedLocale.tr;
 
 @Log
 public class ProgressDialog extends JDialog {
@@ -58,7 +72,9 @@ public class ProgressDialog extends JDialog {
         defaultTitle = title;
         defaultMessage = message;
         setCompactSize();
+        pack();
         setLocationRelativeTo(owner);
+        pack();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -75,21 +91,22 @@ public class ProgressDialog extends JDialog {
     private void setCompactSize() {
         detailsButton.setText(SharedLocale.tr("progress.details"));
         logButton.setVisible(false);
-        setMinimumSize(new Dimension(400, 100));
+        revalidate();
         pack();
     }
 
     private void setDetailsSize() {
         detailsButton.setText(SharedLocale.tr("progress.less"));
         logButton.setVisible(true);
-        setSize(400, 350);
+        revalidate();
+        pack();
     }
 
     private void initComponents() {
         progressBar.setMaximum(1000);
         progressBar.setMinimum(0);
         progressBar.setIndeterminate(true);
-        progressBar.setPreferredSize(new Dimension(0, 18));
+        progressBar.setPreferredSize(new Dimension(350, 18));
 
         buttonsPanel.addElement(detailsButton);
         buttonsPanel.addElement(logButton);
@@ -109,6 +126,7 @@ public class ProgressDialog extends JDialog {
         progressPanel.add(progressBar, BorderLayout.CENTER);
         textAreaPanel.setBorder(BorderFactory.createEmptyBorder(10, 13, 0, 13));
         textAreaPanel.add(logScroll, BorderLayout.CENTER);
+        textAreaPanel.setPreferredSize(new Dimension(350, 200));
 
         mainPanel.add(progressPanel, BorderLayout.NORTH);
         mainPanel.add(textAreaPanel, BorderLayout.CENTER);
@@ -197,9 +215,8 @@ public class ProgressDialog extends JDialog {
 
     public static ProgressDialog getLastDialog() {
         WeakReference<ProgressDialog> ref = lastDialogRef;
-        if (ref != null) {
-            return ref.get();
-        }
+        if (ref != null)
+			return ref.get();
 
         return null;
     }
@@ -239,11 +256,10 @@ public class ProgressDialog extends JDialog {
                         label.setText(dialog.defaultMessage);
                     } else {
                         int index = status.indexOf('\n');
-                        if (index == -1) {
-                            label.setText(status);
-                        } else {
-                            label.setText(status.substring(0, index));
-                        }
+                        if (index == -1)
+							label.setText(status);
+						else
+							label.setText(status.substring(0, index));
                     }
                     logText.setText(status);
                     logText.setCaretPosition(0);
