@@ -7,6 +7,7 @@
 package com.skcraft.launcher;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 
 /**
@@ -27,6 +28,7 @@ public class Configuration {
     private int minMemory = 1024;
     private int maxMemory = 0; // Updated in Launcher
     private int permGen = 256;
+    private boolean showConsole = true;
     private int windowWidth = 854;
     private int widowHeight = 480;
     private boolean proxyEnabled = false;
@@ -38,7 +40,6 @@ public class Configuration {
     private boolean serverEnabled = false;
     private String serverHost;
     private int serverPort = 25565;
-    private String selectedInstance;
 
     @Override
     public boolean equals(Object o) {

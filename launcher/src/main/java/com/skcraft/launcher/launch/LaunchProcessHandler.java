@@ -26,7 +26,6 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
 
     private static final int CONSOLE_NUM_LINES = 10000;
 
-    @SuppressWarnings("unused")
 	private final Launcher launcher;
     private ProcessConsoleFrame consoleFrame;
 
@@ -44,7 +43,8 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
                 public void run() {
                     consoleFrame = new ProcessConsoleFrame(CONSOLE_NUM_LINES, true);
                     consoleFrame.setProcess(process);
-                    consoleFrame.setVisible(true);
+                    if (launcher.getConfig().isShowConsole())
+                    	consoleFrame.setVisible(true);
                     MessageLog messageLog = consoleFrame.getMessageLog();
                     messageLog.consume(process.getInputStream());
                     messageLog.consume(process.getErrorStream());

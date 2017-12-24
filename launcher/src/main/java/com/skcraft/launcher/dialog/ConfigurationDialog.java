@@ -6,17 +6,35 @@
 
 package com.skcraft.launcher.dialog;
 
-import com.skcraft.launcher.Configuration;
-import com.skcraft.launcher.Launcher;
-import com.skcraft.launcher.swing.*;
-import com.skcraft.launcher.persistence.Persistence;
-import com.skcraft.launcher.util.SharedLocale;
-import lombok.NonNull;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JSpinner;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+
+import com.skcraft.launcher.Configuration;
+import com.skcraft.launcher.Launcher;
+import com.skcraft.launcher.persistence.Persistence;
+import com.skcraft.launcher.swing.ActionListeners;
+import com.skcraft.launcher.swing.FormPanel;
+import com.skcraft.launcher.swing.LinedBoxPanel;
+import com.skcraft.launcher.swing.ObjectSwingMapper;
+import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.util.SharedLocale;
+
+import lombok.NonNull;
 
 /**
  * A dialog to modify configuration options.
@@ -35,8 +53,12 @@ public class ConfigurationDialog extends JDialog {
     private final JSpinner maxMemorySpinner = new JSpinner();
     private final JSpinner permGenSpinner = new JSpinner();
     private final FormPanel gameSettingsPanel = new FormPanel();
+    private final JCheckBox showConsoleCheck = new JCheckBox(SharedLocale.tr("options.showConsole"));
     private final JSpinner widthSpinner = new JSpinner();
     private final JSpinner heightSpinner = new JSpinner();
+    private final JCheckBox serverEnabledCheck = new JCheckBox(SharedLocale.tr("options.serverEnabled"));
+    private final JTextField serverHostText = new JTextField();
+    private final JSpinner serverPortSpinner = new JSpinner();
     private final FormPanel proxySettingsPanel = new FormPanel();
     private final JCheckBox useProxyCheck = new JCheckBox(SharedLocale.tr("options.useProxyCheck"));
     private final JTextField proxyHostText = new JTextField();
@@ -75,8 +97,12 @@ public class ConfigurationDialog extends JDialog {
         mapper.map(minMemorySpinner, "minMemory");
         mapper.map(maxMemorySpinner, "maxMemory");
         mapper.map(permGenSpinner, "permGen");
+        mapper.map(showConsoleCheck, "showConsole");
         mapper.map(widthSpinner, "windowWidth");
         mapper.map(heightSpinner, "widowHeight");
+        mapper.map(serverEnabledCheck, "serverEnabled");
+        mapper.map(serverHostText, "serverHost");
+        mapper.map(serverPortSpinner, "serverPort");
         mapper.map(useProxyCheck, "proxyEnabled");
         mapper.map(proxyHostText, "proxyHost");
         mapper.map(proxyPortText, "proxyPort");
@@ -98,8 +124,12 @@ public class ConfigurationDialog extends JDialog {
         SwingHelper.removeOpaqueness(javaSettingsPanel);
         tabbedPane.addTab(SharedLocale.tr("options.javaTab"), SwingHelper.alignTabbedPane(javaSettingsPanel));
 
+        gameSettingsPanel.addRow(showConsoleCheck);
         gameSettingsPanel.addRow(new JLabel(SharedLocale.tr("options.windowWidth")), widthSpinner);
         gameSettingsPanel.addRow(new JLabel(SharedLocale.tr("options.windowHeight")), heightSpinner);
+        gameSettingsPanel.addRow(serverEnabledCheck);
+        gameSettingsPanel.addRow(new JLabel(SharedLocale.tr("options.serverHost")), serverHostText);
+        gameSettingsPanel.addRow(new JLabel(SharedLocale.tr("options.serverPort")), serverPortSpinner);
         SwingHelper.removeOpaqueness(gameSettingsPanel);
         tabbedPane.addTab(SharedLocale.tr("options.minecraftTab"), SwingHelper.alignTabbedPane(gameSettingsPanel));
 
