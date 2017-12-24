@@ -6,17 +6,19 @@
 
 package com.skcraft.launcher.launch;
 
-import com.google.common.base.Function;
-import com.skcraft.launcher.Launcher;
-import com.skcraft.launcher.dialog.LauncherFrame;
-import com.skcraft.launcher.dialog.ProcessConsoleFrame;
-import com.skcraft.launcher.swing.MessageLog;
-import lombok.NonNull;
-import lombok.extern.java.Log;
-
-import javax.swing.*;
+import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+
+import javax.swing.SwingUtilities;
+
+import com.google.common.base.Function;
+import com.skcraft.launcher.Launcher;
+import com.skcraft.launcher.dialog.ProcessConsoleFrame;
+import com.skcraft.launcher.swing.MessageLog;
+
+import lombok.NonNull;
+import lombok.extern.java.Log;
 
 /**
  * Handles post-process creation during launch.
@@ -47,7 +49,7 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
                     	consoleFrame.setVisible(true);
                     MessageLog messageLog = consoleFrame.getMessageLog();
                     messageLog.consume(process.getInputStream());
-                    messageLog.consume(process.getErrorStream());
+                    messageLog.consume(process.getErrorStream(), Color.RED);
                 }
             });
 
