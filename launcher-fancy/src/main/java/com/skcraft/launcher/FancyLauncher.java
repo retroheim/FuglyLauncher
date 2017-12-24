@@ -39,7 +39,7 @@ public class FancyLauncher {
                     if (!SwingHelper.setLookAndFeel("com.skcraft.launcher.skin.LauncherLookAndFeel"))
 						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-                    final Launcher launcher = Launcher.createFromArguments(args);
+                    final Launcher launcher = Launcher.createFromArguments(FancyLauncher.class, args);
                     launcher.setMainWindowSupplier(new CustomWindowSupplier(launcher));
                     launcher.showLauncherWindow();
                 } catch (final Throwable t) {

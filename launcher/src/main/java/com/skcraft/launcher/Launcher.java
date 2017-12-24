@@ -59,6 +59,7 @@ public final class Launcher {
     @Getter
     private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     @Getter @Setter private Supplier<Window> mainWindowSupplier = new DefaultLauncherSupplier(this);
+    @Getter private final Class<?> mainClass;
     @Getter private final File baseDir;
     @Getter private final Properties properties;
     @Getter private final InstanceList instances;
@@ -76,8 +77,8 @@ public final class Launcher {
      * @param baseDir the base directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull File baseDir) throws IOException {
-        this(baseDir, baseDir);
+    public Launcher(@NonNull Class<?> mainClass, @NonNull File baseDir) throws IOException {
+        this(mainClass, baseDir, baseDir);
     }
 
     /**
@@ -88,9 +89,10 @@ public final class Launcher {
      * @param configDir the config directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull File baseDir, @NonNull File configDir) throws IOException {
+    public Launcher(@NonNull Class<?> mainClass, @NonNull File baseDir, @NonNull File configDir) throws IOException {
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Launcher", Locale.getDefault());
 
+        this.mainClass = mainClass;
         this.baseDir = baseDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
         this.instances = new InstanceList(this);
@@ -400,7 +402,7 @@ public final class Launcher {
      * @throws ParameterException thrown on a bad parameter
      * @throws IOException throw on an I/O error
      */
-    public static Launcher createFromArguments(String[] args) throws ParameterException, IOException {
+    public static Launcher createFromArguments(@NonNull Class<?> mainClass, String[] args) throws ParameterException, IOException {
         LauncherArguments options = new LauncherArguments();
         new JCommander(options, args);
 
@@ -415,7 +417,7 @@ public final class Launcher {
             log.info("Using current directory " + dir.getAbsolutePath());
         }
 
-        return new Launcher(dir);
+        return new Launcher(mainClass, dir);
     }
 
     /**
@@ -437,7 +439,7 @@ public final class Launcher {
             @Override
             public void run() {
                 try {
-                    Launcher launcher = createFromArguments(args);
+                    Launcher launcher = createFromArguments(Launcher.class, args);
                     SwingHelper.setSwingProperties(tr("launcher.appTitle", launcher.getVersion()));
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     launcher.showLauncherWindow();
