@@ -17,6 +17,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -45,6 +46,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.plaf.basic.BasicPanelUI;
 
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
@@ -155,6 +157,7 @@ public class LauncherFrame extends JFrame {
         this.selectedPane = new BoardPanel<InstanceTableCellPanel>();
         this.selectedPane.setOpaque(false);
         this.selectedPane.setPreferredSize(new Dimension(250, 60));
+        this.selectedPane.setToolTipText(tr("launcher.launchButton"));
 
         //this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
 
@@ -191,19 +194,29 @@ public class LauncherFrame extends JFrame {
         final JButton expandButton = new JButton(">");
         final JPanel buttons = new JPanel(new GridLayout(3, 1));
         this.refreshButton.setIcon(SwingHelper.createIcon(Launcher.class, "refresh_icon.png", 20, 20));
+        this.refreshButton.setToolTipText(tr("launcher.refreshButton"));
         this.refreshButton.setText(null);
         buttons.add(this.refreshButton);
         // buttons.add(this.updateCheck);
         // buttons.add(this.selfUpdateButton);
         this.optionsButton.setIcon(SwingHelper.createIcon(Launcher.class, "settings_icon.png", 20, 20));
+        this.optionsButton.setToolTipText(tr("launcher.optionButton"));
         this.optionsButton.setText(null);
         buttons.add(this.optionsButton);
         // buttons.add(this.launchButton);
         expandButton.setIcon(SwingHelper.createIcon(Launcher.class, "expand_icon.png", 20, 20));
+        expandButton.setToolTipText(tr("launcher.expandButton"));
         expandButton.setText(null);
         buttons.add(expandButton);
         buttons.setOpaque(false);
+        final JPanel leftBottomTopPanel = new JPanel(new GridBagLayout());
+        final JLabel leftBottomTopText = new JLabel(tr("launcher.launchTitle"));
+        leftBottomTopText.setFont(new Font(leftBottomTopText.getFont().getName(), Font.PLAIN, 16));
+        leftBottomTopPanel.add(leftBottomTopText);
+        leftBottomTopPanel.setUI(new BasicPanelUI());
+        leftBottomTopPanel.setBackground(new Color(32, 30, 98));
         final JPanel leftBottomPane = new JPanel(new BorderLayout());
+        leftBottomPane.add(leftBottomTopPanel, BorderLayout.NORTH);
         leftBottomPane.add(this.selectedPane, BorderLayout.CENTER);
         leftBottomPane.add(buttons, BorderLayout.EAST);
         leftBottomPane.setOpaque(false);
