@@ -60,6 +60,7 @@ public final class Launcher {
     private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     @Getter @Setter private Supplier<Window> mainWindowSupplier = new DefaultLauncherSupplier(this);
     @Getter private final Class<?> mainClass;
+    @Getter private final String[] args;
     @Getter private final File baseDir;
     @Getter private final Properties properties;
     @Getter private final InstanceList instances;
@@ -77,8 +78,8 @@ public final class Launcher {
      * @param baseDir the base directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull Class<?> mainClass, @NonNull File baseDir) throws IOException {
-        this(mainClass, baseDir, baseDir);
+    public Launcher(@NonNull Class<?> mainClass, @NonNull String[] args, @NonNull File baseDir) throws IOException {
+        this(mainClass, args, baseDir, baseDir);
     }
 
     /**
@@ -89,10 +90,11 @@ public final class Launcher {
      * @param configDir the config directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull Class<?> mainClass, @NonNull File baseDir, @NonNull File configDir) throws IOException {
+    public Launcher(@NonNull Class<?> mainClass, @NonNull String[] args, @NonNull File baseDir, @NonNull File configDir) throws IOException {
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Launcher", Locale.getDefault());
 
         this.mainClass = mainClass;
+        this.args = args;
         this.baseDir = baseDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
         this.instances = new InstanceList(this);
@@ -417,7 +419,7 @@ public final class Launcher {
             log.info("Using current directory " + dir.getAbsolutePath());
         }
 
-        return new Launcher(mainClass, dir);
+        return new Launcher(mainClass, args, dir);
     }
 
     /**
