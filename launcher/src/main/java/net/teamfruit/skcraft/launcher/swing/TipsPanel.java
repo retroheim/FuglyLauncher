@@ -1,4 +1,4 @@
-package com.skcraft.launcher.swing;
+package net.teamfruit.skcraft.launcher.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import com.skcraft.launcher.Launcher;
+import com.skcraft.launcher.swing.SwingHelper;
 
 import net.teamfruit.skcraft.launcher.Tip;
 import net.teamfruit.skcraft.launcher.util.ImageSizes;

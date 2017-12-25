@@ -1,4 +1,4 @@
-package com.skcraft.launcher.swing;
+package net.teamfruit.skcraft.launcher.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
+import com.skcraft.launcher.swing.SwingHelper;
 
 import lombok.Getter;
 import lombok.Setter;

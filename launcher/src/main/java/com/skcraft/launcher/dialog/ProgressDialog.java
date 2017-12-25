@@ -38,11 +38,11 @@ import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
-import com.skcraft.launcher.swing.TipsPanel;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.swing.TipsPanel;
 
 @Log
 public class ProgressDialog extends JDialog {

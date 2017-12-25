@@ -52,7 +52,6 @@ import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
 import com.skcraft.launcher.swing.FormPanel;
-import com.skcraft.launcher.swing.InstanceCellFactory;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.LinkButton;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
@@ -63,6 +62,7 @@ import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 
 /**
  * The login dialog.

@@ -24,8 +24,8 @@ import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.NonNull;
 import lombok.extern.java.Log;
-import net.teamfruit.skcraft.launcher.launcher.model.tips.TipInfo;
-import net.teamfruit.skcraft.launcher.launcher.model.tips.TipInfoList;
+import net.teamfruit.skcraft.launcher.model.tips.TipInfo;
+import net.teamfruit.skcraft.launcher.model.tips.TipInfoList;
 
 /**
  * Stores the list of tips.

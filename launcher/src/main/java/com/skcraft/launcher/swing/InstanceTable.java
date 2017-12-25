@@ -8,6 +8,8 @@ package com.skcraft.launcher.swing;
 
 import javax.swing.table.TableModel;
 
+import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
+
 public class InstanceTable extends DefaultTable {
 
 	public InstanceTable() {

@@ -4,7 +4,7 @@ import java.awt.Image;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import net.teamfruit.skcraft.launcher.launcher.model.tips.TipInfo;
+import net.teamfruit.skcraft.launcher.model.tips.TipInfo;
 
 @Data
 @EqualsAndHashCode(callSuper = true)

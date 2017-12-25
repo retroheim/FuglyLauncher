@@ -1,4 +1,4 @@
-package net.teamfruit.skcraft.launcher.launcher.model.tips;
+package net.teamfruit.skcraft.launcher.model.tips;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

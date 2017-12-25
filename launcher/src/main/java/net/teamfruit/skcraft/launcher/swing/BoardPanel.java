@@ -1,4 +1,4 @@
-package com.skcraft.launcher.swing;
+package net.teamfruit.skcraft.launcher.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

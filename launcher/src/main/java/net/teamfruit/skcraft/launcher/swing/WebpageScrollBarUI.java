@@ -1,4 +1,4 @@
-package com.skcraft.launcher.swing;
+package net.teamfruit.skcraft.launcher.swing;
 
 import java.awt.Adjustable;
 import java.awt.Color;

@@ -56,17 +56,12 @@ import com.skcraft.launcher.launch.LaunchListener;
 import com.skcraft.launcher.launch.LaunchOptions;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
 import com.skcraft.launcher.swing.ActionListeners;
-import com.skcraft.launcher.swing.BoardPanel;
 import com.skcraft.launcher.swing.DoubleClickToButtonAdapter;
-import com.skcraft.launcher.swing.InstanceCellFactory;
 import com.skcraft.launcher.swing.InstanceTable;
-import com.skcraft.launcher.swing.InstanceTableCellPanel;
 import com.skcraft.launcher.swing.InstanceTableModel;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
 import com.skcraft.launcher.swing.SwingHelper;
-import com.skcraft.launcher.swing.TipsPanel;
 import com.skcraft.launcher.swing.WebpagePanel;
-import com.skcraft.launcher.swing.WebpageScrollBarUI;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
@@ -75,6 +70,11 @@ import lombok.NonNull;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
+import net.teamfruit.skcraft.launcher.swing.BoardPanel;
+import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
+import net.teamfruit.skcraft.launcher.swing.InstanceTableCellPanel;
+import net.teamfruit.skcraft.launcher.swing.TipsPanel;
+import net.teamfruit.skcraft.launcher.swing.WebpageScrollBarUI;
 
 /**
  * The main launcher frame.
