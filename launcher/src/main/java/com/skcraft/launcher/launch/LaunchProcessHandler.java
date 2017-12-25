@@ -69,6 +69,7 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
             public void run() {
                 if (consoleFrame != null) {
                     consoleFrame.setProcess(null);
+			        consoleFrame.getClearLogButton().setEnabled(false);
                     consoleFrame.requestFocus();
                 }
             }

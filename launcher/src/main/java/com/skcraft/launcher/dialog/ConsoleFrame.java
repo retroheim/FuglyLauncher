@@ -47,6 +47,9 @@ public class ConsoleFrame extends JFrame {
 
     private boolean registeredGlobalLog = false;
 
+	@Getter private JButton clearLogButton;
+	@Getter private JButton pastebinButton;
+
     /**
      * Construct the frame.
      *
@@ -89,24 +92,24 @@ public class ConsoleFrame extends JFrame {
      * Add components to the frame.
      */
     private void initComponents() {
-        JButton pastebinButton = new JButton(SharedLocale.tr("console.uploadLog"));
-        JButton clearLogButton = new JButton(SharedLocale.tr("console.clearLog"));
+        this.pastebinButton = new JButton(SharedLocale.tr("console.uploadLog"));
+        this.clearLogButton = new JButton(SharedLocale.tr("console.clearLog"));
         buttonsPanel = new LinedBoxPanel(true);
 
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        buttonsPanel.addElement(pastebinButton);
-        buttonsPanel.addElement(clearLogButton);
+        buttonsPanel.addElement(this.pastebinButton);
+        buttonsPanel.addElement(this.clearLogButton);
 
         add(buttonsPanel, BorderLayout.NORTH);
         add(messageLog, BorderLayout.CENTER);
-        clearLogButton.addActionListener(new ActionListener() {
+        this.clearLogButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 messageLog.clear();
             }
         });
 
-        pastebinButton.addActionListener(new ActionListener() {
+        this.pastebinButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 pastebinLog();
