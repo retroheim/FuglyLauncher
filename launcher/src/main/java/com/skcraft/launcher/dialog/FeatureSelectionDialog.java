@@ -91,7 +91,7 @@ public class FeatureSelectionDialog extends JDialog {
         SwingHelper.removeOpaqueness(this.descText);
         this.descText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
 
-        this.splitPane.setDividerLocation(300);
+        this.splitPane.setDividerLocation(250);
         this.splitPane.setDividerSize(6);
         SwingHelper.flattenJSplitPane(this.splitPane);
 
