@@ -6,6 +6,15 @@
 
 package com.skcraft.launcher.update;
 
+import java.awt.Window;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.net.URL;
+import java.util.logging.Level;
+
+import javax.swing.JOptionPane;
+import javax.swing.event.SwingPropertyChangeSupport;
+
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -17,15 +26,12 @@ import com.skcraft.launcher.selfupdate.UpdateChecker;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
+
 import lombok.Getter;
+import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.relaunch.LauncherRelauncher;
 
-import javax.swing.*;
-import javax.swing.event.SwingPropertyChangeSupport;
-import java.awt.*;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.net.URL;
-
+@Log
 public class UpdateManager {
 
     @Getter
@@ -82,13 +88,19 @@ public class UpdateManager {
                     propertySupport.firePropertyChange("pendingUpdate", true, false);
                     UpdateManager.this.pendingUpdateUrl = null;
 
-                    SwingHelper.showMessageDialog(
-                            window,
-                            SharedLocale.tr("launcher.selfUpdateComplete"),
-                            SharedLocale.tr("launcher.selfUpdateCompleteTitle"),
-                            null,
-                            JOptionPane.INFORMATION_MESSAGE);
-                    System.exit(0);
+                    try {
+						new LauncherRelauncher(launcher, result).launch();
+						System.exit(0);
+					} catch (Throwable e) {
+						log.log(Level.WARNING, "Unable to relaunch, Please restart yourself: ", e);
+	                    SwingHelper.showMessageDialog(
+	                            window,
+	                            SharedLocale.tr("launcher.selfUpdateComplete"),
+	                            SharedLocale.tr("launcher.selfUpdateCompleteTitle"),
+	                            null,
+	                            JOptionPane.INFORMATION_MESSAGE);
+					}
+
                 }
 
                 @Override
@@ -98,9 +110,8 @@ public class UpdateManager {
 
             ProgressDialog.showProgress(window, future, SharedLocale.tr("launcher.selfUpdatingTitle"), SharedLocale.tr("launcher.selfUpdatingStatus"));
             SwingHelper.addErrorDialogCallback(window, future);
-        } else {
-            propertySupport.firePropertyChange("pendingUpdate", false, false);
-        }
+        } else
+			propertySupport.firePropertyChange("pendingUpdate", false, false);
     }
 
     private void requestUpdate(URL url) {
