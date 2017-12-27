@@ -6,31 +6,28 @@
 
 package com.skcraft.launcher.swing;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.skcraft.launcher.LauncherException;
-import com.skcraft.launcher.util.SharedLocale;
-import com.skcraft.launcher.util.SwingExecutor;
-import lombok.NonNull;
-import lombok.extern.java.Log;
+import static com.skcraft.launcher.util.SharedLocale.*;
+import static org.apache.commons.io.IOUtils.*;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -40,8 +37,43 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
-import static com.skcraft.launcher.util.SharedLocale.tr;
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import javax.imageio.ImageIO;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.text.JTextComponent;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.skcraft.launcher.LauncherException;
+import com.skcraft.launcher.util.PastebinPoster;
+import com.skcraft.launcher.util.SharedLocale;
+import com.skcraft.launcher.util.SwingExecutor;
+
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.extern.java.Log;
 
 /**
  * Swing utility methods.
@@ -87,7 +119,7 @@ public final class SwingHelper {
      * @param url the URL
      * @param parentComponent the component from which to show any errors
      */
-    public static void openURL(@NonNull String url, @NonNull Component parentComponent) {
+    public static void openURL(@NonNull String url, Component parentComponent) {
         try {
             openURL(new URL(url), parentComponent);
         } catch (MalformedURLException e) {
@@ -152,6 +184,8 @@ public final class SwingHelper {
                 detailsText, JOptionPane.ERROR_MESSAGE);
     }
 
+    private static @Setter URL supportURL;
+
     /**
      * Show a message dialog using
      * {@link javax.swing.JOptionPane#showMessageDialog(java.awt.Component, Object, String, int)}.
@@ -193,14 +227,58 @@ public final class SwingHelper {
                 textArea.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
 
                 JScrollPane scrollPane = new JScrollPane(textArea);
-                scrollPane.setPreferredSize(new Dimension(350, 120));
+                scrollPane.setPreferredSize(new Dimension(500, 320));
                 panel.add(scrollPane, BorderLayout.CENTER);
+
+                {
+	                final LinkButton supportButton = new LinkButton(SharedLocale.tr("console.support"));
+	                final JButton pastebinButton = new JButton(SharedLocale.tr("console.uploadLog"));
+	                final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
+
+	                buttonsPanel.setBorder(BorderFactory.createEmptyBorder());
+	                buttonsPanel.addElement(supportButton);
+	                buttonsPanel.addElement(pastebinButton);
+
+	                JPanel rightPanel = new JPanel(new BorderLayout());
+	                rightPanel.add(buttonsPanel, BorderLayout.EAST);
+	                panel.add(rightPanel, BorderLayout.SOUTH);
+
+	                supportButton.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							if (supportURL!=null)
+								SwingHelper.openURL(supportURL, supportButton);
+						}
+					});
+
+	                pastebinButton.addActionListener(new ActionListener() {
+	                    @Override
+	                    public void actionPerformed(ActionEvent e) {
+	                        String text = detailsText;
+	                        // Not really bytes!
+	                        log.info(tr("console.pasteUploading", text.length()));
+
+	                        PastebinPoster.paste(text, new PastebinPoster.PasteCallback() {
+	                            @Override
+	                            public void handleSuccess(String url) {
+	                                log.info(tr("console.pasteUploaded", url));
+	                                SwingHelper.openURL(url, pastebinButton);
+	                            }
+
+	                            @Override
+	                            public void handleError(String err) {
+	                                log.warning(tr("console.pasteFailed", err));
+	                            }
+	                        });
+	                    }
+	                });
+                }
             }
 
             JOptionPane.showMessageDialog(
                     parentComponent, panel, title, messageType);
-        } else {
-            // Call method again from the Event Dispatch Thread
+        } else
+			// Call method again from the Event Dispatch Thread
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
@@ -215,7 +293,6 @@ public final class SwingHelper {
             } catch (InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
-        }
     }
 
     /**
@@ -229,11 +306,11 @@ public final class SwingHelper {
     public static boolean confirmDialog(final Component parentComponent,
                                         @NonNull final String message,
                                         @NonNull final String title) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            return JOptionPane.showConfirmDialog(
+        if (SwingUtilities.isEventDispatchThread())
+			return JOptionPane.showConfirmDialog(
                     parentComponent, message, title, JOptionPane.YES_NO_OPTION) ==
                     JOptionPane.YES_OPTION;
-        } else {
+		else {
             // Use an AtomicBoolean to pass the result back from the
             // Event Dispatcher Thread
             final AtomicBoolean yesSelected = new AtomicBoolean();
@@ -264,9 +341,8 @@ public final class SwingHelper {
         double widest = 0;
         for (Component comp : component) {
             Dimension dim = comp.getPreferredSize();
-            if (dim.getWidth() > widest) {
-                widest = dim.getWidth();
-            }
+            if (dim.getWidth() > widest)
+				widest = dim.getWidth();
         }
 
         for (Component comp : component) {
@@ -281,23 +357,21 @@ public final class SwingHelper {
      * @param components list of components
      */
     public static void removeOpaqueness(@NonNull Component ... components) {
-        for (Component component : components) {
-            if (component instanceof JComponent) {
+        for (Component component : components)
+			if (component instanceof JComponent) {
                 JComponent jComponent = (JComponent) component;
                 jComponent.setOpaque(false);
                 removeOpaqueness(jComponent.getComponents());
             }
-        }
     }
 
     public static Image createImage(Class<?> clazz, String name) {
         URL resource = clazz.getResource(name);
-        if (resource != null) {
-            try {
+        if (resource != null)
+			try {
                 return ImageIO.read(resource);
             } catch (IOException e) {
 			}
-        }
         log.log(Level.WARNING, "Failed to read image from resource: " + name);
         return null;
     }
@@ -308,9 +382,9 @@ public final class SwingHelper {
     		resource = new URL(url);
         } catch (MalformedURLException e) {
     	}
-        if (resource != null) {
-            return Toolkit.getDefaultToolkit().createImage(resource);
-        } else {
+        if (resource != null)
+			return Toolkit.getDefaultToolkit().createImage(resource);
+		else {
             log.log(Level.WARNING, "Failed to read image from url: " + url);
             return null;
         }
@@ -318,29 +392,26 @@ public final class SwingHelper {
 
     public static Icon createIcon(Class<?> clazz, String name) {
         Image image = createImage(clazz, name);
-        if (image != null) {
-            return new ImageIcon(image);
-        } else {
-            return new EmptyIcon(16, 16);
-        }
+        if (image != null)
+			return new ImageIcon(image);
+		else
+			return new EmptyIcon(16, 16);
     }
 
     public static Icon createIcon(Class<?> clazz, String name, int width, int height) {
         Image image = createImage(clazz, name);
-        if (image != null) {
-            return new ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH));
-        } else {
-            return new EmptyIcon(width, height);
-        }
+        if (image != null)
+			return new ImageIcon(image.getScaledInstance(width, height, Image.SCALE_SMOOTH));
+		else
+			return new EmptyIcon(width, height);
     }
 
     public static BufferedImage readBufferedImage(Class<?> clazz, String path) {
         InputStream in = null;
         try {
             in = clazz.getResourceAsStream(path);
-            if (in != null) {
-                return ImageIO.read(in);
-            }
+            if (in != null)
+				return ImageIO.read(in);
         } catch (IOException e) {
         } finally {
             closeQuietly(in);
@@ -350,9 +421,8 @@ public final class SwingHelper {
 
     public static void setFrameIcon(JFrame frame, Class<?> clazz, String path) {
         BufferedImage image = readBufferedImage(clazz, path);
-        if (image != null) {
-            frame.setIconImage(image);
-        }
+        if (image != null)
+			frame.setIconImage(image);
     }
 
     /**
@@ -366,9 +436,8 @@ public final class SwingHelper {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (component instanceof JTextComponent) {
-                    ((JTextComponent) component).selectAll();
-                }
+                if (component instanceof JTextComponent)
+					((JTextComponent) component).selectAll();
                 component.requestFocusInWindow();
             }
         });
@@ -398,9 +467,8 @@ public final class SwingHelper {
 
             @Override
             public void onFailure(Throwable t) {
-                if (t instanceof InterruptedException || t instanceof CancellationException) {
-                    return;
-                }
+                if (t instanceof InterruptedException || t instanceof CancellationException)
+					return;
 
                 String message;
                 if (t instanceof LauncherException) {
@@ -408,9 +476,8 @@ public final class SwingHelper {
                     t = t.getCause();
                 } else {
                     message = t.getLocalizedMessage();
-                    if (message == null) {
-                        message = SharedLocale.tr("errors.genericError");
-                    }
+                    if (message == null)
+						message = SharedLocale.tr("errors.genericError");
                 }
                 log.log(Level.WARNING, "Task failed", t);
                 SwingHelper.showErrorDialog(owner, message, SharedLocale.tr("errorTitle"), t);
@@ -447,17 +514,15 @@ public final class SwingHelper {
         List<String> values = Lists.newArrayList();
         for (String token : tokens) {
             String value = token.trim();
-            if (!value.isEmpty()) {
-                values.add(value);
-            }
+            if (!value.isEmpty())
+				values.add(value);
         }
         return values;
     }
 
     public static void addActionListeners(AbstractButton button, ActionListener[] listeners) {
-        for (ActionListener listener : listeners) {
-            button.addActionListener(listener);
-        }
+        for (ActionListener listener : listeners)
+			button.addActionListener(listener);
     }
 
     public static boolean setLookAndFeel(String lookAndFeel) {

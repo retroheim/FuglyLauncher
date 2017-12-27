@@ -19,6 +19,7 @@ import com.skcraft.launcher.swing.MessageLog;
 
 import lombok.NonNull;
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.launch.ExitHandler;
 
 /**
  * Handles post-process creation during launch.
@@ -54,7 +55,12 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
             });
 
             // Wait for the process to end
-            process.waitFor();
+            int exitcode = process.waitFor();
+	        ExitHandler exitHandler = new ExitHandler(exitcode, consoleFrame.getMessageLog());
+	        if (exitHandler.handleRestart())
+	        	;
+	        else
+	        	exitHandler.handleCrashReport();
         } catch (InterruptedException e) {
             // Orphan process
         } catch (InvocationTargetException e) {

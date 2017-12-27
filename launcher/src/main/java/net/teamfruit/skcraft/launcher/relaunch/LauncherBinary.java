@@ -16,6 +16,8 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.skcraft.launcher.LauncherUtils;
+
 @Log
 public class LauncherBinary implements Comparable<LauncherBinary> {
 
@@ -61,11 +63,11 @@ public class LauncherBinary implements Comparable<LauncherBinary> {
                 jos = new JarOutputStream(bos);
                 Pack200.newUnpacker().unpack(bis, jos);
             } finally {
-                closeQuietly(jos);
-                closeQuietly(bos);
-                closeQuietly(fos);
-                closeQuietly(bis);
-                closeQuietly(fis);
+                LauncherUtils.closeQuietly(jos);
+                LauncherUtils.closeQuietly(bos);
+                LauncherUtils.closeQuietly(fos);
+                LauncherUtils.closeQuietly(bis);
+                LauncherUtils.closeQuietly(fis);
             }
 
             path.delete();
@@ -73,15 +75,6 @@ public class LauncherBinary implements Comparable<LauncherBinary> {
             return outputPath;
         } else {
             return path;
-        }
-    }
-
-    private static void closeQuietly(Closeable closeable) {
-        try {
-            if (closeable != null) {
-                closeable.close();
-            }
-        } catch (IOException e) {
         }
     }
 

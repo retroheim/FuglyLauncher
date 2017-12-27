@@ -97,6 +97,9 @@ public final class Launcher {
         this.args = args;
         this.baseDir = baseDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
+        try {
+        	SwingHelper.setSupportURL(getSupportURL());
+        } catch(Exception e) {}
         this.instances = new InstanceList(this);
         this.tips = new TipList(this);
         this.assets = new AssetsRoot(new File(baseDir, "assets"));
@@ -325,6 +328,21 @@ public final class Launcher {
         try {
             return HttpRequest.url(
                     String.format(getProperties().getProperty("tipsUrl"),
+                            URLEncoder.encode(getVersion(), "UTF-8")));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Get the support URL.
+     *
+     * @return the support URL
+     */
+    public URL getSupportURL() {
+        try {
+            return HttpRequest.url(
+                    String.format(getProperties().getProperty("supportUrl"),
                             URLEncoder.encode(getVersion(), "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);

@@ -14,7 +14,7 @@ import java.net.URLEncoder;
 public class PastebinPoster {
     private static final int CONNECT_TIMEOUT = 5000;
     private static final int READ_TIMEOUT = 5000;
-    
+
     public static void paste(String code, PasteCallback callback) {
         PasteProcessor processor = new PasteProcessor(code, callback);
         Thread thread = new Thread(processor);
@@ -25,22 +25,22 @@ public class PastebinPoster {
         public void handleSuccess(String url);
         public void handleError(String err);
     }
-    
+
     private static class PasteProcessor implements Runnable {
         private String code;
         private PasteCallback callback;
-        
+
         public PasteProcessor(String code, PasteCallback callback) {
             this.code = code;
             this.callback = callback;
         }
-        
+
         @Override
         public void run() {
             HttpURLConnection conn = null;
-            OutputStream out = null; 
+            OutputStream out = null;
             InputStream in = null;
-            
+
             try {
                 URL url = new URL("http://pastebin.com/api/api_post.php");
                 conn = (HttpURLConnection) url.openConnection();
@@ -51,19 +51,19 @@ public class PastebinPoster {
                 conn.setInstanceFollowRedirects(false);
                 conn.setDoOutput(true);
                 out = conn.getOutputStream();
-                
+
                 out.write(("api_option=paste"
                         + "&api_dev_key=" + URLEncoder.encode("4867eae74c6990dbdef07c543cf8f805", "utf-8")
                         + "&api_paste_code=" + URLEncoder.encode(code, "utf-8")
-                        + "&api_paste_private=" + URLEncoder.encode("0", "utf-8")
+                        + "&api_paste_private=" + URLEncoder.encode("1", "utf-8")
                         + "&api_paste_name=" + URLEncoder.encode("", "utf-8")
                         + "&api_paste_expire_date=" + URLEncoder.encode("1D", "utf-8")
                         + "&api_paste_format=" + URLEncoder.encode("text", "utf-8")
                         + "&api_user_key=" + URLEncoder.encode("", "utf-8")).getBytes());
                 out.flush();
                 out.close();
-                
-                if (conn.getResponseCode() == 200) {     
+
+                if (conn.getResponseCode() == 200) {
                     in = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(in));
                     String line;
@@ -73,9 +73,9 @@ public class PastebinPoster {
                         response.append("\r\n");
                     }
                     reader.close();
-                    
+
                     String result = response.toString().trim();
-                    
+
                     if (result.matches("^https?://.*")) {
                         callback.handleSuccess(result.trim());
                     } else {
@@ -108,7 +108,7 @@ public class PastebinPoster {
                 }
             }
         }
-        
+
     }
-    
+
 }
