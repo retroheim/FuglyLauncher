@@ -580,7 +580,7 @@ public class LauncherFrame extends JFrame {
         public void instancesUpdated() {
             final LauncherFrame frame = this.frameRef.get();
             if (frame != null)
-				frame.instancesModel.update();
+				frame.loadInstances();
         }
 
         @Override
