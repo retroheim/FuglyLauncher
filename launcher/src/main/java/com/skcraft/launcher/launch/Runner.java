@@ -6,29 +6,8 @@
 
 package com.skcraft.launcher.launch;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
-import com.google.common.io.Files;
-import com.skcraft.concurrency.DefaultProgress;
-import com.skcraft.concurrency.ProgressObservable;
-import com.skcraft.launcher.*;
-import com.skcraft.launcher.auth.Session;
-import com.skcraft.launcher.install.ZipExtract;
-import com.skcraft.launcher.model.minecraft.AssetsIndex;
-import com.skcraft.launcher.model.minecraft.Library;
-import com.skcraft.launcher.model.minecraft.VersionManifest;
-import com.skcraft.launcher.persistence.Persistence;
-import com.skcraft.launcher.util.Environment;
-import com.skcraft.launcher.util.Platform;
-import com.skcraft.launcher.util.SharedLocale;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.extern.java.Log;
-import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
-
-import org.apache.commons.lang.text.StrSubstitutor;
+import static com.skcraft.launcher.LauncherUtils.*;
+import static com.skcraft.launcher.util.SharedLocale.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -38,8 +17,34 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static com.skcraft.launcher.LauncherUtils.checkInterrupted;
-import static com.skcraft.launcher.util.SharedLocale.tr;
+import org.apache.commons.lang.text.StrSubstitutor;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
+import com.google.common.io.Files;
+import com.skcraft.concurrency.DefaultProgress;
+import com.skcraft.concurrency.ProgressObservable;
+import com.skcraft.launcher.AssetsRoot;
+import com.skcraft.launcher.Configuration;
+import com.skcraft.launcher.Instance;
+import com.skcraft.launcher.Launcher;
+import com.skcraft.launcher.LauncherException;
+import com.skcraft.launcher.auth.Session;
+import com.skcraft.launcher.install.ZipExtract;
+import com.skcraft.launcher.model.minecraft.AssetsIndex;
+import com.skcraft.launcher.model.minecraft.Library;
+import com.skcraft.launcher.model.minecraft.VersionManifest;
+import com.skcraft.launcher.persistence.Persistence;
+import com.skcraft.launcher.util.Environment;
+import com.skcraft.launcher.util.Platform;
+import com.skcraft.launcher.util.SharedLocale;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 /**
  * Handles the launching of an instance.
@@ -88,17 +93,15 @@ public class Runner implements Callable<Process>, ProgressObservable {
      */
     private File getJarPath() {
         File jarPath = instance.getCustomJarPath();
-        if (!jarPath.exists()) {
-            jarPath = launcher.getJarPath(versionManifest);
-        }
+        if (!jarPath.exists())
+			jarPath = launcher.getJarPath(versionManifest);
         return jarPath;
     }
 
     @Override
     public Process call() throws Exception {
-        if (!instance.isInstalled()) {
-            throw new LauncherException("Update required", SharedLocale.tr("runner.updateRequired"));
-        }
+        if (!instance.isInstalled())
+			throw new LauncherException("Update required", SharedLocale.tr("runner.updateRequired"));
 
         config = launcher.getConfig();
         builder = new JavaProcessBuilder();
@@ -144,6 +147,7 @@ public class Runner implements Callable<Process>, ProgressObservable {
         addWindowArgs();
         addPlatformArgs();
         addLegacyArgs();
+        addLauncherArgs();
 
         builder.classPath(getJarPath());
         builder.setMainClass(versionManifest.getMainClass());
@@ -181,9 +185,8 @@ public class Runner implements Callable<Process>, ProgressObservable {
         }
 
         // Windows arguments
-        if (getEnvironment().getPlatform() == Platform.WINDOWS) {
-            builder.getFlags().add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
-        }
+        if (getEnvironment().getPlatform() == Platform.WINDOWS)
+			builder.getFlags().add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
     }
 
     /**
@@ -192,9 +195,8 @@ public class Runner implements Callable<Process>, ProgressObservable {
     private void addLibraries() throws LauncherException {
         // Add libraries to classpath or extract the libraries as necessary
         for (Library library : versionManifest.getLibraries()) {
-            if (!library.matches(environment)) {
-                continue;
-            }
+            if (!library.matches(environment))
+				continue;
 
             File path = new File(launcher.getLibrariesDir(), library.getPath(environment));
 
@@ -204,9 +206,8 @@ public class Runner implements Callable<Process>, ProgressObservable {
                     ZipExtract zipExtract = new ZipExtract(Files.asByteSource(path), extractDir);
                     zipExtract.setExclude(extract.getExclude());
                     zipExtract.run();
-                } else {
-                    builder.classPath(path);
-                }
+                } else
+					builder.classPath(path);
             } else {
                 instance.setInstalled(false);
                 Persistence.commitAndForget(instance);
@@ -228,42 +229,35 @@ public class Runner implements Callable<Process>, ProgressObservable {
         int maxMemory = config.getMaxMemory();
         int permGen = config.getPermGen();
 
-        if (minMemory <= 0) {
-            minMemory = 1024;
-        }
+        if (minMemory <= 0)
+			minMemory = 1024;
 
-        if (maxMemory <= 0) {
-            maxMemory = 1024;
-        }
+        if (maxMemory <= 0)
+			maxMemory = 1024;
 
-        if (permGen <= 0) {
-            permGen = 128;
-        }
+        if (permGen <= 0)
+			permGen = 128;
 
-        if (permGen <= 64) {
-            permGen = 64;
-        }
+        if (permGen <= 64)
+			permGen = 64;
 
-        if (minMemory > maxMemory) {
-            maxMemory = minMemory;
-        }
+        if (minMemory > maxMemory)
+			maxMemory = minMemory;
 
         builder.setMinMemory(minMemory);
         builder.setMaxMemory(maxMemory);
         builder.setPermGen(permGen);
 
         String rawJvmPath = config.getJvmPath();
-        if (!Strings.isNullOrEmpty(rawJvmPath)) {
-            builder.tryJvmPath(new File(rawJvmPath));
-        }
+        if (!Strings.isNullOrEmpty(rawJvmPath))
+			builder.tryJvmPath(new File(rawJvmPath));
 
         String rawJvmArgs = config.getJvmArgs();
         if (!Strings.isNullOrEmpty(rawJvmArgs)) {
             List<String> flags = builder.getFlags();
 
-            for (String arg : JavaProcessBuilder.splitArgs(rawJvmArgs)) {
-                flags.add(arg);
-            }
+            for (String arg : JavaProcessBuilder.splitArgs(rawJvmArgs))
+				flags.add(arg);
         }
     }
 
@@ -277,9 +271,8 @@ public class Runner implements Callable<Process>, ProgressObservable {
 
         String[] rawArgs = versionManifest.getMinecraftArguments().split(" +");
         StrSubstitutor substitutor = new StrSubstitutor(getCommandSubstitutions());
-        for (String arg : rawArgs) {
-            args.add(substitutor.replace(arg));
-        }
+        for (String arg : rawArgs)
+			args.add(substitutor.replace(arg));
     }
 
     /**
@@ -360,6 +353,17 @@ public class Runner implements Callable<Process>, ProgressObservable {
      */
     private void addLegacyArgs() {
         builder.getFlags().add("-Dminecraft.applet.TargetDirectory=" + instance.getContentDir());
+    }
+
+    /**
+     * Add launcher arguments.
+     */
+    private void addLauncherArgs() {
+    	List<String> flags = builder.getFlags();
+        flags.add("-Dminecraft.launcher.name=" + launcher.getProperties().getProperty("name"));
+        flags.add("-Dminecraft.launcher.version=" + launcher.getProperties().getProperty("version"));
+        flags.add("-Dminecraft.launcher.instance.name=" + instance.getName());
+        flags.add("-Dminecraft.launcher.instance.version=" + instance.getVersion());
     }
 
     /**
