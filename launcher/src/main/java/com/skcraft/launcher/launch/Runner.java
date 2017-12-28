@@ -26,6 +26,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
+
 import org.apache.commons.lang.text.StrSubstitutor;
 
 import java.io.File;
@@ -60,6 +62,7 @@ public class Runner implements Callable<Process>, ProgressObservable {
     private Configuration config;
     private JavaProcessBuilder builder;
     private AssetsRoot assetsRoot;
+    private ConnectServerInfo server;
 
     /**
      * Create a new instance launcher.
@@ -70,11 +73,12 @@ public class Runner implements Callable<Process>, ProgressObservable {
      * @param extractDir the directory to extract to
      */
     public Runner(@NonNull Launcher launcher, @NonNull Instance instance,
-                  @NonNull Session session, @NonNull File extractDir) {
+                  @NonNull Session session, @NonNull File extractDir, ConnectServerInfo server) {
         this.launcher = launcher;
         this.instance = instance;
         this.session = session;
         this.extractDir = extractDir;
+        this.server = server;
     }
 
     /**
@@ -312,7 +316,17 @@ public class Runner implements Callable<Process>, ProgressObservable {
     private void addServerArgs() {
         List<String> args = builder.getArgs();
 
-        if (config.isServerEnabled()) {
+        if (server!=null) {
+            String host = server.getServerHost();
+            int port = server.getServerPort();
+
+            if (!Strings.isNullOrEmpty(host) && port > 0 && port < 65535) {
+                args.add("--server");
+                args.add(host);
+                args.add("--port");
+                args.add(String.valueOf(port));
+            }
+        } else if (config.isServerEnabled()) {
             String host = config.getServerHost();
             int port = config.getServerPort();
 

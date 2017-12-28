@@ -14,6 +14,8 @@ import com.google.common.io.ByteSink;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Closer;
 import com.google.common.io.Files;
+
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 
@@ -37,7 +39,7 @@ import java.util.logging.Level;
 @Log
 public final class Persistence {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final @Getter ObjectMapper mapper = new ObjectMapper();
     private static final WeakHashMap<Object, ByteSink> bound = new WeakHashMap<Object, ByteSink>();
     public static final DefaultPrettyPrinter L2F_LIST_PRETTY_PRINTER;
 

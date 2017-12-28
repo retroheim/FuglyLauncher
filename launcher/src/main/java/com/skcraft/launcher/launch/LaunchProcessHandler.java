@@ -55,12 +55,7 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
             });
 
             // Wait for the process to end
-            int exitcode = process.waitFor();
-	        ExitHandler exitHandler = new ExitHandler(exitcode, consoleFrame.getMessageLog());
-	        if (exitHandler.handleRestart())
-	        	;
-	        else
-	        	exitHandler.handleCrashReport();
+            process.waitFor();
         } catch (InterruptedException e) {
             // Orphan process
         } catch (InvocationTargetException e) {
