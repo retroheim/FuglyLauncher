@@ -74,8 +74,8 @@ public class FeatureSelectionDialog extends JDialog {
     private void initComponents() {
         this.componentsTable.setModel(new FeatureTableModel(this.features) {
         	@Override
-        	protected boolean checkFeature(Feature feature) {
-        		if (!isSupportedOS(feature.getDescription()))
+        	protected boolean checkFeature(Feature feature, boolean newvalue) {
+        		if (newvalue&&!isSupportedOS(feature.getDescription()))
         			if (!SwingHelper.confirmDialog(componentsTable, SharedLocale.tr("features.intro.unsupportedOS"), SharedLocale.tr("features.intro.unsupportedOSTitle")))
         				return false;
         		return true;

@@ -47,9 +47,10 @@ public class FeatureTableModel extends AbstractTableModel {
 	public void setValueAt(Object value, int rowIndex, int columnIndex) {
 		switch (columnIndex) {
 			case 0:
+				boolean newvalue = (boolean) (Boolean) value;
 				Feature feature = features.get(rowIndex);
-				if (checkFeature(feature))
-					feature.setSelected((boolean) (Boolean) value);
+				if (checkFeature(feature, newvalue))
+					feature.setSelected(newvalue);
 				break;
 			case 1:
 			default:
@@ -57,7 +58,7 @@ public class FeatureTableModel extends AbstractTableModel {
 		}
 	}
 
-	protected boolean checkFeature(Feature feature) {
+	protected boolean checkFeature(Feature feature, boolean newvalue) {
 		return true;
 	}
 
