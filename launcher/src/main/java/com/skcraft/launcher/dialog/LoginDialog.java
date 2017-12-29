@@ -62,6 +62,7 @@ import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 
 /**
@@ -70,8 +71,8 @@ import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 public class LoginDialog extends JDialog {
 
     private final Launcher launcher;
-    private Instance instance;
     @Getter private final AccountList accounts;
+    private LaunchOptions options;
     @Getter private Session session;
     @Getter private boolean connectServer;
 
@@ -95,12 +96,12 @@ public class LoginDialog extends JDialog {
      * @param launcher the launcher
      * @param instance
      */
-    public LoginDialog(final Window owner, @NonNull final Launcher launcher, final Instance instance) {
+    public LoginDialog(final Window owner, @NonNull final Launcher launcher, final LaunchOptions options) {
         super(owner, ModalityType.DOCUMENT_MODAL);
 
         this.launcher = launcher;
         this.accounts = launcher.getAccounts();
-        this.instance = instance;
+        this.options = options;
 
         setTitle(SharedLocale.tr("login.title"));
         initComponents();
@@ -142,6 +143,8 @@ public class LoginDialog extends JDialog {
         this.formPanel.addRow(new JLabel(), this.rememberPassCheck);
         this.buttonsPanel.setBorder(BorderFactory.createEmptyBorder(26, 13, 13, 13));
 
+        Instance instance = options.getInstance();
+
         /*
         if (this.launcher.getConfig().isOfflineEnabled()) {
             this.buttonsPanel.addElement(this.offlineButton);
@@ -150,17 +153,22 @@ public class LoginDialog extends JDialog {
         */
         //this.buttonsPanel.addElement(this.recoverButton);
         this.buttonsPanel.addGlue();
+        if (instance!=null) {
+        	ConnectServerInfo server = instance.getServer();
+        	if (server!=null&&server.isValid())
+        		this.buttonsPanel.addElement(this.loginServerButton);
+        }
         this.buttonsPanel.addElement(this.loginButton);
         this.buttonsPanel.addElement(this.cancelButton);
 
-        if (this.instance!=null) {
-	        final JPanel title = new InstanceCellFactory().getCellComponent(null, this.instance, false);
+        if (instance!=null) {
+	        final JPanel title = new InstanceCellFactory().getCellComponent(null, instance, false);
 	        add(title, BorderLayout.NORTH);
         }
         add(this.formPanel, BorderLayout.CENTER);
         add(this.buttonsPanel, BorderLayout.SOUTH);
 
-        getRootPane().setDefaultButton(this.loginButton);
+        getRootPane().setDefaultButton(loginServerButton.getParent()!=null?this.loginServerButton:this.loginButton);
 
         this.passwordText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
 
@@ -363,7 +371,7 @@ public class LoginDialog extends JDialog {
     }
 
     public static LoginDialog showLoginRequest(final LaunchOptions options, final Launcher launcher) {
-        final LoginDialog dialog = new LoginDialog(options.getWindow(), launcher, options.getInstance());
+        final LoginDialog dialog = new LoginDialog(options.getWindow(), launcher, options);
         dialog.setVisible(true);
         return dialog;
     }
