@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.skcraft.launcher.model.modpack.LaunchModifier;
 import com.skcraft.launcher.model.modpack.Manifest;
 import lombok.Data;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class BuilderConfig {
     private String title;
     private String thumb;
     private String gameVersion;
+    private ConnectServerInfo server;
     @JsonProperty("launch")
     private LaunchModifier launchModifier = new LaunchModifier();
     private List<FeaturePattern> features = Lists.newArrayList();
@@ -46,6 +48,7 @@ public class BuilderConfig {
         manifest.updateTitle(getTitle());
         manifest.updateThumb(getThumb());
         manifest.updateGameVersion(getGameVersion());
+        manifest.setServer(getServer());
         manifest.setLaunchModifier(getLaunchModifier());
     }
 

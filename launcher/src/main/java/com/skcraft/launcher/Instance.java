@@ -13,6 +13,7 @@ import com.skcraft.launcher.launch.JavaProcessBuilder;
 import com.skcraft.launcher.model.modpack.LaunchModifier;
 
 import lombok.Data;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class Instance implements Comparable<Instance> {
     private String thumb;
     private String name;
     private String version;
+    private ConnectServerInfo server;
     private boolean updatePending;
     private boolean installed;
     private Date lastAccessed;

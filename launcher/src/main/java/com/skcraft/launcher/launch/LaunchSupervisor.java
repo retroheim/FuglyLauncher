@@ -54,7 +54,7 @@ public class LaunchSupervisor {
 		final Window window = options.getWindow();
 		final Instance instance = options.getInstance();
 		final LaunchListener listener = options.getListener();
-		final ConnectServerInfo server = options.getServer();
+		ConnectServerInfo server = options.getServer();
 
 		try {
 			boolean update = options.getUpdatePolicy().isUpdateEnabled()&&instance.isUpdatePending();
@@ -69,7 +69,10 @@ public class LaunchSupervisor {
 			if (options.getSession()!=null)
 				session = options.getSession();
 			else {
-				session = LoginDialog.showLoginRequest(options, launcher);
+				LoginDialog dialog = LoginDialog.showLoginRequest(options, launcher);
+				session = dialog.getSession();
+				if (dialog.isConnectServer())
+					server = instance.getServer();
 				if (session==null)
 					return;
 			}
@@ -103,10 +106,11 @@ public class LaunchSupervisor {
 				}, SwingExecutor.INSTANCE);
 
 				// On success, launch also
+				final ConnectServerInfo connectserver = server;
 				Futures.addCallback(future, new FutureCallback<Instance>() {
 					@Override
 					public void onSuccess(Instance result) {
-						launch(window, instance, session, listener, server);
+						launch(window, instance, session, listener, connectserver);
 					}
 
 					@Override

@@ -73,11 +73,13 @@ public class LoginDialog extends JDialog {
     private Instance instance;
     @Getter private final AccountList accounts;
     @Getter private Session session;
+    @Getter private boolean connectServer;
 
     private final JComboBox<Account> idCombo = new JComboBox<Account>();
     private final JPasswordField passwordText = new JPasswordField();
     private final JCheckBox rememberIdCheck = new JCheckBox(SharedLocale.tr("login.rememberId"));
     private final JCheckBox rememberPassCheck = new JCheckBox(SharedLocale.tr("login.rememberPassword"));
+    private final JButton loginServerButton = new JButton(SharedLocale.tr("login.loginServer"));
     private final JButton loginButton = new JButton(SharedLocale.tr("login.login"));
     private final LinkButton recoverButton = new LinkButton(SharedLocale.tr("login.recoverAccount"));
     private final JButton offlineButton = new JButton(SharedLocale.tr("login.playOffline"));
@@ -132,6 +134,7 @@ public class LoginDialog extends JDialog {
         this.idCombo.getEditor().selectAll();
 
         this.loginButton.setFont(this.loginButton.getFont().deriveFont(Font.BOLD));
+        this.loginServerButton.setFont(this.loginServerButton.getFont().deriveFont(Font.BOLD));
 
         this.formPanel.addRow(new JLabel(SharedLocale.tr("login.idEmail")), this.idCombo);
         this.formPanel.addRow(new JLabel(SharedLocale.tr("login.password")), this.passwordText);
@@ -178,9 +181,18 @@ public class LoginDialog extends JDialog {
         this.recoverButton.addActionListener(
                 ActionListeners.openURL(this.recoverButton, this.launcher.getProperties().getProperty("resetPasswordUrl")));
 
+        this.loginServerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+            	connectServer = true;
+                prepareLogin();
+            }
+        });
+
         this.loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
+            	connectServer = false;
                 prepareLogin();
             }
         });
@@ -350,10 +362,10 @@ public class LoginDialog extends JDialog {
         return dialog.getSession();
     }
 
-    public static Session showLoginRequest(final LaunchOptions options, final Launcher launcher) {
+    public static LoginDialog showLoginRequest(final LaunchOptions options, final Launcher launcher) {
         final LoginDialog dialog = new LoginDialog(options.getWindow(), launcher, options.getInstance());
         dialog.setVisible(true);
-        return dialog.getSession();
+        return dialog;
     }
 
     private class LoginCallable implements Callable<Session>,ProgressObservable {

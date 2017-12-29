@@ -18,6 +18,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,6 +36,7 @@ public class Manifest extends BaseManifest {
     private String librariesLocation;
     private String objectsLocation;
     private String gameVersion;
+    private ConnectServerInfo server;
     @JsonProperty("launch")
     private LaunchModifier launchModifier;
     private List<Feature> features = new ArrayList<Feature>();
@@ -96,5 +98,6 @@ public class Manifest extends BaseManifest {
 
     public void update(Instance instance) {
         instance.setLaunchModifier(getLaunchModifier());
+        instance.setServer(getServer());
     }
 }
