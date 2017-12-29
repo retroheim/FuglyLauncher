@@ -29,16 +29,22 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.skcraft.launcher.model.modpack.Feature;
+import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
 import com.skcraft.launcher.swing.CheckboxTable;
 import com.skcraft.launcher.swing.FeatureTableModel;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.swing.TextFieldPopupMenu;
+import com.skcraft.launcher.util.Environment;
+import com.skcraft.launcher.util.Platform;
 import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.model.modpack.SupportOS;
 
 public class FeatureSelectionDialog extends JDialog {
 
@@ -66,7 +72,32 @@ public class FeatureSelectionDialog extends JDialog {
     }
 
     private void initComponents() {
-        this.componentsTable.setModel(new FeatureTableModel(this.features));
+        this.componentsTable.setModel(new FeatureTableModel(this.features) {
+        	@Override
+        	protected boolean checkFeature(Feature feature) {
+        		if (!isSupportedOS(feature.getDescription()))
+        			if (!SwingHelper.confirmDialog(componentsTable, SharedLocale.tr("features.intro.unsupportedOS"), SharedLocale.tr("features.intro.unsupportedOSTitle")))
+        				return false;
+        		return true;
+        	}
+
+            private boolean isSupportedOS(String desc) {
+            	String os = StringUtils.substringBetween(desc, "<!--OS:(", ")-->");
+            	if (os!=null)
+        			try {
+        				SupportOS supported = Persistence.getMapper().readValue(os, SupportOS.class);
+        				if (supported!=null) {
+        					Platform platform = Environment.detectPlatform();
+        					List<Platform> allow = supported.getAllow();
+        					List<Platform> deny = supported.getDeny();
+        					if ((allow!=null&&!allow.contains(platform))||(deny!=null&&deny.contains(platform)))
+        						return false;
+        				}
+        			} catch (Exception e) {
+        			}
+            	return true;
+            }
+        });
 
         this.descScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
