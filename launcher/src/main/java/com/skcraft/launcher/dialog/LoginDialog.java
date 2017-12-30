@@ -143,7 +143,9 @@ public class LoginDialog extends JDialog {
         this.formPanel.addRow(new JLabel(), this.rememberPassCheck);
         this.buttonsPanel.setBorder(BorderFactory.createEmptyBorder(26, 13, 13, 13));
 
-        Instance instance = options.getInstance();
+        Instance instance = null;
+        if (options!=null)
+        	instance = options.getInstance();
 
         /*
         if (this.launcher.getConfig().isOfflineEnabled()) {

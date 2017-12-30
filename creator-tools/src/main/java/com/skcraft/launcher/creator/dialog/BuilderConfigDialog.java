@@ -228,7 +228,7 @@ public class BuilderConfigDialog extends JDialog {
 		SwingHelper.setTextAndResetCaret(thumbText, config.getThumb());
 		SwingHelper.setTextAndResetCaret(gameVersionText, config.getGameVersion());
 		final ConnectServerInfo server = config.getServer();
-		if (server!=null) {
+		if (server!=null&&server.isValid()) {
 			SwingHelper.setTextAndResetCaret(serverHostText, server.getServerHost());
 			serverPortSpinner.setValue(server.getServerPort());
 		} else

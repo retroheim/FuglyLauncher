@@ -13,6 +13,7 @@ import com.skcraft.launcher.model.modpack.ManifestInfo;
 import com.skcraft.launcher.model.modpack.PackageList;
 import com.skcraft.launcher.persistence.Persistence;
 import lombok.Getter;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 import java.io.IOException;
 import java.util.List;
@@ -57,6 +58,15 @@ public enum ListingType {
                 }
                 if (info.getThumb() != null) {
                     builder.append("    'thumb' => '").append(escape(info.getThumb())).append("',\r\n");
+                }
+                if (info.getServer() != null) {
+                	ConnectServerInfo server = info.getServer();
+                    builder.append("    'server' => array(\r\n");
+                    if (server.getServerHost() != null) {
+                    	builder.append("        'serverHost' => '").append(escape(server.getServerHost())).append("',\r\n");
+                    }
+                    builder.append("        'serverPort' => '").append(server.getServerPort()).append("',\r\n");
+                    builder.append("    ),\r\n");
                 }
                 builder.append("    'version' => '").append(escape(info.getVersion())).append("',\r\n");
                 builder.append("    'priority' => ").append(info.getPriority()).append(",\r\n");

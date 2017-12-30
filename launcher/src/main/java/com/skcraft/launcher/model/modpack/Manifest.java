@@ -36,7 +36,6 @@ public class Manifest extends BaseManifest {
     private String librariesLocation;
     private String objectsLocation;
     private String gameVersion;
-    private ConnectServerInfo server;
     @JsonProperty("launch")
     private LaunchModifier launchModifier;
     private List<Feature> features = new ArrayList<Feature>();
@@ -96,8 +95,19 @@ public class Manifest extends BaseManifest {
         }
     }
 
+    public void updateServer(String serverHost, int serverPort) {
+        if (serverHost != null) {
+        	updateServer(new ConnectServerInfo(serverHost, serverPort));
+        }
+    }
+
+    public void updateServer(ConnectServerInfo server) {
+        if (server != null && server.isValid()) {
+    		setServer(server);
+        }
+    }
+
     public void update(Instance instance) {
         instance.setLaunchModifier(getLaunchModifier());
-        instance.setServer(getServer());
     }
 }

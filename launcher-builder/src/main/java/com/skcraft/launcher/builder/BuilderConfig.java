@@ -47,8 +47,8 @@ public class BuilderConfig {
         manifest.updateName(getName());
         manifest.updateTitle(getTitle());
         manifest.updateThumb(getThumb());
+        manifest.updateServer(getServer());
         manifest.updateGameVersion(getGameVersion());
-        manifest.setServer(getServer());
         manifest.setLaunchModifier(getLaunchModifier());
     }
 

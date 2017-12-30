@@ -383,8 +383,10 @@ public class PackageBuilder {
         // From options
         manifest.updateName(options.getName());
         manifest.updateTitle(options.getTitle());
-        manifest.updateThumb(options.getThumb());
         manifest.updateGameVersion(options.getGameVersion());
+        manifest.updateThumb(options.getThumb());
+        manifest.updateServer(options.getServerHost(), options.getServerPort());
+
         manifest.setVersion(options.getVersion());
         manifest.setLibrariesLocation(options.getLibrariesLocation());
         manifest.setObjectsLocation(options.getObjectsLocation());

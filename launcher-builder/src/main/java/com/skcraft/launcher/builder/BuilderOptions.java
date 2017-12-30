@@ -31,6 +31,10 @@ public class BuilderOptions {
     private String thumb;
     @Parameter(names = "--mc-version")
     private String gameVersion;
+    @Parameter(names = "--setverHost")
+    private String serverHost;
+    @Parameter(names = "--serverPort")
+    private int serverPort;
 
     // Required
     @Parameter(names = "--version", required = true)
