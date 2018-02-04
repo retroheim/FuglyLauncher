@@ -6,19 +6,26 @@
 
 package com.skcraft.launcher.dialog;
 
+import static com.skcraft.launcher.util.SharedLocale.*;
 import static javax.swing.BorderFactory.*;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.ScrollPaneConstants;
@@ -31,6 +38,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.model.modpack.Feature;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
@@ -49,6 +57,7 @@ import net.teamfruit.skcraft.launcher.model.modpack.SupportOS;
 public class FeatureSelectionDialog extends JDialog {
 
     private final List<Feature> features;
+    private final File contentDir;
     private final JPanel container = new JPanel(new BorderLayout());
     private final JEditorPane descText = new JEditorPane(new HTMLEditorKit().getContentType(), SharedLocale.tr("features.selectForInfo"));
     private final JScrollPane descScroll = new JScrollPane(this.descText);
@@ -56,12 +65,14 @@ public class FeatureSelectionDialog extends JDialog {
     private final JScrollPane componentsScroll = new JScrollPane(this.componentsTable);
     private final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.componentsScroll, this.descScroll);
     private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
+    private final JButton openDirButton = new JButton(SharedLocale.tr("features.openFolder"));
     private final JButton installButton = new JButton(SharedLocale.tr("features.install"));
 
-    public FeatureSelectionDialog(final Window owner, @NonNull final List<Feature> features) {
+    public FeatureSelectionDialog(final Window owner, @NonNull final List<Feature> features, File contentDir) {
         super(owner, ModalityType.DOCUMENT_MODAL);
 
         this.features = features;
+        this.contentDir = contentDir;
 
         setTitle(SharedLocale.tr("features.title"));
         initComponents();
@@ -130,6 +141,7 @@ public class FeatureSelectionDialog extends JDialog {
         this.container.add(this.splitPane, BorderLayout.CENTER);
 
         this.buttonsPanel.addGlue();
+        this.buttonsPanel.addElement(this.openDirButton);
         this.buttonsPanel.addElement(this.installButton);
 
         final JLabel descLabel = new JLabel(SharedLocale.tr("features.intro"));
@@ -148,7 +160,70 @@ public class FeatureSelectionDialog extends JDialog {
             }
         });
 
+        this.openDirButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				popupInstanceMenu(openDirButton, 0, openDirButton.getHeight());
+			}
+		});
         this.installButton.addActionListener(ActionListeners.dispose(this));
+    }
+
+    /**
+     * Popup the menu for the instances.
+     *
+     * @param component the component
+     * @param x mouse X
+     * @param y mouse Y
+     * @param selected the selected instance, possibly null
+     */
+    private void popupInstanceMenu(final Component component, final int x, final int y) {
+        final JPopupMenu popup = new JPopupMenu();
+        JMenuItem menuItem;
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.openFolder"));
+        menuItem.addActionListener(ActionListeners.browseDir(
+                this, contentDir, true));
+        popup.add(menuItem);
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.openMods"));
+        menuItem.addActionListener(ActionListeners.browseDir(
+                this, new File(contentDir, "mods"), true));
+        popup.add(menuItem);
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.openConfig"));
+        menuItem.addActionListener(ActionListeners.browseDir(
+                this, new File(contentDir, "config"), true));
+        popup.add(menuItem);
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.openSaves"));
+        menuItem.addActionListener(ActionListeners.browseDir(
+                this, new File(contentDir, "saves"), true));
+        popup.add(menuItem);
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.openResourcePacks"));
+        menuItem.addActionListener(ActionListeners.browseDir(
+                this, new File(contentDir, "resourcepacks"), true));
+        popup.add(menuItem);
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.openScreenshots"));
+        menuItem.addActionListener(ActionListeners.browseDir(
+                this, new File(contentDir, "screenshots"), true));
+        popup.add(menuItem);
+
+        menuItem = new JMenuItem(SharedLocale.tr("instance.copyAsPath"));
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                final File dir = contentDir;
+                dir.mkdirs();
+                SwingHelper.setClipboard(dir.getAbsolutePath());
+            }
+        });
+        popup.add(menuItem);
+
+        popup.show(component, x, y);
+
     }
 
     private void updateDescription() {

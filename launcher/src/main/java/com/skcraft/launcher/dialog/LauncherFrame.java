@@ -110,7 +110,7 @@ public class LauncherFrame extends JFrame {
         this.instancesModel = new InstanceTableModel(launcher.getInstances());
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(500, 500));
+        setMinimumSize(new Dimension(750, 500));
         initComponents();
         pack();
         setLocationRelativeTo(null);
@@ -246,7 +246,7 @@ public class LauncherFrame extends JFrame {
         };
         rightPane.add(instanceLabel, BorderLayout.NORTH);
         rightPane.add(this.instanceScroll, BorderLayout.CENTER);
-        rightPane.setVisible(false);
+        //rightPane.setVisible(true);
         rightPane.setOpaque(false);
         this.splitPane.add(leftPane, BorderLayout.CENTER);
         this.splitPane.add(rightPane, BorderLayout.EAST);
@@ -422,6 +422,16 @@ public class LauncherFrame extends JFrame {
                 menuItem = new JMenuItem(SharedLocale.tr("instance.openFolder"));
                 menuItem.addActionListener(ActionListeners.browseDir(
                         LauncherFrame.this, selected.getContentDir(), true));
+                popup.add(menuItem);
+
+                menuItem = new JMenuItem(SharedLocale.tr("instance.openMods"));
+                menuItem.addActionListener(ActionListeners.browseDir(
+                        LauncherFrame.this, new File(selected.getContentDir(), "mods"), true));
+                popup.add(menuItem);
+
+                menuItem = new JMenuItem(SharedLocale.tr("instance.openConfig"));
+                menuItem.addActionListener(ActionListeners.browseDir(
+                        LauncherFrame.this, new File(selected.getContentDir(), "config"), true));
                 popup.add(menuItem);
 
                 menuItem = new JMenuItem(SharedLocale.tr("instance.openSaves"));

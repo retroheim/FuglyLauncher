@@ -111,7 +111,7 @@ public abstract class BaseUpdater {
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    new FeatureSelectionDialog(ProgressDialog.getLastDialog(), features).setVisible(true);
+                    new FeatureSelectionDialog(ProgressDialog.getLastDialog(), features, contentDir).setVisible(true);
                 }
             });
 
