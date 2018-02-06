@@ -12,12 +12,15 @@ import static com.skcraft.launcher.util.SharedLocale.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +39,7 @@ import com.skcraft.launcher.model.minecraft.AssetsIndex;
 import com.skcraft.launcher.model.minecraft.Library;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
 import com.skcraft.launcher.persistence.Persistence;
+import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.Environment;
 import com.skcraft.launcher.util.Platform;
 import com.skcraft.launcher.util.SharedLocale;
@@ -153,6 +157,23 @@ public class Runner implements Callable<Process>, ProgressObservable {
         builder.setMainClass(versionManifest.getMainClass());
 
         callLaunchModifier();
+
+        ProcessBuilder processTestVersionBuilder = new ProcessBuilder(builder.buildTestVersionCommand());
+        processTestVersionBuilder.directory(instance.getContentDir());
+        Runner.log.info("Checking Java Version...");
+        checkInterrupted();
+
+        Process testVersionProcess = processTestVersionBuilder.start();
+        if (testVersionProcess.waitFor()==0) {
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(testVersionProcess.getInputStream(), writer);
+            IOUtils.copy(testVersionProcess.getErrorStream(), writer);
+            String output = writer.toString();
+            Runner.log.info("Java Version Info: " + StringUtils.trim(output));
+            if (!StringUtils.contains(output, "64-Bit"))
+            	if (SwingHelper.confirmDialog(null, SharedLocale.tr("runner.not64bitJava"), SharedLocale.tr("runner.not64bitJavaTitle")))
+            		throw new RuntimeException("Canceled");
+        }
 
         ProcessBuilder processBuilder = new ProcessBuilder(builder.buildCommand());
         processBuilder.directory(instance.getContentDir());

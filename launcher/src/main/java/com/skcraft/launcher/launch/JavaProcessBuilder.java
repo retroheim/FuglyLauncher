@@ -81,6 +81,20 @@ public class JavaProcessBuilder {
         return builder.toString();
     }
 
+    public List<String> buildTestVersionCommand() {
+        List<String> command = new ArrayList<String>();
+
+        if (getJvmPath() != null) {
+            command.add(getJvmPath() + File.separator + "java");
+        } else {
+            command.add("java");
+        }
+
+        command.add("-version");
+
+        return command;
+    }
+
     public List<String> buildCommand() {
         List<String> command = new ArrayList<String>();
 
