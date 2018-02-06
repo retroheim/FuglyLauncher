@@ -48,6 +48,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.plaf.basic.BasicPanelUI;
 
+import org.apache.commons.lang.BooleanUtils;
+
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
@@ -165,7 +167,8 @@ public class LauncherFrame extends JFrame {
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals("readyUpdate"))
-					launcher.getUpdateManager().performUpdate(LauncherFrame.this);
+                	if (!BooleanUtils.toBoolean(System.getProperty("com.skcraft.launcher.noupdate")))
+                		launcher.getUpdateManager().performUpdate(LauncherFrame.this);
             }
         });
         /*
