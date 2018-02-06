@@ -12,9 +12,6 @@ import com.skcraft.concurrency.ProgressObservable;
 import lombok.Getter;
 import lombok.extern.java.Log;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -480,6 +477,7 @@ public class HttpRequest implements Closeable, ProgressObservable {
          * @return the object
          * @throws java.io.IOException on I/O error
          */
+        /*
         @SuppressWarnings("unchecked")
         public <T> T asXml(Class<T> cls) throws IOException {
             try {
@@ -490,6 +488,7 @@ public class HttpRequest implements Closeable, ProgressObservable {
                 throw new IOException(e);
             }
         }
+        */
 
         /**
          * Save the result to a file.
