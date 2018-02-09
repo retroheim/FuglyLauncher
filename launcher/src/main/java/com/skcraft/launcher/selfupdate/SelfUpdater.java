@@ -17,8 +17,6 @@ import lombok.NonNull;
 import java.io.File;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SelfUpdater implements Callable<File>, ProgressObservable {
 
@@ -35,7 +33,7 @@ public class SelfUpdater implements Callable<File>, ProgressObservable {
 
     @Override
     public File call() throws Exception {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        // ExecutorService executor = Executors.newSingleThreadExecutor();
 
         try {
             File dir = launcher.getLauncherBinariesDir();
@@ -52,7 +50,7 @@ public class SelfUpdater implements Callable<File>, ProgressObservable {
 
             return file;
         } finally {
-            executor.shutdownNow();
+            // executor.shutdownNow();
         }
     }
 

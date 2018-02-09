@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
+import net.teamfruit.skcraft.launcher.UriScheme;
 
 import org.apache.commons.io.FileUtils;
 
@@ -71,6 +72,7 @@ public final class Launcher {
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
     @Getter private final UpdateManager updateManager = new UpdateManager(this);
     @Getter private final InstanceTasks instanceTasks = new InstanceTasks(this);
+    @Getter private final UriScheme uriScheme = new UriScheme(this);
 
     /**
      * Create a new launcher instance with the given base directory.
@@ -120,6 +122,13 @@ public final class Launcher {
         });
 
         updateManager.checkForUpdate();
+
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+        		uriScheme.install();
+            }
+        });
     }
 
     /**

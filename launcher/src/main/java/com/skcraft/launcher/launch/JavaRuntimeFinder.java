@@ -53,12 +53,13 @@ public final class JavaRuntimeFinder {
     private static void getEntriesFromRegistry(List<JREEntry> entries, String basePath)
             throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         List<String> subKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, basePath);
-        for (String subKey : subKeys) {
-            JREEntry entry = getEntryFromRegistry(basePath, subKey);
-            if (entry != null) {
-                entries.add(entry);
-            }
-        }
+        if (subKeys!=null)
+	        for (String subKey : subKeys) {
+	            JREEntry entry = getEntryFromRegistry(basePath, subKey);
+	            if (entry != null) {
+	                entries.add(entry);
+	            }
+	        }
     }
 
     private static JREEntry getEntryFromRegistry(String basePath, String version)  throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
