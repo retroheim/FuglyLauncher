@@ -263,6 +263,10 @@ public final class SwingHelper {
 	                            public void handleSuccess(String url) {
 	                                log.info(tr("console.pasteUploaded", url));
 	                                SwingHelper.openURL(url, pastebinButton);
+	                                try {
+	                                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(url), (ClipboardOwner)null);
+	                                } catch (Exception exception) {
+	                                }
 	                            }
 
 	                            @Override

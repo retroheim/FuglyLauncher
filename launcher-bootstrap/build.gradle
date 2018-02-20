@@ -24,6 +24,8 @@ processResources {
 shadowJar {
     dependencies {
         exclude(dependency('org.projectlombok:lombok'))
+        exclude(dependency('junit:junit'))
+        exclude(dependency('org.hamcrest:hamcrest-core'))
     }
 }
 
