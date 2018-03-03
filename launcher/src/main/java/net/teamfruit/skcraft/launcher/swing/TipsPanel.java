@@ -1,6 +1,7 @@
 package net.teamfruit.skcraft.launcher.swing;
 
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -84,6 +85,9 @@ public class TipsPanel extends JPanel {
 				TipsPanel.this.title = tip.getDesc();
 				TipsPanel.this.thumb = tip.getThumbImage();
 				setVisible(true);
+				Container parent = getParent();
+				if (parent!=null)
+					parent.validate();
 				repaint();
 			}
 		});
