@@ -6,12 +6,15 @@
 
 package com.skcraft.launcher.swing;
 
-import com.skcraft.launcher.util.LimitLinesDocumentListener;
-import com.skcraft.launcher.util.SimpleLogFormatter;
+import static org.apache.commons.io.IOUtils.*;
 
-import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +24,28 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+
+import com.skcraft.launcher.util.LimitLinesDocumentListener;
+import com.skcraft.launcher.util.SharedLocale;
+import com.skcraft.launcher.util.SimpleLogFormatter;
+
+import lombok.Getter;
 
 /**
  * A simple message log.
@@ -33,7 +57,10 @@ public class MessageLog extends JPanel {
     private final int numLines;
     private final boolean colorEnabled;
 
+    @Getter private JCheckBox seeLastCheckbox;
+
     protected JTextComponent textComponent;
+    protected JScrollPane scrollText;
     protected Document document;
 
     private Handler loggerHandler;
@@ -76,6 +103,8 @@ public class MessageLog extends JPanel {
             text.setWrapStyleWord(true);
         }
 
+        seeLastCheckbox = new JCheckBox(SharedLocale.tr("console.seeLast"), true);
+
         textComponent.setFont(new JLabel().getFont());
         textComponent.setEditable(false);
         textComponent.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
@@ -84,12 +113,37 @@ public class MessageLog extends JPanel {
         document = textComponent.getDocument();
         document.addDocumentListener(new LimitLinesDocumentListener(numLines, true));
 
-        JScrollPane scrollText = new JScrollPane(textComponent);
+        scrollText = new JScrollPane(textComponent);
         scrollText.setBorder(null);
         scrollText.setVerticalScrollBarPolicy(
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollText.setHorizontalScrollBarPolicy(
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+        	@Override
+        	public void mousePressed(MouseEvent e) {
+        		seeLastCheckbox.setSelected(false);
+        	}
+
+        	@Override
+        	public void mouseWheelMoved(MouseWheelEvent e) {
+        		if(e.getWheelRotation()<0)
+        			seeLastCheckbox.setSelected(false);
+        	}
+		};
+        scrollText.getVerticalScrollBar().addMouseListener(mouseAdapter);
+        scrollText.addMouseWheelListener(mouseAdapter);
+        final JScrollBar scrollBar = scrollText.getVerticalScrollBar();
+        scrollBar.addAdjustmentListener(new AdjustmentListener(){
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent arg0) {
+                int pos = scrollBar.getValue();
+                int height = scrollBar.getHeight();
+                if(scrollBar.getMaximum() == pos + height){
+                    seeLastCheckbox.setSelected(true);
+                }
+            }
+        });
 
         add(scrollText, BorderLayout.CENTER);
     }
@@ -127,7 +181,8 @@ public class MessageLog extends JPanel {
                     int offset = d.getLength();
                     d.insertString(offset, line,
                             (a != null && colorEnabled) ? a : defaultAttributes);
-                    t.setCaretPosition(d.getLength());
+                    if (seeLastCheckbox.isSelected())
+                    	t.setCaretPosition(d.getLength());
                 } catch (BadLocationException ble) {
 
                 }

@@ -99,6 +99,7 @@ public class ConsoleFrame extends JFrame {
         buttonsPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         buttonsPanel.addElement(this.pastebinButton);
         buttonsPanel.addElement(this.clearLogButton);
+        buttonsPanel.addElement(messageLog.getSeeLastCheckbox());
 
         add(buttonsPanel, BorderLayout.NORTH);
         add(messageLog, BorderLayout.CENTER);
