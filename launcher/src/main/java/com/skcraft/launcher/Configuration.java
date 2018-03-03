@@ -23,6 +23,8 @@ import lombok.Data;
 public class Configuration {
 
     private boolean offlineEnabled = false;
+    private boolean offlineModeEnabled = false;
+    private String offlineModePlayerName;
     private String jvmPath;
     private String jvmArgs;
     private int minMemory = 1024;

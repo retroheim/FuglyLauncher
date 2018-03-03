@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -33,6 +34,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
 import javax.swing.WindowConstants;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.FutureCallback;
@@ -147,12 +150,11 @@ public class LoginDialog extends JDialog {
         if (options!=null)
         	instance = options.getInstance();
 
-        /*
-        if (this.launcher.getConfig().isOfflineEnabled()) {
+        if (this.launcher.getConfig().isOfflineModeEnabled()) {
             this.buttonsPanel.addElement(this.offlineButton);
             this.buttonsPanel.addElement(Box.createHorizontalStrut(2));
         }
-        */
+
         //this.buttonsPanel.addElement(this.recoverButton);
         this.buttonsPanel.addGlue();
         if (instance!=null) {
@@ -210,7 +212,10 @@ public class LoginDialog extends JDialog {
         this.offlineButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                setResult(new OfflineSession(LoginDialog.this.launcher.getProperties().getProperty("offlinePlayerName")));
+            	String playerName = LoginDialog.this.launcher.getConfig().getOfflineModePlayerName();
+            	if (StringUtils.isEmpty(playerName))
+            		playerName = LoginDialog.this.launcher.getProperties().getProperty("offlinePlayerName");
+                setResult(new OfflineSession(playerName));
                 removeListeners();
                 dispose();
             }
