@@ -87,7 +87,8 @@ public class TipsPanel extends JPanel {
 				setVisible(true);
 				Container parent = getParent();
 				if (parent!=null)
-					parent.validate();
+					parent.revalidate();
+				revalidate();
 				repaint();
 			}
 		});
