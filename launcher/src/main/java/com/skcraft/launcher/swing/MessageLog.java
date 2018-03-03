@@ -16,11 +16,10 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.logging.Handler;
@@ -338,7 +337,7 @@ public class MessageLog extends JTabbedPane {
     public static class ConsumableInputStream {
     	private final InputStream from;
     	private final @Getter(lazy=true, value=AccessLevel.PRIVATE) Thread thread = initListener();
-    	private List<ConsoleOutputStream> outs = Lists.newCopyOnWriteArrayList();
+    	private List<PrintWriter> outs = Lists.newCopyOnWriteArrayList();
 
     	public ConsumableInputStream(InputStream from) {
 			this.from = from;
@@ -351,26 +350,31 @@ public class MessageLog extends JTabbedPane {
          * @param outputStream console stream to write to
          */
         void consume(ConsoleOutputStream outputStream) {
-            outs.add(outputStream);
+            outs.add(new PrintWriter(outputStream, true));
             getThread();
         }
 
         private Thread initListener() {
+        	final InputStream in = from;
         	Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-            		final BufferedReader in = new BufferedReader(new InputStreamReader(from));
+                    byte[] buffer = new byte[1024];
                     try {
-                        String line = null;
-                        while ((line = in.readLine()) != null) {
-                            System.out.println(line);
-                            for (ConsoleOutputStream out: outs) {
-	                            out.print(line+"\n");
+                        int len;
+                        while ((len = in.read(buffer)) != -1) {
+                            String s = new String(buffer, 0, len);
+                            System.out.print(s);
+                            for (PrintWriter out: outs) {
+                                out.append(s);
+                                out.flush();
                             }
                         }
                     } catch (IOException e) {
                     } finally {
                         closeQuietly(in);
+                        for (PrintWriter out: outs)
+                        	closeQuietly(out);
                     }
                 }
             });
@@ -423,7 +427,7 @@ public class MessageLog extends JTabbedPane {
 
         @Override
         public void flush() throws UnsupportedEncodingException {
-            String data = toString("UTF-8");
+            String data = toString();
             print(data);
         }
 
