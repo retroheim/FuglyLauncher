@@ -35,7 +35,6 @@ import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.Getter;
-import lombok.Setter;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon.IconSet;
 
@@ -49,7 +48,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     private TrayIcon trayIcon;
 
     @Getter private Process process;
-    @Getter @Setter private boolean killOnClose;
+    //@Getter @Setter private boolean killOnClose;
 
     private PrintWriter processOut;
 
@@ -101,8 +100,8 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     @Override
     protected void performClose() {
         if (hasProcess()) {
-            if (killOnClose) {
-                performKill();
+            if (!performKill()) {
+                return;
             }
         }
 
@@ -113,9 +112,9 @@ public class ProcessConsoleFrame extends ConsoleFrame {
         super.performClose();
     }
 
-    private void performKill() {
+    private boolean performKill() {
         if (!confirmKill()) {
-            return;
+            return false;
         }
 
         synchronized (this) {
@@ -126,6 +125,8 @@ public class ProcessConsoleFrame extends ConsoleFrame {
         }
 
         updateComponents();
+
+        return true;
     }
 
     protected void initComponents() {
