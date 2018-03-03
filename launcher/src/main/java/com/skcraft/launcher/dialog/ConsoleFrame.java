@@ -10,6 +10,7 @@ import static com.skcraft.launcher.util.SharedLocale.*;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +24,7 @@ import javax.swing.WindowConstants;
 
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.MessageLog;
+import com.skcraft.launcher.swing.MessageLog.MessagePanel;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.PastebinPoster;
 import com.skcraft.launcher.util.SharedLocale;
@@ -142,22 +144,27 @@ public class ConsoleFrame extends JFrame {
      * Send the contents of the message log to a pastebin.
      */
     private void pastebinLog() {
-        String text = messageLog.getPastableText();
-        // Not really bytes!
-        messageLog.log(tr("console.pasteUploading", text.length()), messageLog.asHighlighted());
+    	Component selected = messageLog.getSelectedComponent();
+    	if (selected instanceof MessagePanel) {
+    		final MessagePanel message = (MessagePanel) selected;
 
-        PastebinPoster.paste(text, new PastebinPoster.PasteCallback() {
-            @Override
-            public void handleSuccess(String url) {
-                messageLog.log(tr("console.pasteUploaded", url), messageLog.asHighlighted());
-                SwingHelper.openURL(url, messageLog);
-            }
+	        String text = message.getPastableText();
+	        // Not really bytes!
+	        message.log(tr("console.pasteUploading", text.length()), messageLog.asHighlighted());
 
-            @Override
-            public void handleError(String err) {
-                messageLog.log(tr("console.pasteFailed", err), messageLog.asError());
-            }
-        });
+	        PastebinPoster.paste(text, new PastebinPoster.PasteCallback() {
+	            @Override
+	            public void handleSuccess(String url) {
+	                message.log(tr("console.pasteUploaded", url), messageLog.asHighlighted());
+	                SwingHelper.openURL(url, message);
+	            }
+
+	            @Override
+	            public void handleError(String err) {
+	                message.log(tr("console.pasteFailed", err), messageLog.asError());
+	            }
+	        });
+    	}
     }
 
     public static void showMessages() {

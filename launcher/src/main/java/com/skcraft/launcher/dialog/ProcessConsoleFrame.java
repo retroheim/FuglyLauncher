@@ -6,21 +6,32 @@
 
 package com.skcraft.launcher.dialog;
 
+import static com.skcraft.launcher.util.SharedLocale.*;
+
+import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Image;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.util.regex.Pattern;
+
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
+import javax.swing.text.AttributeSet;
+
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
+
 import lombok.Getter;
 import lombok.Setter;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon.IconSet;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
-
-import static com.skcraft.launcher.util.SharedLocale.tr;
 
 /**
  * A version of the console window that can manage a process.
@@ -112,6 +123,16 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     }
 
     protected void initComponents() {
+    	final Pattern chatPattern = Pattern.compile("\\[(.+?)\\] \\[.+?\\]: \\[CHAT\\] (.*)");
+
+    	getMessageLog().addTab(SharedLocale.tr("console.chatTab"), getMessageLog().new MessagePanel() {
+    		@Override
+    		public void log(String line, AttributeSet attributes) {
+    			if (line.contains("[CHAT] "))
+    				super.log(chatPattern.matcher(line).replaceAll("[$1] $2"), attributes);
+    		}
+    	});
+
         killButton = new JButton(SharedLocale.tr("console.forceClose"));
         minimizeButton = new JButton(); // Text set later
 

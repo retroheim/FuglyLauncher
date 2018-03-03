@@ -28,7 +28,7 @@ public class ExitHandler {
 	public ExitHandler(int exitcode, MessageLog log) {
 		this.exitcode = exitcode;
 		if (exitcode!=0) {
-			String logString = log.getPastableText();
+			String logString = log.getMessage().getPastableText();
 			this.logLines = logString.split("\n");
 		}
 	}

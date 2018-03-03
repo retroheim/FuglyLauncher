@@ -16,10 +16,10 @@ import com.google.common.base.Function;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.dialog.ProcessConsoleFrame;
 import com.skcraft.launcher.swing.MessageLog;
+import com.skcraft.launcher.swing.MessageLog.ConsumableInputStream;
 
 import lombok.NonNull;
 import lombok.extern.java.Log;
-import net.teamfruit.skcraft.launcher.launch.ExitHandler;
 
 /**
  * Handles post-process creation during launch.
@@ -49,8 +49,8 @@ public class LaunchProcessHandler implements Function<Process, ProcessConsoleFra
                     if (launcher.getConfig().isShowConsole())
                     	consoleFrame.setVisible(true);
                     MessageLog messageLog = consoleFrame.getMessageLog();
-                    messageLog.consume(process.getInputStream());
-                    messageLog.consume(process.getErrorStream(), Color.RED);
+                    messageLog.consume(new ConsumableInputStream(process.getInputStream()));
+                    messageLog.consume(new ConsumableInputStream(process.getErrorStream()), Color.RED);
                 }
             });
 
