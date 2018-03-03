@@ -18,13 +18,19 @@ import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
+import com.google.common.collect.Maps;
 import com.skcraft.launcher.swing.LinedBoxPanel;
+import com.skcraft.launcher.swing.MessageLog;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
 
@@ -123,13 +129,89 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     }
 
     protected void initComponents() {
-    	final Pattern chatPattern = Pattern.compile("\\[(.+?)\\] \\[.+?\\]: \\[CHAT\\] (.*)");
+    	MessageLog message = getMessageLog();
 
-    	getMessageLog().addTab(SharedLocale.tr("console.chatTab"), getMessageLog().new MessagePanel() {
-    		@Override
+    	message.setTitleAt(0, SharedLocale.tr("console.gameTab"));
+
+    	message.addTab(SharedLocale.tr("console.chatTab"), message.new MessagePanel() {
+	     	private final Pattern chatPattern = Pattern.compile("\\[(.+?)\\] \\[.+?\\]: \\[CHAT\\] (.*)");
+	     	private final Pattern colorPattern = Pattern.compile("\u00A7(.)");
+
+	     	private final Map<Character, Color> colors = Maps.newHashMap();
+
+	     	private SimpleAttributeSet blankAttr = new SimpleAttributeSet();
+
+	     	{
+	     		textComponent.setBackground(new Color(0f, 0f, 0f, 0.5f));
+
+	     		colors.put('0', new Color(0x000000));
+	     		colors.put('1', new Color(0x0000AA));
+	     		colors.put('2', new Color(0x00AA00));
+	     		colors.put('3', new Color(0x00AAAA));
+	     		colors.put('4', new Color(0xAA0000));
+	     		colors.put('5', new Color(0xAA00AA));
+	     		colors.put('6', new Color(0xFFAA00));
+	     		colors.put('7', new Color(0xAAAAAA));
+	     		colors.put('8', new Color(0x555555));
+	     		colors.put('9', new Color(0x5555FF));
+	     		colors.put('a', new Color(0x55FF55));
+	     		colors.put('b', new Color(0x55FFFF));
+	     		colors.put('c', new Color(0xFF5555));
+	     		colors.put('d', new Color(0xFF55FF));
+	     		colors.put('e', new Color(0xFFFF55));
+	     		colors.put('f', new Color(0xFFFFFF));
+
+	     		StyleConstants.setForeground(blankAttr, new Color(0xAAAAAA));
+	     	}
+
+	   		@Override
     		public void log(String line, AttributeSet attributes) {
-    			if (line.contains("[CHAT] "))
-    				super.log(chatPattern.matcher(line).replaceAll("[$1] $2"), attributes);
+    			if (line.contains("[CHAT] ")) {
+    				Matcher m = chatPattern.matcher(line);
+    			    while (m.find()) {
+    			    	String timeText = m.group(1);
+
+    			    	super.log("["+timeText+"] ", blankAttr);
+
+    			        String chatText = m.group(2);
+
+    			        Matcher cm = colorPattern.matcher(chatText);
+    			        StringBuffer csb = new StringBuffer();
+
+    			     	SimpleAttributeSet lastAttr = new SimpleAttributeSet();
+
+    			        while (cm.find()) {
+    			        	char key = cm.group(1).charAt(0);
+    			        	Color color = colors.get(key);
+    			        	if (color!=null) {
+    			        		lastAttr = new SimpleAttributeSet();
+    			        		StyleConstants.setForeground(lastAttr, color);
+    			        	} else {
+    			        		if (key=='r')
+    			        			lastAttr = new SimpleAttributeSet();
+    			        		else if (key=='k')
+    			        			StyleConstants.setBackground(lastAttr, StyleConstants.getForeground(lastAttr));
+    			        		else if (key=='l')
+    			        			StyleConstants.setBold(lastAttr, true);
+    			        		else if (key=='m')
+    			        			StyleConstants.setStrikeThrough(lastAttr, true);
+    			        		else if (key=='n')
+    			        			StyleConstants.setUnderline(lastAttr, true);
+    			        		else if (key=='o')
+    			        			StyleConstants.setItalic(lastAttr, true);
+    			        	}
+
+    			        	csb.setLength(0);
+    			        	cm.appendReplacement(csb, "");
+    			        	super.log(csb.toString(), lastAttr);
+    			        }
+
+			        	csb.setLength(0);
+			        	cm.appendTail(csb);
+			        	csb.append("\n");
+			        	super.log(csb.toString(), lastAttr);
+			        }
+    			}
     		}
     	});
 

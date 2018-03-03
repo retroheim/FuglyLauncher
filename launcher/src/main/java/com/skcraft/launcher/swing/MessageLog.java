@@ -202,7 +202,11 @@ public class MessageLog extends JTabbedPane {
     private void initComponents() {
     	message = new MessagePanel();
 
-    	addTab(SharedLocale.tr("console.mainTab"), message);
+    	initTabs();
+    }
+
+    protected void initTabs() {
+    	addTab(SharedLocale.tr("console.launcherTab"), message);
     }
 
     /**
