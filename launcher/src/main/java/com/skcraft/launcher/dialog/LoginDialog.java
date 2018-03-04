@@ -166,7 +166,7 @@ public class LoginDialog extends JDialog {
         this.buttonsPanel.addElement(this.cancelButton);
 
         if (instance!=null) {
-	        final JPanel title = new InstanceCellFactory().getCellComponent(null, instance, false);
+	        final JPanel title = new InstanceCellFactory().getCellComponent(this.getRootPane(), instance, false);
 	        add(title, BorderLayout.NORTH);
         }
         add(this.formPanel, BorderLayout.CENTER);

@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -56,7 +57,7 @@ public class InstanceTableCellPanel extends JPanel {
 		setPreferredSize(new Dimension(250, 64));
 	}
 
-	public void setInstance(final Instance instance) {
+	public void setInstance(final Instance instance, final Map<Instance, Image> iconCaches) {
 		this.instance = instance;
 
 		this.notdownloaded = !instance.isLocal();
@@ -64,17 +65,19 @@ public class InstanceTableCellPanel extends JPanel {
 
 		if (instance.getThumb()==null)
 			setThumb(DefaultIcons.instanceNoThumbInstanceIcon);
-		else
-			if (instance.getIconCache()!=null)
-				setThumb(instance.getIconCache());
+		else {
+			Image iconCache = iconCaches.get(instance);
+			if (iconCache!=null)
+				setThumb(iconCache);
 			else
 				try {
 					final Image thumb = SwingHelper.createImage(instance.getThumb());
 					setThumb(thumb);
-					instance.setIconCache(thumb);
+					iconCaches.put(instance, thumb);
 				} catch (final Exception e) {
 					setThumb(DefaultIcons.instanceMissingThumbBackground);
 				}
+		}
 	}
 
 	@Override

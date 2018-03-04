@@ -6,7 +6,13 @@
 
 package com.skcraft.launcher;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.io.Files;
 import com.skcraft.launcher.launch.JavaProcessBuilder;
@@ -15,16 +21,12 @@ import com.skcraft.launcher.model.modpack.LaunchModifier;
 import lombok.Data;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Date;
-
 /**
  * An instance is a profile that represents one particular installation
  * of the game, with separate files and so on.
  */
 @Data
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Instance implements Comparable<Instance> {
 
     private String title;
@@ -43,7 +45,6 @@ public class Instance implements Comparable<Instance> {
     @JsonIgnore private int priority;
     @JsonIgnore private boolean selected;
     @JsonIgnore private boolean local;
-    @JsonIgnore private java.awt.Image iconCache;
 
     /**
      * Get the tile of the instance, which might be the same as the

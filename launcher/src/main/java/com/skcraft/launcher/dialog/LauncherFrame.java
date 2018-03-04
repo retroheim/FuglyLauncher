@@ -294,7 +294,7 @@ public class LauncherFrame extends JFrame {
 				InstanceTableCellPanel panel = selectedPane.get();
 				if (panel!=null) {
 					panel.setShowSelected(true);
-					repaint();
+					selectedPane.repaint();
 				}
 			}
 
@@ -303,7 +303,7 @@ public class LauncherFrame extends JFrame {
 				InstanceTableCellPanel panel = selectedPane.get();
 				if (panel!=null) {
 					panel.setShowSelected(false);
-					repaint();
+					selectedPane.repaint();
 				}
 			}
 		});
@@ -331,7 +331,7 @@ public class LauncherFrame extends JFrame {
 		        		index = 0;
 		        	final Instance instance = LauncherFrame.this.instancesModel.getValueAt(index, 0);
 
-		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(null, instance, false);
+		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(LauncherFrame.this.selectedPane, instance, false);
 		        	tablecell.setShowPlayIcon(true);
 		    		LauncherFrame.this.selectedPane.set(tablecell);
 		        }
