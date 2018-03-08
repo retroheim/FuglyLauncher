@@ -1,7 +1,7 @@
 package net.teamfruit.skcraft.launcher.swing;
 
 import java.awt.Color;
-import java.awt.Container;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.MediaTracker;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -84,11 +86,15 @@ public class TipsPanel extends JPanel {
 				final Tip tip = TipsPanel.this.list.get(x);
 				TipsPanel.this.title = tip.getDesc();
 				TipsPanel.this.thumb = tip.getThumbImage();
-				setVisible(true);
-				Container parent = getParent();
-				if (parent!=null)
-					parent.revalidate();
-				revalidate();
+				if (!isVisible()) {
+					setVisible(true);
+					Window window = findWindow(TipsPanel.this);
+					if (window!=null) {
+						window.revalidate();
+						window.pack();
+					}
+					revalidate();
+				}
 				repaint();
 			}
 		});
@@ -97,6 +103,16 @@ public class TipsPanel extends JPanel {
 		setVisible(false);
 
 		this.tm.start();
+	}
+
+	public static Window findWindow(Component c) {
+		if (c==null) {
+			return JOptionPane.getRootFrame();
+		} else if (c instanceof Window) {
+			return (Window) c;
+		} else {
+			return findWindow(c.getParent());
+		}
 	}
 
 	@Override
