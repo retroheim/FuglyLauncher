@@ -1,4 +1,4 @@
-package net.teamfruit.skcraft.launcher;
+package net.teamfruit.skcraft.launcher.integration;
 
 import java.io.File;
 import java.io.IOException;

@@ -85,9 +85,6 @@ public class UpdateManager {
             Futures.addCallback(future, new FutureCallback<File>() {
                 @Override
                 public void onSuccess(File result) {
-                    propertySupport.firePropertyChange("pendingUpdate", true, false);
-                    UpdateManager.this.pendingUpdateUrl = null;
-
                     try {
 						new LauncherRelauncher(launcher, result).launch();
 						System.exit(0);
@@ -101,17 +98,24 @@ public class UpdateManager {
 	                            JOptionPane.INFORMATION_MESSAGE);
 					}
 
+                    propertySupport.firePropertyChange("pendingUpdate", true, false);
+                    propertySupport.firePropertyChange("updateDone", false, false);
+                    UpdateManager.this.pendingUpdateUrl = null;
+
                 }
 
                 @Override
                 public void onFailure(Throwable t) {
+                    propertySupport.firePropertyChange("updateDone", false, false);
                 }
             }, SwingExecutor.INSTANCE);
 
             ProgressDialog.showProgress(window, future, SharedLocale.tr("launcher.selfUpdatingTitle"), SharedLocale.tr("launcher.selfUpdatingStatus"));
             SwingHelper.addErrorDialogCallback(window, future);
-        } else
+        } else {
 			propertySupport.firePropertyChange("pendingUpdate", false, false);
+            propertySupport.firePropertyChange("updateDone", false, false);
+        }
     }
 
     private void requestUpdate(URL url) {

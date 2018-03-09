@@ -49,6 +49,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.plaf.basic.BasicPanelUI;
 
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
@@ -513,6 +514,40 @@ public class LauncherFrame extends JFrame {
 
     }
 
+    private boolean first_loaded = true;
+
+	private void onInstanceReady() {
+        if (first_loaded) {
+        	first_loaded = false;
+        	processRun();
+        }
+    }
+
+	private boolean processRun() {
+		String runid = launcher.getOptions().getRun();
+		if (!StringUtils.isEmpty(runid)) {
+			log.info("Trying to launch "+runid);
+			Instance runinstance = null;
+			for (Instance instance: launcher.getInstances().getInstances())
+				if (StringUtils.equalsIgnoreCase(runid, instance.getName())) {
+					runinstance = instance;
+					break;
+				}
+			if (runinstance!=null) {
+				log.info("Launching "+runinstance.getName());
+				launch(runinstance);
+				return true;
+			} else {
+				log.warning("Unable to find "+runid);
+				SwingHelper.showErrorDialog(LauncherFrame.this,
+						SharedLocale.tr("errors.missingInstance", runid),
+						SharedLocale.tr("errors.missingInstanceTitle", runid));
+			}
+		}
+
+    	return false;
+	}
+
     private void confirmDelete(final Instance instance) {
         if (!SwingHelper.confirmDialog(this,
                 tr("instance.confirmDelete", instance.getTitle()), SharedLocale.tr("confirmTitle")))
@@ -554,6 +589,7 @@ public class LauncherFrame extends JFrame {
                 instancesModel.update();
                 if (instancesTable.getRowCount() > 0)
 					instancesTable.setRowSelectionInterval(0, 0);
+            	onInstanceReady();
                 requestFocus();
             }
         }, SwingExecutor.INSTANCE);
@@ -568,8 +604,11 @@ public class LauncherFrame extends JFrame {
     }
 
     private void launch() {
+    	launch(this.launcher.getInstances().get(this.instancesTable.getSelectedRow()));
+    }
+
+    private void launch(Instance instance) {
         final boolean permitUpdate = this.updateCheck.isSelected();
-        final Instance instance = this.launcher.getInstances().get(this.instancesTable.getSelectedRow());
 
         final LaunchOptions options = new LaunchOptions.Builder()
                 .setInstance(instance)

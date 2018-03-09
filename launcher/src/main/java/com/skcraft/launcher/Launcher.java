@@ -50,7 +50,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
-import net.teamfruit.skcraft.launcher.UriScheme;
+import net.teamfruit.skcraft.launcher.integration.UriScheme;
 
 /**
  * The main entry point for the launcher.
@@ -135,6 +135,8 @@ public final class Launcher {
         		uriScheme.install();
             }
         });
+
+        getOptions().processURI();
     }
 
     /**
@@ -445,10 +447,6 @@ public final class Launcher {
 
         Integer bsVersion = options.getBootstrapVersion();
         log.info(bsVersion != null ? "Bootstrap version " + bsVersion + " detected" : "Not bootstrapped");
-
-        String uriPath = options.getUriPath();
-        if (uriPath!=null)
-        	log.info("URI path " + uriPath + " detected");
 
         File dir = options.getDir();
         if (dir != null) {
