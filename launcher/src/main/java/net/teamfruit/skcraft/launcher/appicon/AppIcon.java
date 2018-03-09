@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,5 +80,9 @@ public class AppIcon {
 				String.format(path_format, "256x256"),
 		};
 		return getIconSet(clazz, icon_paths);
+	}
+
+	public static InputStream getWindowsAppIcon() {
+		return AppIcon.class.getResourceAsStream("icon.ico");
 	}
 }

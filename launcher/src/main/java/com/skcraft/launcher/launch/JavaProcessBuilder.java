@@ -6,16 +6,16 @@
 
 package com.skcraft.launcher.launch;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * A tool to build the entire command line used to launch a Java process.
@@ -28,6 +28,7 @@ public class JavaProcessBuilder {
     private static final Pattern argsPattern = Pattern.compile("(?:([^\"]\\S*)|\"(.+?)\")\\s*");
 
     @Getter @Setter private File jvmPath = JavaRuntimeFinder.findBestJavaPath();
+    @Getter @Setter private String jvmApp = "java";
     @Getter @Setter private int minMemory;
     @Getter @Setter private int maxMemory;
     @Getter @Setter private int permGen;
@@ -99,9 +100,9 @@ public class JavaProcessBuilder {
         List<String> command = new ArrayList<String>();
 
         if (getJvmPath() != null) {
-            command.add(getJvmPath() + File.separator + "java");
+            command.add(getJvmPath() + File.separator + getJvmApp());
         } else {
-            command.add("java");
+            command.add(getJvmApp());
         }
 
         for (String flag : flags) {

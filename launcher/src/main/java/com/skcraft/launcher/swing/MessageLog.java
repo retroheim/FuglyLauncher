@@ -101,8 +101,6 @@ public class MessageLog extends JTabbedPane {
                 text.setWrapStyleWord(true);
             }
 
-            seeLastCheckbox = new JCheckBox(SharedLocale.tr("console.seeLast"), true);
-
             textComponent.setFont(new JLabel().getFont());
             textComponent.setEditable(false);
             textComponent.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
@@ -182,9 +180,48 @@ public class MessageLog extends JTabbedPane {
                 }
             });
         }
+
+	    /**
+		 * Register a global logger listener.
+		 */
+		public void registerLoggerHandler() {
+		    loggerHandler = new ConsoleLoggerHandler();
+		    rootLogger.addHandler(loggerHandler);
+		}
+
+		/**
+		 * Used to send logger messages to the console.
+		 */
+		private class ConsoleLoggerHandler extends Handler {
+		    private final SimpleLogFormatter formatter = new SimpleLogFormatter();
+
+		    @Override
+		    public void publish(LogRecord record) {
+		        Level level = record.getLevel();
+		        /*Throwable t = */record.getThrown();
+		        AttributeSet attributes = defaultAttributes;
+
+		        if (level.intValue() >= Level.WARNING.intValue()) {
+		            attributes = errorAttributes;
+		        } else if (level.intValue() < Level.INFO.intValue()) {
+		            attributes = debugAttributes;
+		        }
+
+		        log(formatter.format(record), attributes);
+		    }
+
+		    @Override
+		    public void flush() {
+		    }
+
+		    @Override
+		    public void close() throws SecurityException {
+		    }
+		}
     }
 
-    public MessageLog(int numLines, boolean colorEnabled) {
+
+	public MessageLog(int numLines, boolean colorEnabled) {
         this.numLines = numLines;
         this.colorEnabled = colorEnabled;
 
@@ -200,6 +237,7 @@ public class MessageLog extends JTabbedPane {
     }
 
     private void initComponents() {
+        seeLastCheckbox = new JCheckBox(SharedLocale.tr("console.seeLast"), true);
     	message = new MessagePanel();
 
     	initTabs();
@@ -301,14 +339,6 @@ public class MessageLog extends JTabbedPane {
     }
 
     /**
-     * Register a global logger listener.
-     */
-    public void registerLoggerHandler() {
-        loggerHandler = new ConsoleLoggerHandler();
-        rootLogger.addHandler(loggerHandler);
-    }
-
-    /**
      * Detach the handler on the global logger.
      */
     public void detachGlobalHandler() {
@@ -388,36 +418,6 @@ public class MessageLog extends JTabbedPane {
         }
     }
 
-
-    /**
-     * Used to send logger messages to the console.
-     */
-    private class ConsoleLoggerHandler extends Handler {
-        private final SimpleLogFormatter formatter = new SimpleLogFormatter();
-
-        @Override
-        public void publish(LogRecord record) {
-            Level level = record.getLevel();
-            /*Throwable t = */record.getThrown();
-            AttributeSet attributes = defaultAttributes;
-
-            if (level.intValue() >= Level.WARNING.intValue()) {
-                attributes = errorAttributes;
-            } else if (level.intValue() < Level.INFO.intValue()) {
-                attributes = debugAttributes;
-            }
-
-            log(formatter.format(record), attributes);
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-    }
 
     /**
      * Used to send console messages to the console.

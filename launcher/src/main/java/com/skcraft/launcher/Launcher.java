@@ -6,6 +6,26 @@
 
 package com.skcraft.launcher;
 
+import static com.skcraft.launcher.util.SharedLocale.*;
+
+import java.awt.Window;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.apache.commons.io.FileUtils;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Strings;
@@ -24,30 +44,13 @@ import com.skcraft.launcher.util.HttpRequest;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SimpleLogFormatter;
 import com.sun.management.OperatingSystemMXBean;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.UriScheme;
-
-import org.apache.commons.io.FileUtils;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-
-import static com.skcraft.launcher.util.SharedLocale.tr;
 
 /**
  * The main entry point for the launcher.
@@ -61,6 +64,7 @@ public final class Launcher {
     private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     @Getter @Setter private Supplier<Window> mainWindowSupplier = new DefaultLauncherSupplier(this);
     @Getter private final Class<?> mainClass;
+    @Getter private final LauncherArguments options;
     @Getter private final String[] args;
     @Getter private final File baseDir;
     @Getter private final Properties properties;
@@ -76,12 +80,13 @@ public final class Launcher {
 
     /**
      * Create a new launcher instance with the given base directory.
+     * @param options
      *
      * @param baseDir the base directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull Class<?> mainClass, @NonNull String[] args, @NonNull File baseDir) throws IOException {
-        this(mainClass, args, baseDir, baseDir);
+    public Launcher(@NonNull Class<?> mainClass, @NonNull LauncherArguments options, @NonNull String[] args, @NonNull File baseDir) throws IOException {
+        this(mainClass, options, args, baseDir, baseDir);
     }
 
     /**
@@ -92,10 +97,11 @@ public final class Launcher {
      * @param configDir the config directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull Class<?> mainClass, @NonNull String[] args, @NonNull File baseDir, @NonNull File configDir) throws IOException {
+    public Launcher(@NonNull Class<?> mainClass, @NonNull LauncherArguments options, @NonNull String[] args, @NonNull File baseDir, @NonNull File configDir) throws IOException {
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Launcher", Locale.getDefault());
 
         this.mainClass = mainClass;
+        this.options = options;
         this.args = args;
         this.baseDir = baseDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
@@ -433,10 +439,16 @@ public final class Launcher {
      */
     public static Launcher createFromArguments(@NonNull Class<?> mainClass, String[] args) throws ParameterException, IOException {
         LauncherArguments options = new LauncherArguments();
-        new JCommander(options, args);
+        JCommander cmd = new JCommander(options);
+        cmd.setAcceptUnknownOptions(true);
+        cmd.parse(args);
 
         Integer bsVersion = options.getBootstrapVersion();
         log.info(bsVersion != null ? "Bootstrap version " + bsVersion + " detected" : "Not bootstrapped");
+
+        String uriPath = options.getUriPath();
+        if (uriPath!=null)
+        	log.info("URI path " + uriPath + " detected");
 
         File dir = options.getDir();
         if (dir != null) {
@@ -446,7 +458,7 @@ public final class Launcher {
             log.info("Using current directory " + dir.getAbsolutePath());
         }
 
-        return new Launcher(mainClass, args, dir);
+        return new Launcher(mainClass, options, args, dir);
     }
 
     /**

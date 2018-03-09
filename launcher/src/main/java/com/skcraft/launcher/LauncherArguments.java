@@ -6,10 +6,11 @@
 
 package com.skcraft.launcher;
 
-import com.beust.jcommander.Parameter;
-import lombok.Data;
-
 import java.io.File;
+
+import com.beust.jcommander.Parameter;
+
+import lombok.Data;
 
 /**
  * The command line arguments that the launcher accepts.
@@ -25,5 +26,8 @@ public class LauncherArguments {
 
     @Parameter(names = "--portable")
     private boolean portable;
+
+    @Parameter(names = "--uripath")
+    private String uriPath;
 
 }

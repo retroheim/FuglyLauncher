@@ -125,7 +125,7 @@ public class ConsoleFrame extends JFrame {
      */
     private void registerLoggerHandler() {
         if (!registeredGlobalLog) {
-            getMessageLog().registerLoggerHandler();
+            getMessageLog().getMessage().registerLoggerHandler();
             registeredGlobalLog = true;
         }
     }
@@ -167,19 +167,23 @@ public class ConsoleFrame extends JFrame {
     	}
     }
 
-    public static void showMessages() {
+    public static ConsoleFrame initMessages() {
         ConsoleFrame frame = globalFrame;
         if (frame == null) {
             frame = new ConsoleFrame(10000, false);
             globalFrame = frame;
             frame.setTitle(SharedLocale.tr("console.launcherConsoleTitle"));
             frame.registerLoggerHandler();
-            frame.setVisible(true);
         } else {
-            frame.setVisible(true);
             frame.registerLoggerHandler();
-            frame.requestFocus();
         }
+        return frame;
+    }
+
+    public static void showMessages() {
+        ConsoleFrame frame = initMessages();
+        frame.setVisible(true);
+        frame.requestFocus();
     }
 
     public static void hideMessages() {
