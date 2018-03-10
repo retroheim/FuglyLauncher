@@ -8,11 +8,16 @@ package com.skcraft.launcher.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+
+import lombok.AccessLevel;
+import lombok.Getter;
 
 public class WinRegistry {
     public static final int HKEY_CURRENT_USER = 0x80000001;
@@ -82,7 +87,7 @@ public class WinRegistry {
 
     /**
      * Read a value from key and value name
-     * 
+     *
      * @param hkey
      *            HKEY_CURRENT_USER/HKEY_LOCAL_MACHINE
      * @param key
@@ -360,6 +365,14 @@ public class WinRegistry {
 
     // utility
     private static byte[] toCstr(String str) {
+        byte[] result0 = str.getBytes(getCstrCharset());
+        byte[] result = Arrays.copyOf(result0, result0.length+1);
+        result[result0.length] = 0;
+        return result;
+    }
+
+    /*
+    private static byte[] toCstr(String str) {
         byte[] result = new byte[str.length() + 1];
 
         for (int i = 0; i < str.length(); i++) {
@@ -367,5 +380,19 @@ public class WinRegistry {
         }
         result[str.length()] = 0;
         return result;
+    }
+    */
+
+    @Getter(lazy=true, value=AccessLevel.PRIVATE) private static final Charset cstrCharset = searchCstrCharset();
+
+    private static Charset searchCstrCharset() {
+    	Charset charset = Charset.defaultCharset();
+    	try {
+	    	if (charset.name().equals("UTF-8")||charset.name().equals("UTF-16"))
+	    		charset = Charset.forName("windows-31j");
+    	} catch (Exception e) {
+    		; // ignore
+		}
+    	return charset;
     }
 }
