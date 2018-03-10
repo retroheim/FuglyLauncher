@@ -38,6 +38,7 @@ import com.skcraft.launcher.auth.YggdrasilLoginService;
 import com.skcraft.launcher.launch.LaunchSupervisor;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
 import com.skcraft.launcher.persistence.Persistence;
+import com.skcraft.launcher.swing.DefaultFont;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.update.UpdateManager;
 import com.skcraft.launcher.util.HttpRequest;
@@ -113,6 +114,8 @@ public final class Launcher {
         this.assets = new AssetsRoot(new File(baseDir, "assets"));
         this.config = Persistence.load(new File(configDir, "config.json"), Configuration.class);
         this.accounts = Persistence.load(new File(configDir, "accounts.dat"), AccountList.class);
+
+        DefaultFont.configUIFont();
 
         setDefaultConfig();
 
