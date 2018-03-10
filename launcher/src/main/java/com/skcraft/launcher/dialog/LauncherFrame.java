@@ -118,7 +118,7 @@ public class LauncherFrame extends JFrame {
         pack();
         setLocationRelativeTo(null);
 
-        AppIcon.setFrameIconSet(this, AppIcon.getAppIconSet());
+        AppIcon.setFrameIconSet(this, AppIcon.getSwingIconSet(AppIcon.getAppIconSet()));
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override

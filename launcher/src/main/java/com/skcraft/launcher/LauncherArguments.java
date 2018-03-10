@@ -37,20 +37,24 @@ public class LauncherArguments {
 
     public void processURI() {
     	String uripath = getUriPath();
-    	if (StringUtils.contains(uripath, "://"))
-    		uripath = StringUtils.substringAfter(uripath, "://");
     	if (!StringUtils.isEmpty(uripath)) {
-        	String[] uripaths = StringUtils.split(uripath, "/");
+	    	if (StringUtils.startsWith(uripath, "'")&&StringUtils.endsWith(uripath, "'"))
+	    		uripath = StringUtils.substringBetween(uripath, "'");
+	    	if (StringUtils.contains(uripath, "://"))
+	    		uripath = StringUtils.substringAfter(uripath, "://");
+	    	if (!StringUtils.isEmpty(uripath)) {
+	        	String[] uripaths = StringUtils.split(uripath, "/");
 
-        	if (uripaths.length>0) {
-        		String type = uripaths[0];
-        		if (type.equals("run")) {
-        			if (uripaths.length>1) {
-        				String runid = uripaths[1];
-        				setRun(runid);
-        			}
-        		}
-        	}
+	        	if (uripaths.length>0) {
+	        		String type = uripaths[0];
+	        		if (type.equals("run")) {
+	        			if (uripaths.length>1) {
+	        				String runid = uripaths[1];
+	        				setRun(runid);
+	        			}
+	        		}
+	        	}
+	    	}
     	}
     }
 }

@@ -4,25 +4,44 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
 
+import org.apache.commons.lang.StringUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.io.InputSupplier;
 import com.skcraft.launcher.swing.SwingHelper;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class AppIcon {
-	public static void setFrameIconSet(JFrame frame, IconSet iconSet) {
-		frame.setIconImages(iconSet.getIcons());
+	@Getter private final Class<?> clazz;
+	@Getter private final String name;
+	@Getter private final String path;
+
+	@Getter(lazy=true) private final BufferedImage image = SwingHelper.readBufferedImage(clazz, path);
+
+	@Getter private InputSupplier<InputStream> input = new InputSupplier<InputStream>() {
+		@Override
+		public InputStream getInput() throws IOException {
+			return clazz.getResourceAsStream(path);
+		}
+	};
+
+	public static void setFrameIconSet(JFrame frame, List<BufferedImage> iconSet) {
+		frame.setIconImages(iconSet);
 	}
 
-	public static IconSet getTaskIcon(IconSet iconSet, Color color) {
+	public static List<BufferedImage> getSwingTaskIcon(List<BufferedImage> iconSet, Color color) {
 		final List<BufferedImage> icons = new ArrayList<BufferedImage>();
-		for (BufferedImage base: iconSet.getIcons()) {
+		for (BufferedImage base: iconSet) {
 			int image_width = base.getWidth();
 			int image_height = base.getHeight();
 			int icon_size = Math.min(image_width, image_height)/2;
@@ -35,54 +54,49 @@ public class AppIcon {
 		    g.dispose();
 		    icons.add(image);
 		}
-		return new AppIconSet(icons);
+		return icons;
 	}
 
-	public interface IconSet {
-		BufferedImage getIcon();
-
-		List<BufferedImage> getIcons();
+	public static List<AppIcon> getIconSet(Class<?> clazz, String... paths) {
+		final List<AppIcon> icons = Lists.newArrayList();
+		for (String path : paths)
+			icons.add(new AppIcon(clazz, StringUtils.substringBeforeLast(path, "/"), path));
+		return icons;
 	}
 
-	@RequiredArgsConstructor
-	private static class AppIconSet implements IconSet {
-		private final @Getter List<BufferedImage> icons;
-
-		@Override
-		public BufferedImage getIcon() {
-			if (!icons.isEmpty())
-				return icons.get(0);
-			return null;
+	public static List<BufferedImage> getSwingIconSet(List<AppIcon> appicons) {
+		final List<BufferedImage> icons = Lists.newArrayList();
+		for (AppIcon appicon : appicons) {
+			BufferedImage icon = appicon.getImage();
+			if (icon!=null)
+				icons.add(icon);
 		}
+		return icons;
 	}
 
-	public static IconSet getIconSet(Class<?> clazz, String... paths) {
-		final List<BufferedImage> icons = new ArrayList<BufferedImage>();
-		for (String path : paths) {
-			BufferedImage image = SwingHelper.readBufferedImage(clazz, path);
-			if (image!=null)
-				icons.add(image);
-		}
-		return new AppIconSet(icons);
-	}
+	private static final @Getter(lazy = true) List<AppIcon> appIconSet = createAppIconSet();
 
-	private static final @Getter(lazy = true) IconSet appIconSet = createAppIconSet();
-
-	private static IconSet createAppIconSet() {
+	private static List<AppIcon> createAppIconSet() {
 		final Class<?> clazz = AppIcon.class;
 		final String path_format = "icon_%s.png";
-		final String[] icon_paths = {
-				String.format(path_format, "16x16"),
-				String.format(path_format, "32x32"),
-				String.format(path_format, "48x48"),
-				String.format(path_format, "64x64"),
-				String.format(path_format, "128x128"),
-				String.format(path_format, "256x256"),
+		final String[] icon_names = {
+				"16x16",
+				"32x32",
+				"48x48",
+				"64x64",
+				"128x128",
+				"256x256",
 		};
-		return getIconSet(clazz, icon_paths);
+		final List<AppIcon> icons = Lists.newArrayList();
+		for (String name : icon_names)
+			icons.add(new AppIcon(clazz, name, String.format(path_format, name)));
+		return icons;
 	}
 
-	public static InputStream getWindowsAppIcon() {
-		return AppIcon.class.getResourceAsStream("icon.ico");
-	}
+	@Getter private static final InputSupplier<InputStream> windowsAppIcon = new InputSupplier<InputStream>() {
+		@Override
+		public InputStream getInput() throws IOException {
+			return AppIcon.class.getResourceAsStream("icon.ico");
+		}
+	};
 }

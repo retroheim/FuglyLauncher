@@ -136,6 +136,7 @@ public final class Launcher {
             }
         });
 
+        //SwingHelper.showErrorDialog(null, "["+getOptions().getUriPath()+"]", "URI Path");
         getOptions().processURI();
     }
 
@@ -210,6 +211,15 @@ public final class Launcher {
      */
     public File getInstallerDir() {
         return new File(getTemporaryDir(), "install");
+    }
+
+    /**
+     * Get the directory to store icons.
+     *
+     * @return the icons directory
+     */
+    public File getIconDir() {
+        return new File(getBaseDir(), "icons");
     }
 
     /**

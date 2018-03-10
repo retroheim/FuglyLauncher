@@ -10,14 +10,15 @@ import static com.skcraft.launcher.util.SharedLocale.*;
 
 import java.awt.AWTException;
 import java.awt.Color;
-import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.PrintWriter;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
@@ -29,7 +30,6 @@ import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.Getter;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
-import net.teamfruit.skcraft.launcher.appicon.AppIcon.IconSet;
 import net.teamfruit.skcraft.launcher.swing.ChatMessagePanel;
 
 /**
@@ -162,11 +162,11 @@ public class ProcessConsoleFrame extends ConsoleFrame {
             return false;
         }
 
-        Image icon = getTrayRunningIcon().getIcon();
-        if (icon==null)
+        List<BufferedImage> icon = getTrayRunningIcon();
+        if (icon.isEmpty())
         	return false;
 
-        trayIcon = new TrayIcon(icon);
+        trayIcon = new TrayIcon(icon.get(0));
         trayIcon.setImageAutoSize(true);
         trayIcon.setToolTip(SharedLocale.tr("console.trayTooltip"));
 
@@ -212,7 +212,7 @@ public class ProcessConsoleFrame extends ConsoleFrame {
     }
 
     private synchronized void updateComponents() {
-        IconSet iconSet = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
+        List<BufferedImage> iconSet = hasProcess() ? getTrayRunningIcon() : getTrayClosedIcon();
 
         killButton.setEnabled(hasProcess());
 
@@ -223,9 +223,8 @@ public class ProcessConsoleFrame extends ConsoleFrame {
         }
 
         if (trayIcon != null) {
-	        Image icon = iconSet.getIcon();
-        	if (icon!=null)
-        		trayIcon.setImage(icon);
+        	if (iconSet.isEmpty())
+        		trayIcon.setImage(iconSet.get(0));
         }
 
         AppIcon.setFrameIconSet(this, iconSet);

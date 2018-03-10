@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -32,7 +34,6 @@ import com.skcraft.launcher.util.SharedLocale;
 import lombok.Getter;
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
-import net.teamfruit.skcraft.launcher.appicon.AppIcon.IconSet;
 
 /**
  * A frame capable of showing messages.
@@ -41,8 +42,8 @@ public class ConsoleFrame extends JFrame {
 
     private static ConsoleFrame globalFrame;
 
-    @Getter private final IconSet trayRunningIcon;
-    @Getter private final IconSet trayClosedIcon;
+    @Getter private final List<BufferedImage> trayRunningIcon;
+    @Getter private final List<BufferedImage> trayClosedIcon;
 
     @Getter private final MessageLog messageLog;
     @Getter private LinedBoxPanel buttonsPanel;
@@ -71,9 +72,9 @@ public class ConsoleFrame extends JFrame {
      */
     public ConsoleFrame(@NonNull String title, int numLines, boolean colorEnabled) {
         messageLog = new MessageLog(numLines, colorEnabled);
-        IconSet iconSet = AppIcon.getAppIconSet();
-        trayRunningIcon = AppIcon.getTaskIcon(iconSet, new Color(67, 181, 129));
-        trayClosedIcon = AppIcon.getTaskIcon(iconSet, new Color(152, 41, 41));
+        List<BufferedImage> swingIconSet = AppIcon.getSwingIconSet(AppIcon.getAppIconSet());
+        trayRunningIcon = AppIcon.getSwingTaskIcon(swingIconSet, new Color(67, 181, 129));
+        trayClosedIcon = AppIcon.getSwingTaskIcon(swingIconSet, new Color(152, 41, 41));
 
         setTitle(title);
         AppIcon.setFrameIconSet(this, trayRunningIcon);
