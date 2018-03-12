@@ -8,8 +8,6 @@ import com.apple.eawt.Application;
 import com.apple.eawt.OpenFilesHandler;
 import com.apple.eawt.OpenURIHandler;
 import com.apple.eawt.PreferencesHandler;
-import com.apple.eawt.QuitHandler;
-import com.apple.eawt.QuitResponse;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.dialog.AboutDialog;
 import com.skcraft.launcher.dialog.ConfigurationDialog;
@@ -21,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 public class AppleHandler {
 	@RequiredArgsConstructor
-	private static class AppleHandlerImpl implements OpenFilesHandler, AboutHandler, PreferencesHandler, QuitHandler, OpenURIHandler {
+	private static class AppleHandlerImpl implements OpenFilesHandler, AboutHandler, PreferencesHandler, OpenURIHandler {
 		private final Launcher launcher;
 
 		@Override
@@ -36,27 +34,18 @@ public class AppleHandler {
 
 		@Override
 		public void handlePreferences(AppEvent.PreferencesEvent pe) {
-			new ConfigurationDialog(null, launcher);
-		}
-
-		@Override
-		public void handleQuitRequestWith(AppEvent.QuitEvent qe, QuitResponse qr) {
-			if (SwingHelper.confirmDialog(null, "handleQuitRequestWith", "handleQuitRequestWith"))
-				qr.performQuit();
-			else
-				qr.cancelQuit();
+			new ConfigurationDialog(null, launcher).setVisible(true);
 		}
 
 		@Override
 		public void openURI(AppEvent.OpenURIEvent oue) {
-			SwingHelper.showMessageDialog(null, "openURI: "+oue.getURI(), "openURI", null, JOptionPane.INFORMATION_MESSAGE);
+			launcher.getOptions().setUriPath(oue.getURI().getPath());
 		}
 
 		public void register() {
 			Application app = Application.getApplication();
 			app.setAboutHandler(this);
 			app.setPreferencesHandler(this);
-			app.setQuitHandler(this);
 			app.setOpenFileHandler(this);
 			app.setOpenURIHandler(this);
 		}
