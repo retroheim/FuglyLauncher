@@ -41,6 +41,8 @@ import lombok.NonNull;
  */
 public class ConfigurationDialog extends JDialog {
 
+	private final Launcher launcher;
+
     private final Configuration config;
     private final ObjectSwingMapper mapper;
 
@@ -70,6 +72,7 @@ public class ConfigurationDialog extends JDialog {
     private final JCheckBox offlineModeEnabledCheck = new JCheckBox(SharedLocale.tr("options.offlineModeEnabled"));
     private final JTextField offlineModePlayerNameText = new JTextField();
     private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
+    private final JButton openDirButton = new JButton(SharedLocale.tr("features.openFolder"));
     private final JButton okButton = new JButton(SharedLocale.tr("button.ok"));
     private final JButton cancelButton = new JButton(SharedLocale.tr("button.cancel"));
     private final JButton aboutButton = new JButton(SharedLocale.tr("options.about"));
@@ -83,6 +86,8 @@ public class ConfigurationDialog extends JDialog {
      */
     public ConfigurationDialog(Window owner, @NonNull Launcher launcher) {
         super(owner, ModalityType.DOCUMENT_MODAL);
+
+        this.launcher = launcher;
 
         this.config = launcher.getConfig();
         mapper = new ObjectSwingMapper(config);
@@ -148,6 +153,7 @@ public class ConfigurationDialog extends JDialog {
         advancedPanel.addRow(new JLabel(SharedLocale.tr("options.gameKey")), gameKeyText);
         advancedPanel.addRow(offlineModeEnabledCheck);
         advancedPanel.addRow(new JLabel(SharedLocale.tr("options.offlineModePlayerName")), offlineModePlayerNameText);
+        advancedPanel.addRow(openDirButton);
         SwingHelper.removeOpaqueness(advancedPanel);
         tabbedPane.addTab(SharedLocale.tr("options.advancedTab"), SwingHelper.alignTabbedPane(advancedPanel));
 
@@ -163,6 +169,8 @@ public class ConfigurationDialog extends JDialog {
         add(buttonsPanel, BorderLayout.SOUTH);
 
         SwingHelper.equalWidth(okButton, cancelButton);
+
+        openDirButton.addActionListener(ActionListeners.browseDir(this, this.launcher.getBaseDir(), true));
 
         cancelButton.addActionListener(ActionListeners.dispose(this));
 
