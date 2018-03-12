@@ -133,7 +133,7 @@ public final class Launcher {
 
         updateManager.checkForUpdate();
 
-        AppleHandler.register();
+        AppleHandler.register(this);
 
         executor.submit(new Runnable() {
             @Override
