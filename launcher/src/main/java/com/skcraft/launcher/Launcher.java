@@ -51,6 +51,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
+import net.teamfruit.skcraft.launcher.integration.AppleHandler;
 import net.teamfruit.skcraft.launcher.integration.UriScheme;
 
 /**
@@ -131,6 +132,8 @@ public final class Launcher {
         });
 
         updateManager.checkForUpdate();
+
+        AppleHandler.register();
 
         executor.submit(new Runnable() {
             @Override

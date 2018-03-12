@@ -64,7 +64,8 @@ public class UriScheme {
 	}
 
 	public void install() {
-		if (Environment.getInstance().getPlatform()==Platform.WINDOWS)
+		Platform platform = Environment.getInstance().getPlatform();
+		if (platform==Platform.WINDOWS)
 			try {
 				File binaryPath = getBinary();
 				if (binaryPath!=null) {
@@ -97,7 +98,7 @@ public class UriScheme {
 			} catch (Throwable ignored) {
 				ignored.printStackTrace();
 			}
-		else if (Environment.getInstance().getPlatform()==Platform.LINUX)
+		else if (platform==Platform.LINUX)
 			try {
 				File binaryPath = getBinary();
 				if (binaryPath!=null) {
