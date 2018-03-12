@@ -40,9 +40,7 @@ public class Bootstrap {
         SimpleLogFormatter.configureGlobalLogger();
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Bootstrap", Locale.getDefault());
 
-        boolean portable = isPortableMode();
-
-        Bootstrap bootstrap = new Bootstrap(portable, args);
+        Bootstrap bootstrap = new Bootstrap(args);
         try {
             bootstrap.cleanup();
             bootstrap.launch();
@@ -53,13 +51,14 @@ public class Bootstrap {
         }
     }
 
-    public Bootstrap(boolean portable, String[] args) throws IOException {
+    public Bootstrap(String[] args) throws IOException {
         this.properties = BootstrapUtils.loadProperties(Bootstrap.class, "bootstrap.properties");
 
-        File baseDir = portable ? new File(".") : getUserLauncherDir();
+        File portableDir = getPortableDir();
+        File baseDir = portableDir!=null ? portableDir : getUserLauncherDir();
 
         this.baseDir = baseDir;
-        this.portable = portable;
+        this.portable = portableDir!=null;
         this.binariesDir = new File(baseDir, "launcher");
         this.originalArgs = args;
 
@@ -188,9 +187,32 @@ public class Bootstrap {
         return OperatingSystem.getCurrentPlatform().getWorkingDirectory(getProperties().getProperty("homeFolder"));
     }
 
-    private static boolean isPortableMode() {
-        return new File("portable.txt").exists();
-    }
+	private File getPortableDir() {
+		final String portableName = "portable.txt";
+		File portable = new File(portableName);
+		try {
+			portable = portable.getCanonicalFile();
+		} catch (final IOException e) {
+		}
+		final File parentDir = portable.getParentFile();
+		if (!(parentDir!=null&&parentDir.exists()))
+			return null;
+		if (portable.exists())
+			return parentDir;
+		final File contentsDir = parentDir.getParentFile();
+		if (contentsDir!=null&&contentsDir.exists()&&contentsDir.getName().equals("Contents")) {
+			final File appDir = contentsDir.getParentFile();
+			if (appDir!=null&&appDir.exists()&&BootstrapUtils.endsWith(appDir.getName(), ".app", true)) {
+				final File outBaseDir = appDir.getParentFile();
+				if (outBaseDir!=null&&outBaseDir.exists()) {
+					final File outBasePortable = new File(outBaseDir, portableName);
+					if (outBasePortable.exists())
+						return outBaseDir;
+				}
+			}
+		}
 
+		return null;
+	}
 
 }
