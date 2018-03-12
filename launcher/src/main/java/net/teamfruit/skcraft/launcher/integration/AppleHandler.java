@@ -11,6 +11,7 @@ import com.apple.eawt.PreferencesHandler;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.dialog.AboutDialog;
 import com.skcraft.launcher.dialog.ConfigurationDialog;
+import com.skcraft.launcher.dialog.LauncherFrame;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.Environment;
 import com.skcraft.launcher.util.Platform;
@@ -21,6 +22,7 @@ public class AppleHandler {
 	@RequiredArgsConstructor
 	private static class AppleHandlerImpl implements OpenFilesHandler, AboutHandler, PreferencesHandler, OpenURIHandler {
 		private final Launcher launcher;
+		private final LauncherFrame launcherFrame;
 
 		@Override
 		public void openFiles(AppEvent.OpenFilesEvent ofe) {
@@ -29,17 +31,19 @@ public class AppleHandler {
 
 		@Override
 		public void handleAbout(AppEvent.AboutEvent ae) {
-			new AboutDialog(null).setVisible(true);
+			new AboutDialog(launcherFrame).setVisible(true);
 		}
 
 		@Override
 		public void handlePreferences(AppEvent.PreferencesEvent pe) {
-			new ConfigurationDialog(null, launcher).setVisible(true);
+			new ConfigurationDialog(launcherFrame, launcher).setVisible(true);
 		}
 
 		@Override
 		public void openURI(AppEvent.OpenURIEvent oue) {
 			launcher.getOptions().setUriPath(oue.getURI().getPath());
+			if (!launcherFrame.isFirst_loaded()&&launcherFrame.isVisible())
+				launcherFrame.processRun();
 		}
 
 		public void register() {
@@ -52,10 +56,10 @@ public class AppleHandler {
 
 	}
 
-	public static void register(Launcher launcher) {
+	public static void register(Launcher launcher, LauncherFrame launcherFrame) {
 		if (Environment.getInstance().getPlatform()==Platform.MAC_OS_X)
 			try {
-				new AppleHandlerImpl(launcher).register();
+				new AppleHandlerImpl(launcher, launcherFrame).register();
 			} catch (Throwable ignored) {
 				ignored.printStackTrace();
 			}

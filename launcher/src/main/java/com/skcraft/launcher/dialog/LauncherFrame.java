@@ -73,6 +73,7 @@ import lombok.NonNull;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
+import net.teamfruit.skcraft.launcher.integration.AppleHandler;
 import net.teamfruit.skcraft.launcher.swing.BoardPanel;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 import net.teamfruit.skcraft.launcher.swing.InstanceTableCellPanel;
@@ -111,6 +112,8 @@ public class LauncherFrame extends JFrame {
 
         this.launcher = launcher;
         this.instancesModel = new InstanceTableModel(launcher.getInstances());
+
+        AppleHandler.register(launcher, this);
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(750, 500));
@@ -514,7 +517,7 @@ public class LauncherFrame extends JFrame {
 
     }
 
-    private boolean first_loaded = true;
+    @Getter private boolean first_loaded = true;
 
 	private void onInstanceReady() {
         if (first_loaded) {
@@ -523,7 +526,7 @@ public class LauncherFrame extends JFrame {
         }
     }
 
-	private boolean processRun() {
+	public boolean processRun() {
 		String runid = launcher.getOptions().getRun();
 		if (!StringUtils.isEmpty(runid)) {
 			log.info("Trying to launch "+runid);
