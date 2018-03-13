@@ -42,6 +42,9 @@ public class Configuration {
     private boolean serverEnabled = false;
     private String serverHost;
     private int serverPort = 25565;
+    private String pathDataDir;
+    private String pathCommonDataDir;
+    private String pathInstanceDir;
 
     @Override
     public boolean equals(Object o) {

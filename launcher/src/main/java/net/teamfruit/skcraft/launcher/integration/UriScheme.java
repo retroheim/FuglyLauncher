@@ -169,6 +169,8 @@ public class UriScheme {
 			arguments.add("--bootstrap-version");
 			arguments.add(String.valueOf(bsVersion));
 		}
+		if (options.isPortable())
+			arguments.add("--portable");
 		arguments.add("--uripath");
 		arguments.add(uripathreplace);
 		arguments.addAll(cmd.getUnknownOptions());

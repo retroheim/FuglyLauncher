@@ -68,12 +68,12 @@ public final class Launcher {
     @Getter private final LauncherArguments options;
     @Getter private final String[] args;
     @Getter private final File baseDir;
+    @Getter private final File configDir;
     @Getter private final Properties properties;
     @Getter private final InstanceList instances;
     @Getter private final TipList tips;
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
-    @Getter private final AssetsRoot assets;
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
     @Getter private final UpdateManager updateManager = new UpdateManager(this);
     @Getter private final InstanceTasks instanceTasks = new InstanceTasks(this);
@@ -105,13 +105,13 @@ public final class Launcher {
         this.options = options;
         this.args = args;
         this.baseDir = baseDir;
+        this.configDir = configDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
         try {
         	SwingHelper.setSupportURL(getSupportURL());
         } catch(Exception e) {}
         this.instances = new InstanceList(this);
         this.tips = new TipList(this);
-        this.assets = new AssetsRoot(new File(baseDir, "assets"));
         this.config = Persistence.load(new File(configDir, "config.json"), Configuration.class);
         this.accounts = Persistence.load(new File(configDir, "accounts.dat"), AccountList.class);
 
@@ -190,12 +190,30 @@ public final class Launcher {
     }
 
     /**
+     * Get a assets root.
+     *
+     * @return a assets root
+     */
+    public AssetsRoot getAssets() {
+        return new AssetsRoot(getAssetsDir());
+    }
+
+    /**
+     * Get the directory to store icons.
+     *
+     * @return the icons directory
+     */
+    public File getDataDir() {
+        return getBaseDir();
+    }
+
+    /**
      * Get the directory containing the instances.
      *
      * @return the instances dir
      */
     public File getInstancesDir() {
-        return new File(getBaseDir(), "instances");
+        return new File(getDataDir(), "instances");
     }
 
     /**
@@ -293,7 +311,16 @@ public final class Launcher {
      * @return the common data directory
      */
     public File getCommonDataDir() {
-        return getBaseDir();
+        return getDataDir();
+    }
+
+    /**
+     * Get the directory to store assets.
+     *
+     * @return the assets directory
+     */
+    public File getAssetsDir() {
+        return new File(getCommonDataDir(), "assets");
     }
 
     /**
