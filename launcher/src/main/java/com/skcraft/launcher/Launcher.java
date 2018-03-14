@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
@@ -204,16 +205,43 @@ public final class Launcher {
      * @return the icons directory
      */
     public File getDataDir() {
-        return getBaseDir();
+    	File baseDir = getBaseDir();
+    	String path = getConfig().getPathDataDir();
+    	return getDirFromOption(baseDir, path);
     }
 
     /**
+	 * Get the directory to store common data files.
+	 *
+	 * @return the common data directory
+	 */
+	public File getCommonDataDir() {
+		File baseDir = getDataDir();
+		String path = getConfig().getPathCommonDataDir();
+    	return getDirFromOption(baseDir, path);
+	}
+
+	/**
      * Get the directory containing the instances.
      *
      * @return the instances dir
      */
     public File getInstancesDir() {
-        return new File(getDataDir(), "instances");
+    	File baseDir = new File(getDataDir(), "instances");
+    	String path = getConfig().getPathInstancesDir();
+    	return getDirFromOption(baseDir, path);
+    }
+
+    public File getDirFromOption(File baseDir, String path) {
+    	File destDir = baseDir;
+    	if (!StringUtils.isEmpty(path)) {
+    		File absDir = new File(path);
+    		if (absDir.isAbsolute())
+    			destDir = absDir;
+    		else
+    			destDir = new File(baseDir, path);
+    	}
+        return destDir;
     }
 
     /**
@@ -303,15 +331,6 @@ public final class Launcher {
      */
     public File getLauncherBinariesDir() {
         return new File(getBaseDir(), "launcher");
-    }
-
-    /**
-     * Get the directory to store common data files.
-     *
-     * @return the common data directory
-     */
-    public File getCommonDataDir() {
-        return getDataDir();
     }
 
     /**

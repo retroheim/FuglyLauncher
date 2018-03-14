@@ -44,7 +44,7 @@ public class Configuration {
     private int serverPort = 25565;
     private String pathDataDir;
     private String pathCommonDataDir;
-    private String pathInstanceDir;
+    private String pathInstancesDir;
 
     @Override
     public boolean equals(Object o) {
