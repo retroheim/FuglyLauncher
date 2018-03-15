@@ -10,7 +10,6 @@ import static com.skcraft.launcher.util.SharedLocale.*;
 
 import java.awt.Window;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
@@ -24,9 +23,6 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Strings;
@@ -37,7 +33,6 @@ import com.skcraft.launcher.auth.AccountList;
 import com.skcraft.launcher.auth.LoginService;
 import com.skcraft.launcher.auth.YggdrasilLoginService;
 import com.skcraft.launcher.launch.LaunchSupervisor;
-import com.skcraft.launcher.model.minecraft.VersionManifest;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.DefaultFont;
 import com.skcraft.launcher.swing.SwingHelper;
@@ -47,11 +42,14 @@ import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SimpleLogFormatter;
 import com.sun.management.OperatingSystemMXBean;
 
+import lombok.Delegate;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
+import net.teamfruit.skcraft.launcher.dirs.ConfigLauncherDirectories;
+import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
 import net.teamfruit.skcraft.launcher.integration.UriScheme;
 
 /**
@@ -68,8 +66,6 @@ public final class Launcher {
     @Getter private final Class<?> mainClass;
     @Getter private final LauncherArguments options;
     @Getter private final String[] args;
-    @Getter private final File baseDir;
-    @Getter private final File configDir;
     @Getter private final Properties properties;
     @Getter private final InstanceList instances;
     @Getter private final TipList tips;
@@ -80,41 +76,45 @@ public final class Launcher {
     @Getter private final InstanceTasks instanceTasks = new InstanceTasks(this);
     @Getter private final UriScheme uriScheme = new UriScheme(this);
 
+    @Delegate @Getter private final LauncherDirectories directories;
+
     /**
      * Create a new launcher instance with the given base directory.
      * @param options
      *
-     * @param baseDir the base directory
+     * @param argBaseDir the base directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull Class<?> mainClass, @NonNull LauncherArguments options, @NonNull String[] args, @NonNull File baseDir) throws IOException {
-        this(mainClass, options, args, baseDir, baseDir);
+    public Launcher(@NonNull Class<?> mainClass, @NonNull LauncherArguments options, @NonNull String[] args, @NonNull final File argBaseDir) throws IOException {
+        this(mainClass, options, args, argBaseDir, argBaseDir);
     }
 
     /**
      * Create a new launcher instance with the given base and configuration
      * directories.
      *
-     * @param baseDir the base directory
-     * @param configDir the config directory
+     * @param argBaseDir the base directory
+     * @param argConfigDir the config directory
      * @throws java.io.IOException on load error
      */
-    public Launcher(@NonNull Class<?> mainClass, @NonNull LauncherArguments options, @NonNull String[] args, @NonNull File baseDir, @NonNull File configDir) throws IOException {
+    public Launcher(@NonNull Class<?> mainClass, @NonNull LauncherArguments options, @NonNull String[] args, @NonNull final File argBaseDir, @NonNull final File argConfigDir) throws IOException {
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Launcher", Locale.getDefault());
 
         this.mainClass = mainClass;
         this.options = options;
         this.args = args;
-        this.baseDir = baseDir;
-        this.configDir = configDir;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
         try {
         	SwingHelper.setSupportURL(getSupportURL());
         } catch(Exception e) {}
         this.instances = new InstanceList(this);
         this.tips = new TipList(this);
-        this.config = Persistence.load(new File(configDir, "config.json"), Configuration.class);
-        this.accounts = Persistence.load(new File(configDir, "accounts.dat"), AccountList.class);
+        this.config = Persistence.load(new File(argConfigDir, "config.json"), Configuration.class);
+        this.accounts = Persistence.load(new File(argConfigDir, "accounts.dat"), AccountList.class);
+        this.directories = new ConfigLauncherDirectories(this.config) {
+			@Getter private final File configDir = argConfigDir;
+			@Getter private final File baseDir = argBaseDir;
+		};
 
         DefaultFont.configUIFont();
 
@@ -197,187 +197,6 @@ public final class Launcher {
      */
     public AssetsRoot getAssets() {
         return new AssetsRoot(getAssetsDir());
-    }
-
-    /**
-     * Get the directory to store icons.
-     *
-     * @return the icons directory
-     */
-    public File getDataDir() {
-    	File baseDir = getBaseDir();
-    	String path = getConfig().getPathDataDir();
-    	return getDirFromOption(baseDir, path);
-    }
-
-    /**
-	 * Get the directory to store common data files.
-	 *
-	 * @return the common data directory
-	 */
-	public File getCommonDataDir() {
-		File baseDir = getDataDir();
-		String path = getConfig().getPathCommonDataDir();
-    	return getDirFromOption(baseDir, path);
-	}
-
-	/**
-     * Get the directory containing the instances.
-     *
-     * @return the instances dir
-     */
-    public File getInstancesDir() {
-    	File baseDir = new File(getDataDir(), "instances");
-    	String path = getConfig().getPathInstancesDir();
-    	return getDirFromOption(baseDir, path);
-    }
-
-    public File getDirFromOption(File baseDir, String path) {
-    	File destDir = baseDir;
-    	if (!StringUtils.isEmpty(path)) {
-    		File absDir = new File(path);
-    		if (absDir.isAbsolute())
-    			destDir = absDir;
-    		else
-    			destDir = new File(baseDir, path);
-    	}
-        return destDir;
-    }
-
-    /**
-     * Get the directory to store temporary files.
-     *
-     * @return the temporary directory
-     */
-    public File getTemporaryDir() {
-        return new File(getBaseDir(), "temp");
-    }
-
-    /**
-     * Get the directory to store temporary install files.
-     *
-     * @return the temporary install directory
-     */
-    public File getInstallerDir() {
-        return new File(getTemporaryDir(), "install");
-    }
-
-    /**
-     * Get the directory to store icons.
-     *
-     * @return the icons directory
-     */
-    public File getIconDir() {
-        return new File(getBaseDir(), "icons");
-    }
-
-    /**
-     * Get the directory to store temporarily extracted files.
-     *
-     * @return the directory
-     */
-    private File getExtractDir() {
-        return new File(getTemporaryDir(), "extract");
-    }
-
-    /**
-     * Delete old extracted files.
-     */
-    public void cleanupExtractDir() {
-        log.info("Cleaning up temporary extracted files directory...");
-
-        final long now = System.currentTimeMillis();
-
-        File[] dirs = getExtractDir().listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                try {
-                    long time = Long.parseLong(pathname.getName());
-                    return (now - time) > (1000 * 60 * 60);
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            }
-        });
-
-        if (dirs != null) {
-            for (File dir : dirs) {
-                log.info("Removing " + dir.getAbsolutePath() + "...");
-                try {
-                    FileUtils.deleteDirectory(dir);
-                } catch (IOException e) {
-                    log.log(Level.WARNING, "Failed to delete " + dir.getAbsolutePath(), e);
-                }
-            }
-        }
-    }
-
-    /**
-     * Create a new temporary directory to extract files to.
-     *
-     * @return the directory path
-     */
-    public File createExtractDir() {
-        File dir = new File(getExtractDir(), String.valueOf(System.currentTimeMillis()));
-        dir.mkdirs();
-        log.info("Created temporary directory " + dir.getAbsolutePath());
-        return dir;
-    }
-
-    /**
-     * Get the directory to store the launcher binaries.
-     *
-     * @return the libraries directory
-     */
-    public File getLauncherBinariesDir() {
-        return new File(getBaseDir(), "launcher");
-    }
-
-    /**
-     * Get the directory to store assets.
-     *
-     * @return the assets directory
-     */
-    public File getAssetsDir() {
-        return new File(getCommonDataDir(), "assets");
-    }
-
-    /**
-     * Get the directory to store libraries.
-     *
-     * @return the libraries directory
-     */
-    public File getLibrariesDir() {
-        return new File(getCommonDataDir(), "libraries");
-    }
-
-    /**
-     * Get the directory to store versions.
-     *
-     * @return the versions directory
-     */
-    public File getVersionsDir() {
-        return new File(getCommonDataDir(), "versions");
-    }
-
-    /**
-     * Get the directory to store a version.
-     *
-     * @param version the version
-     * @return the directory
-     */
-    public File getVersionDir(String version) {
-        return new File(getVersionsDir(), version);
-    }
-
-    /**
-     * Get the path to the JAR for the given version manifest.
-     *
-     * @param versionManifest the version manifest
-     * @return the path
-     */
-    public File getJarPath(VersionManifest versionManifest) {
-        return new File(getVersionDir(versionManifest.getId()), versionManifest.getId() + ".jar");
     }
 
     /**

@@ -38,6 +38,9 @@ import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.dialog.DirectorySelectionDialog;
+import net.teamfruit.skcraft.launcher.dirs.DirectoryTasks;
+import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
+import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 
 /**
  * A dialog to modify configuration options.
@@ -83,8 +86,35 @@ public class ConfigurationDialog extends JDialog {
     private final JButton cancelButton = new JButton(SharedLocale.tr("button.cancel"));
     private final JButton aboutButton = new JButton(SharedLocale.tr("options.about"));
     private final JButton logButton = new JButton(SharedLocale.tr("options.launcherConsole"));
-    
-    private final JCheckBox moveFiles = new JCheckBox(SharedLocale.tr("options.moveFiles"));
+
+    private final JCheckBox moveFilesCheck = new JCheckBox(SharedLocale.tr("options.moveFiles"), true);
+
+    private OptionLauncherDirectories launcherDirs = new OptionLauncherDirectories() {
+		@Override
+		public File getConfigDir() {
+			return launcher.getConfigDir();
+		}
+
+		@Override
+		public File getBaseDir() {
+			return launcher.getBaseDir();
+		}
+
+		@Override
+		public String getPathDataDir() {
+			return pathDataDirText.getText();
+		}
+
+		@Override
+		public String getPathCommonDataDir() {
+			return pathCommonDataDirText.getText();
+		}
+
+		@Override
+		public String getPathInstancesDir() {
+			return pathInstancesDirText.getText();
+		}
+	};
 
     /**
      * Create a new configuration dialog.
@@ -167,19 +197,13 @@ public class ConfigurationDialog extends JDialog {
         SwingHelper.removeOpaqueness(advancedPanel);
         tabbedPane.addTab(SharedLocale.tr("options.advancedTab"), SwingHelper.alignTabbedPane(advancedPanel));
 
-        File pathCurrentDir = launcher.getBaseDir();
-        try {
-        	pathCurrentDir = pathCurrentDir.getCanonicalFile();
-        } catch (IOException e) {}
+        File pathCurrentDir = DirectoryUtils.tryCanonical(launcher.getBaseDir());
         JTextField pathCurrentDirText = new JTextField(pathCurrentDir.getAbsolutePath());
         JButton openCurrentDirButton = new JButton(SharedLocale.tr("features.openFolder"));
         pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathCurrentDir")), openCurrentDirButton);
         pathDirPanel.addRow(pathCurrentDirText);
         pathCurrentDirText.setEditable(false);
-        File pathBaseDir = launcher.getBaseDir();
-        try {
-        	pathBaseDir = pathBaseDir.getCanonicalFile();
-        } catch (IOException e) {}
+        File pathBaseDir = DirectoryUtils.tryCanonical(launcher.getBaseDir());
         JTextField pathBaseDirText = new JTextField(pathBaseDir.getAbsolutePath());
         JButton openBaseDirButton = new JButton(SharedLocale.tr("features.openFolder"));
         pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathBaseDir")), openBaseDirButton);
@@ -197,7 +221,7 @@ public class ConfigurationDialog extends JDialog {
         pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathInstancesDir")), pathInstancesDirButton);
         pathDirPanel.addRow(pathInstancesDirText);
         pathInstancesDirText.setEditable(false);
-        pathDirPanel.addRow(moveFiles);
+        pathDirPanel.addRow(moveFilesCheck);
         SwingHelper.removeOpaqueness(pathDirPanel);
         tabbedPane.addTab(SharedLocale.tr("options.pathDirTab"), SwingHelper.alignTabbedPane(pathDirPanel));
 
@@ -243,21 +267,21 @@ public class ConfigurationDialog extends JDialog {
         pathDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher, pathDataDirText, SharedLocale.tr("options.pathDataDir"), launcher.getBaseDir()).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathDataDirText, SharedLocale.tr("options.pathDataDir"), launcherDirs.getDefaultDataDir()).setVisible(true);
 			}
 		});
 
         pathCommonDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher, pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir"), launcher.getDirFromOption(launcher.getBaseDir(), pathDataDirText.getText())).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir"), launcherDirs.getDefaultCommonDataDir()).setVisible(true);
 			}
 		});
 
         pathInstancesDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher, pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir"), new File(launcher.getDirFromOption(launcher.getBaseDir(), pathDataDirText.getText()), "instances")).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir"), launcherDirs.getDefaultInstancesDir()).setVisible(true);
 			}
 		});
     }
@@ -266,8 +290,40 @@ public class ConfigurationDialog extends JDialog {
      * Save the configuration and close the dialog.
      */
     public void save() {
+    	if (moveFilesCheck.isSelected())
+    		try {
+    			moveFiles();
+    		} catch (IOException e) {
+				e.printStackTrace();
+			}
         mapper.copyFromSwing();
         Persistence.commitAndForget(config);
         dispose();
+    }
+
+    public void moveFiles() throws IOException {
+    	File commonAssetsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getAssetsDir());
+    	File commonAssetsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getAssetsDir());
+    	File commonLibrariesDataDirSrc = DirectoryUtils.tryCanonical(launcher.getLibrariesDir());
+    	File commonLibrariesDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getLibrariesDir());
+    	File commonVersionsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getVersionsDir());
+    	File commonVersionsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getVersionsDir());
+    	File instancesDirSrc = DirectoryUtils.tryCanonical(launcher.getInstancesDir());
+    	File instancesDirDest = DirectoryUtils.tryCanonical(launcherDirs.getInstancesDir());
+    	if (commonAssetsDataDirDest.exists()&&commonAssetsDataDirDest.length()>0
+    			|| commonLibrariesDataDirDest.exists()&&commonLibrariesDataDirDest.length()>0
+    			|| commonVersionsDataDirDest.exists()&&commonVersionsDataDirDest.length()>0
+    			|| instancesDirDest.exists()&&instancesDirDest.length()>
+    			0)
+    		throw new IOException("Destination already exists");
+    	DirectoryTasks tasks = new DirectoryTasks(launcher);
+    	if (!commonAssetsDataDirSrc.equals(commonAssetsDataDirDest))
+    		tasks.move(this, commonAssetsDataDirSrc, commonAssetsDataDirDest);
+    	if (!commonLibrariesDataDirSrc.equals(commonLibrariesDataDirDest))
+    		tasks.move(this, commonLibrariesDataDirSrc, commonLibrariesDataDirDest);
+    	if (!commonVersionsDataDirSrc.equals(commonVersionsDataDirDest))
+    		tasks.move(this, commonVersionsDataDirSrc, commonVersionsDataDirDest);
+    	if (!instancesDirSrc.equals(instancesDirDest))
+    		tasks.move(this, instancesDirSrc, instancesDirDest);
     }
 }

@@ -6,7 +6,6 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -18,7 +17,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
-import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.swing.ActionListeners;
 import com.skcraft.launcher.swing.FormPanel;
 import com.skcraft.launcher.swing.LinedBoxPanel;
@@ -27,9 +25,11 @@ import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
+import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
 
 public class DirectorySelectionDialog extends JDialog {
-	private final Launcher launcher;
+	private final LauncherDirectories launcher;
 
 	private final JTextField targetText;
 	private File baseDir;
@@ -45,16 +45,12 @@ public class DirectorySelectionDialog extends JDialog {
 	private final JButton okButton = new JButton(SharedLocale.tr("button.ok"));
 	private final JButton cancelButton = new JButton(SharedLocale.tr("button.cancel"));
 
-	public DirectorySelectionDialog(Window owner, @NonNull Launcher launcher, JTextField pathDirText, String title, File baseDir) {
+	public DirectorySelectionDialog(Window owner, @NonNull LauncherDirectories launcher, JTextField pathDirText, String title, File baseDir) {
 		super(owner, ModalityType.DOCUMENT_MODAL);
 
 		this.launcher = launcher;
 		this.targetText = pathDirText;
-		try {
-			baseDir = baseDir.getCanonicalFile();
-		} catch (IOException e) {
-		}
-		this.baseDir = baseDir;
+		this.baseDir = DirectoryUtils.tryCanonical(baseDir);
 
 		setTitle(title);
 		initComponents();
@@ -93,7 +89,7 @@ public class DirectorySelectionDialog extends JDialog {
 		openDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				File dir = launcher.getDirFromOption(baseDir, pathText.getText());
+				File dir = DirectoryUtils.getDirFromOption(baseDir, pathText.getText());
 				dir.mkdirs();
 				SwingHelper.browseDir(dir, DirectorySelectionDialog.this);
 			}
@@ -103,7 +99,7 @@ public class DirectorySelectionDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				JFileChooser filechooser = new JFileChooser();
-				filechooser.setCurrentDirectory(launcher.getDirFromOption(baseDir, pathText.getText()));
+				filechooser.setCurrentDirectory(DirectoryUtils.getDirFromOption(baseDir, pathText.getText()));
 				filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				filechooser.setFileFilter(new FileFilter() {
 					@Getter
@@ -118,12 +114,9 @@ public class DirectorySelectionDialog extends JDialog {
 				filechooser.showSaveDialog(DirectorySelectionDialog.this);
 				File file = filechooser.getSelectedFile();
 				if (file!=null) {
-					try {
-						file = file.getCanonicalFile();
-					} catch (IOException e) {
-					}
-					if (isInSubDirectory(baseDir, file))
-						pathText.setText(getRelativePath(baseDir, file));
+					file = DirectoryUtils.tryCanonical(file);
+					if (DirectoryUtils.isInSubDirectory(baseDir, file))
+						pathText.setText(DirectoryUtils.getRelativePath(baseDir, file));
 					else
 						pathText.setText(file.getAbsolutePath());
 				}
@@ -160,19 +153,5 @@ public class DirectorySelectionDialog extends JDialog {
 	public void save() {
 		targetText.setText(pathText.getText());
 		dispose();
-	}
-
-	public static boolean isInSubDirectory(File dir, File file) {
-		if (file==null)
-			return false;
-
-		if (file.equals(dir))
-			return true;
-
-		return isInSubDirectory(dir, file.getParentFile());
-	}
-
-	public static String getRelativePath(File dir, File file) {
-		return dir.toURI().relativize(file.toURI()).getPath();
 	}
 }

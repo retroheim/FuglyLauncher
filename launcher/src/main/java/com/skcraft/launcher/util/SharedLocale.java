@@ -6,9 +6,6 @@
 
 package com.skcraft.launcher.util;
 
-import lombok.NonNull;
-import lombok.extern.java.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +16,9 @@ import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+
+import lombok.NonNull;
+import lombok.extern.java.Log;
 
 /**
  * Handles loading a shared message {@link java.util.ResourceBundle}.
@@ -79,7 +79,7 @@ public class SharedLocale {
     public static String tr(String key, Object... args) {
         if (bundle != null) {
             try {
-                MessageFormat formatter = new MessageFormat(tr(key));
+                MessageFormat formatter = new MessageFormat(bundle.getString(key));
                 formatter.setLocale(getLocale());
                 return formatter.format(args);
             } catch (MissingResourceException e) {
