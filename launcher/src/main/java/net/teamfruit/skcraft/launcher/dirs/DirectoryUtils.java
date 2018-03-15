@@ -8,23 +8,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.skcraft.launcher.LauncherUtils;
 
 public class DirectoryUtils {
-    public static File getDirFromOption(File baseDir, String path) {
-    	File destDir = baseDir;
-    	if (!StringUtils.isEmpty(path)) {
-    		File absDir = new File(path);
-    		if (absDir.isAbsolute())
-    			destDir = absDir;
-    		else
-    			destDir = new File(baseDir, path);
-    	}
-        return destDir;
-    }
+	public static @Nullable File findExistsDirFromAncestors(File file) {
+		if (file.isDirectory())
+			return file;
+		File parent = file.getParentFile();
+		if (parent==null)
+			return null;
+		return findExistsDirFromAncestors(parent);
+	}
+
+	public static File getDirFromOption(File baseDir, String path) {
+		File destDir = baseDir;
+		if (!StringUtils.isEmpty(path)) {
+			File absDir = new File(path);
+			if (absDir.isAbsolute())
+				destDir = absDir;
+			else
+				destDir = new File(baseDir, path);
+		}
+		return destDir;
+	}
 
 	public static File tryCanonical(File file) {
 		if (file==null)
@@ -46,8 +57,8 @@ public class DirectoryUtils {
 		return isInSubDirectory(dir, file.getParentFile());
 	}
 
-	public static String getRelativePath(File dir, File file) {
-		return dir.toURI().relativize(file.toURI()).getPath();
+	public static String getRelativePath(File baseDir, File targetDir) {
+		return baseDir.toURI().relativize(targetDir.toURI()).getPath();
 	}
 
 	public static int getFilesCount(File file) {
@@ -75,9 +86,9 @@ public class DirectoryUtils {
 		if (!srcDir.isDirectory()) {
 			throw new IOException("Source '"+srcDir+"' is not a directory");
 		}
-		/*if (destDir.exists()&&destDir.length()>0) {
+		if (destDir.exists()&&destDir.length()>0) {
 			throw new IOException("Destination '"+destDir+"' already exists");
-		}*/
+		}
 		boolean rename = srcDir.renameTo(destDir);
 		if (!rename) {
 			if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath()+File.separator)) {

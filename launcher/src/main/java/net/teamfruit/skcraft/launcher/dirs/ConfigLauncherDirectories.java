@@ -12,11 +12,6 @@ public abstract class ConfigLauncherDirectories extends OptionLauncherDirectorie
 	private final Configuration config;
 
 	@Override
-	public String getPathDataDir() {
-		return getConfig().getPathDataDir();
-	}
-
-	@Override
 	public String getPathCommonDataDir() {
 		return getConfig().getPathCommonDataDir();
 	}

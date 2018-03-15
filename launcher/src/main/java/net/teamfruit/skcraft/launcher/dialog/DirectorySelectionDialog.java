@@ -16,6 +16,8 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.basic.BasicFileChooserUI;
 
 import com.skcraft.launcher.swing.ActionListeners;
 import com.skcraft.launcher.swing.FormPanel;
@@ -99,7 +101,10 @@ public class DirectorySelectionDialog extends JDialog {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				JFileChooser filechooser = new JFileChooser();
-				filechooser.setCurrentDirectory(DirectoryUtils.getDirFromOption(baseDir, pathText.getText()));
+
+				File targetDir = DirectoryUtils.getDirFromOption(baseDir, pathText.getText());
+				File exists = DirectoryUtils.findExistsDirFromAncestors(targetDir);
+				filechooser.setCurrentDirectory(exists);
 				filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				filechooser.setFileFilter(new FileFilter() {
 					@Getter
@@ -111,6 +116,11 @@ public class DirectorySelectionDialog extends JDialog {
 					}
 				});
 				filechooser.setAcceptAllFileFilterUsed(false);
+
+				ComponentUI componentUI = filechooser.getUI();
+				if (!targetDir.equals(exists)&&componentUI instanceof BasicFileChooserUI)
+					((BasicFileChooserUI) componentUI).setFileName(DirectoryUtils.getRelativePath(exists, targetDir));
+
 				filechooser.showSaveDialog(DirectorySelectionDialog.this);
 				File file = filechooser.getSelectedFile();
 				if (file!=null) {

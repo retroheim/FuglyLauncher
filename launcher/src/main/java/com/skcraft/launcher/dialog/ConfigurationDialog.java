@@ -12,7 +12,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -26,6 +26,10 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Configuration;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.persistence.Persistence;
@@ -35,6 +39,7 @@ import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.ObjectSwingMapper;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
+import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.dialog.DirectorySelectionDialog;
@@ -79,7 +84,6 @@ public class ConfigurationDialog extends JDialog {
     private final JTextField offlineModePlayerNameText = new JTextField();
     private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
     private final FormPanel pathDirPanel = new FormPanel();
-    private final JTextField pathDataDirText = new JTextField();
     private final JTextField pathCommonDataDirText = new JTextField();
     private final JTextField pathInstancesDirText = new JTextField();
     private final JButton okButton = new JButton(SharedLocale.tr("button.ok"));
@@ -98,11 +102,6 @@ public class ConfigurationDialog extends JDialog {
 		@Override
 		public File getBaseDir() {
 			return launcher.getBaseDir();
-		}
-
-		@Override
-		public String getPathDataDir() {
-			return pathDataDirText.getText();
 		}
 
 		@Override
@@ -156,7 +155,6 @@ public class ConfigurationDialog extends JDialog {
         mapper.map(gameKeyText, "gameKey");
         mapper.map(offlineModeEnabledCheck, "offlineModeEnabled");
         mapper.map(offlineModePlayerNameText, "offlineModePlayerName");
-        mapper.map(pathDataDirText, "pathDataDir");
         mapper.map(pathCommonDataDirText, "pathCommonDataDir");
         mapper.map(pathInstancesDirText, "pathInstancesDir");
 
@@ -209,10 +207,6 @@ public class ConfigurationDialog extends JDialog {
         pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathBaseDir")), openBaseDirButton);
         pathDirPanel.addRow(pathBaseDirText);
         pathBaseDirText.setEditable(false);
-        JButton pathDataDirButton = new JButton(SharedLocale.tr("options.pathDirButton"));
-        pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathDataDir")), pathDataDirButton);
-        pathDirPanel.addRow(pathDataDirText);
-        pathDataDirText.setEditable(false);
         JButton pathCommonDataDirButton = new JButton(SharedLocale.tr("options.pathDirButton"));
         pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathCommonDataDir")), pathCommonDataDirButton);
         pathDirPanel.addRow(pathCommonDataDirText);
@@ -264,13 +258,6 @@ public class ConfigurationDialog extends JDialog {
             }
         });
 
-        pathDataDirButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathDataDirText, SharedLocale.tr("options.pathDataDir"), launcherDirs.getDefaultDataDir()).setVisible(true);
-			}
-		});
-
         pathCommonDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -290,18 +277,21 @@ public class ConfigurationDialog extends JDialog {
      * Save the configuration and close the dialog.
      */
     public void save() {
-    	if (moveFilesCheck.isSelected())
-    		try {
-    			moveFiles();
-    		} catch (IOException e) {
-				e.printStackTrace();
+    	Runnable saveAndClose = new Runnable() {
+			@Override
+			public void run() {
+		        mapper.copyFromSwing();
+		        Persistence.commitAndForget(config);
+		        dispose();
 			}
-        mapper.copyFromSwing();
-        Persistence.commitAndForget(config);
-        dispose();
+		};
+    	if (moveFilesCheck.isSelected())
+			moveFiles(saveAndClose);
+    	else
+    		saveAndClose.run();
     }
 
-    public void moveFiles() throws IOException {
+    public void moveFiles(final Runnable callback) {
     	File commonAssetsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getAssetsDir());
     	File commonAssetsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getAssetsDir());
     	File commonLibrariesDataDirSrc = DirectoryUtils.tryCanonical(launcher.getLibrariesDir());
@@ -310,20 +300,27 @@ public class ConfigurationDialog extends JDialog {
     	File commonVersionsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getVersionsDir());
     	File instancesDirSrc = DirectoryUtils.tryCanonical(launcher.getInstancesDir());
     	File instancesDirDest = DirectoryUtils.tryCanonical(launcherDirs.getInstancesDir());
-    	if (commonAssetsDataDirDest.exists()&&commonAssetsDataDirDest.length()>0
-    			|| commonLibrariesDataDirDest.exists()&&commonLibrariesDataDirDest.length()>0
-    			|| commonVersionsDataDirDest.exists()&&commonVersionsDataDirDest.length()>0
-    			|| instancesDirDest.exists()&&instancesDirDest.length()>
-    			0)
-    		throw new IOException("Destination already exists");
+
     	DirectoryTasks tasks = new DirectoryTasks(launcher);
+    	List<ObservableFuture<File>> futures = Lists.newArrayList();
     	if (!commonAssetsDataDirSrc.equals(commonAssetsDataDirDest))
-    		tasks.move(this, commonAssetsDataDirSrc, commonAssetsDataDirDest);
+    		futures.add(tasks.move(this, commonAssetsDataDirSrc, commonAssetsDataDirDest));
     	if (!commonLibrariesDataDirSrc.equals(commonLibrariesDataDirDest))
-    		tasks.move(this, commonLibrariesDataDirSrc, commonLibrariesDataDirDest);
+    		futures.add(tasks.move(this, commonLibrariesDataDirSrc, commonLibrariesDataDirDest));
     	if (!commonVersionsDataDirSrc.equals(commonVersionsDataDirDest))
-    		tasks.move(this, commonVersionsDataDirSrc, commonVersionsDataDirDest);
+    		futures.add(tasks.move(this, commonVersionsDataDirSrc, commonVersionsDataDirDest));
     	if (!instancesDirSrc.equals(instancesDirDest))
-    		tasks.move(this, instancesDirSrc, instancesDirDest);
+    		futures.add(tasks.move(this, instancesDirSrc, instancesDirDest));
+
+    	Futures.addCallback(Futures.allAsList(futures), new FutureCallback<List<File>>() {
+			@Override
+			public void onSuccess(List<File> result) {
+				callback.run();
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+			}
+		}, SwingExecutor.INSTANCE);
     }
 }
