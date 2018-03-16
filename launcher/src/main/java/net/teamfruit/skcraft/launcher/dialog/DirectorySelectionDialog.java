@@ -78,6 +78,17 @@ public class DirectorySelectionDialog extends JDialog {
 			@Override
 			protected boolean onSetSelected(boolean b) {
 				pathTextSuffix.setVisible(b);
+				if (DirectorySelectionDialog.this.name!=null) {
+					String text = pathText.getText();
+					if (b) {
+						File file = new File(text);
+						if (StringUtils.equalsIgnoreCase(file.getName(), DirectorySelectionDialog.this.name))
+							pathText.setText(file.getParent());
+					} else {
+						text = new File(StringUtils.isEmpty(text) ? null : text, DirectorySelectionDialog.this.name).getPath();
+						pathText.setText(text);
+					}
+				}
 				return true;
 			}
 		};
@@ -119,26 +130,13 @@ public class DirectorySelectionDialog extends JDialog {
 		ChangeListener listener = new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
+				String text = pathText.getText();
 				if (name!=null) {
-					String text = pathText.getText();
 					if (pathTextSuffixLinkedCheck.isSelected())
 						text = new File(StringUtils.isEmpty(text) ? null : text, name).getPath();
 					pathTextSuffix.setText((StringUtils.endsWithAny(text, new String[] { "/", "\\" }) ? "" : File.separator)+name);
-					if (!pathTextSuffixLinkedCheck.isSelected()) {
-						File file = DirectoryUtils.getDirFromOption(baseDir, text);
-						if (StringUtils.equalsIgnoreCase(file.getName(), name)) {
-							pathTextSuffixLinkedCheck.setSelected(true);
-							final String text0 = text;
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									pathText.setText(new File(text0).getParent());
-								}
-							});
-						}
-					}
-					pathTextAbsoluteLinkedCheck.setSelected(DirectoryUtils.isAbsolute(text));
 				}
+				pathTextAbsoluteLinkedCheck.setSelected(DirectoryUtils.isAbsolute(text));
 			}
 		};
 		addChangeListener(pathText, listener);
@@ -147,6 +145,7 @@ public class DirectorySelectionDialog extends JDialog {
 
 		pathTextSuffixLinkedCheck.register();
 		pathTextAbsoluteLinkedCheck.register();
+		pathTextSuffixLinkedCheck.setSelected(true);
 
 		if (name==null)
 			pathTextSuffixCheck.setEnabled(false);
@@ -230,8 +229,9 @@ public class DirectorySelectionDialog extends JDialog {
 	 */
 	public void save() {
 		String text = pathText.getText();
-		if (pathTextSuffixLinkedCheck.isSelected())
-			text = new File(StringUtils.isEmpty(text) ? null : text, name).getPath();
+		if (name!=null)
+			if (pathTextSuffixLinkedCheck.isSelected())
+				text = new File(StringUtils.isEmpty(text) ? null : text, name).getPath();
 		targetText.setText(text);
 		dispose();
 	}

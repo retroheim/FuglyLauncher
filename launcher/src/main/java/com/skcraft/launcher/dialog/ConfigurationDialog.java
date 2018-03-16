@@ -335,7 +335,6 @@ public class ConfigurationDialog extends JDialog {
 
 			@Override
 			public void onFailure(Throwable t) {
-				moveFilesCheck.setSelected(false);
 			}
 		}, SwingExecutor.INSTANCE);
 	}
