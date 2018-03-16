@@ -9,6 +9,7 @@ package com.skcraft.launcher;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
+import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 
 /**
  * The configuration for the launcher.
@@ -42,8 +43,8 @@ public class Configuration {
     private boolean serverEnabled = false;
     private String serverHost;
     private int serverPort = 25565;
-    private String pathCommonDataDir;
-    private String pathInstancesDir;
+    private String pathCommonDataDir = OptionLauncherDirectories.DefaultPathCommonDataDir;
+    private String pathInstancesDir = OptionLauncherDirectories.DefaultPathInstancesDir;
 
     @Override
     public boolean equals(Object o) {

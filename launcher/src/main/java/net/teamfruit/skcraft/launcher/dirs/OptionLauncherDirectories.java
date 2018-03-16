@@ -2,28 +2,34 @@ package net.teamfruit.skcraft.launcher.dirs;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
+
 public abstract class OptionLauncherDirectories extends AbstractLauncherDirectories {
+
+	public static final String DefaultPathCommonDataDir = "";
+
+	public static final String DefaultPathInstancesDir = "instances";
 
 	public abstract String getPathCommonDataDir();
 
 	public abstract String getPathInstancesDir();
 
 	public File getDefaultCommonDataDir() {
-		return super.getCommonDataDir();
+		return getDataDir();
 	}
 
 	public File getDefaultInstancesDir() {
-		return super.getInstancesDir();
+		return getDataDir();
 	}
 
 	@Override
 	public File getCommonDataDir() {
-		return DirectoryUtils.getDirFromOption(getDefaultCommonDataDir(), getPathCommonDataDir());
+		return DirectoryUtils.getDirFromOption(getDefaultCommonDataDir(), StringUtils.defaultString(getPathCommonDataDir(), DefaultPathCommonDataDir));
 	}
 
 	@Override
 	public File getInstancesDir() {
-		return DirectoryUtils.getDirFromOption(getDefaultInstancesDir(), getPathInstancesDir());
+		return DirectoryUtils.getDirFromOption(getDefaultInstancesDir(), StringUtils.defaultString(getPathInstancesDir(), DefaultPathInstancesDir));
 	}
 
 }

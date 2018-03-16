@@ -40,7 +40,6 @@ import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
 import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
 
@@ -48,7 +47,6 @@ public class DirectorySelectionDialog extends JDialog {
 	private final LauncherDirectories launcher;
 
 	private final JTextField targetText;
-	private final File rawBaseDir;
 	private File baseDir;
 	private final String name;
 
@@ -57,8 +55,10 @@ public class DirectorySelectionDialog extends JDialog {
 	private final JTextField pathText = new JTextField();
 	private final JLabel pathTextPrefix = new JLabel();
 	private final JLabel pathTextSuffix = new JLabel();
-	private final JCheckBox pathTextPrefixCheck = new JCheckBox(SharedLocale.tr("options.fixedName"));
-	private final LinkedCheckBox linkedCheck;
+	private final JCheckBox pathTextSuffixCheck = new JCheckBox(SharedLocale.tr("options.fixedName"));
+	private final LinkedCheckBox pathTextSuffixLinkedCheck;
+	private final JCheckBox pathTextAbsoluteCheck = new JCheckBox(SharedLocale.tr("options.absolutePath"));
+	private final LinkedCheckBox pathTextAbsoluteLinkedCheck;
 
 	private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
 	private final JButton chooseDirButton = new JButton(SharedLocale.tr("options.chooseDirButton"));
@@ -71,13 +71,30 @@ public class DirectorySelectionDialog extends JDialog {
 
 		this.launcher = launcher;
 		this.targetText = pathDirText;
-		this.baseDir = this.rawBaseDir = DirectoryUtils.tryCanonical(baseDir);
+		this.baseDir = DirectoryUtils.tryCanonical(baseDir);
 		this.name = name;
 
-		this.linkedCheck = new LinkedCheckBox(pathTextPrefixCheck) {
+		this.pathTextSuffixLinkedCheck = new LinkedCheckBox(pathTextSuffixCheck) {
 			@Override
-			protected void onSetSelected(boolean b) {
+			protected boolean onSetSelected(boolean b) {
 				pathTextSuffix.setVisible(b);
+				return true;
+			}
+		};
+		this.pathTextAbsoluteLinkedCheck = new LinkedCheckBox(pathTextAbsoluteCheck) {
+			@Override
+			protected boolean onSetSelected(boolean b) {
+				File file = new File(pathText.getText());
+				boolean abs = file.isAbsolute();
+				if (b&&!abs)
+					pathText.setText(DirectoryUtils.getDirFromOption(DirectorySelectionDialog.this.baseDir, pathText.getText()).getAbsolutePath());
+				else if (!b&&abs)
+					if (DirectoryUtils.isInSubDirectory(DirectorySelectionDialog.this.baseDir, file))
+						pathText.setText(DirectoryUtils.getRelativePath(DirectorySelectionDialog.this.baseDir, file));
+					else
+						return false;
+				pathTextPrefix.setVisible(!b);
+				return true;
 			}
 		};
 
@@ -87,7 +104,7 @@ public class DirectorySelectionDialog extends JDialog {
 		final int height = 130;
 		setMinimumSize(new Dimension(650, height));
 		setMaximumSize(new Dimension(Short.MAX_VALUE, height));
-		setSize(new Dimension(650, height));
+		setSize(new Dimension(850, height));
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -99,43 +116,40 @@ public class DirectorySelectionDialog extends JDialog {
 	}
 
 	private void initComponents() {
-		PathTextListener listener = new PathTextListener(pathText, pathTextPrefix) {
+		ChangeListener listener = new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				super.stateChanged(e);
 				if (name!=null) {
-					final String text = target.getText();
+					String text = pathText.getText();
+					if (pathTextSuffixLinkedCheck.isSelected())
+						text = new File(StringUtils.isEmpty(text) ? null : text, name).getPath();
 					pathTextSuffix.setText((StringUtils.endsWithAny(text, new String[] { "/", "\\" }) ? "" : File.separator)+name);
-					if (!linkedCheck.isSelected()) {
+					if (!pathTextSuffixLinkedCheck.isSelected()) {
 						File file = DirectoryUtils.getDirFromOption(baseDir, text);
 						if (StringUtils.equalsIgnoreCase(file.getName(), name)) {
-							linkedCheck.setSelected(true);
+							pathTextSuffixLinkedCheck.setSelected(true);
+							final String text0 = text;
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
 								public void run() {
-									target.setText(new File(text).getParent());
+									pathText.setText(new File(text0).getParent());
 								}
 							});
 						}
 					}
+					pathTextAbsoluteLinkedCheck.setSelected(DirectoryUtils.isAbsolute(text));
 				}
 			}
 		};
 		addChangeListener(pathText, listener);
-		String text = targetText.getText();
-		pathText.setText(text);
-		if (StringUtils.equalsIgnoreCase(baseDir.getName(), name)) {
-			File parent = baseDir.getParentFile();
-			if (parent!=null) {
-				baseDir = parent;
-				if (StringUtils.isEmpty(text))
-					linkedCheck.setSelected(true);
-			}
-		}
+		pathText.setText(targetText.getText());
 		listener.stateChanged(new ChangeEvent(pathText));
 
+		pathTextSuffixLinkedCheck.register();
+		pathTextAbsoluteLinkedCheck.register();
+
 		if (name==null)
-			pathTextPrefixCheck.setEnabled(false);
+			pathTextSuffixCheck.setEnabled(false);
 		pathTextPrefix.setText(SharedLocale.tr("options.baseDir", File.separator));
 		pathTextPrefix.setToolTipText(baseDir.getAbsolutePath());
 		pathTextPanel.add(pathTextPrefix, BorderLayout.WEST);
@@ -147,7 +161,8 @@ public class DirectorySelectionDialog extends JDialog {
 
 		buttonsPanel.addElement(chooseDirButton);
 		buttonsPanel.addElement(openDirButton);
-		buttonsPanel.addElement(pathTextPrefixCheck);
+		buttonsPanel.addElement(pathTextSuffixCheck);
+		buttonsPanel.addElement(pathTextAbsoluteCheck);
 		buttonsPanel.addGlue();
 		buttonsPanel.addElement(okButton);
 		buttonsPanel.addElement(cancelButton);
@@ -215,29 +230,10 @@ public class DirectorySelectionDialog extends JDialog {
 	 */
 	public void save() {
 		String text = pathText.getText();
-		if (linkedCheck.isSelected())
+		if (pathTextSuffixLinkedCheck.isSelected())
 			text = new File(StringUtils.isEmpty(text) ? null : text, name).getPath();
-		if (!DirectoryUtils.isAbsolute(text)) {
-			File file = DirectoryUtils.getDirFromOption(baseDir, text);
-			if (DirectoryUtils.isInSubDirectory(rawBaseDir, file))
-				text = DirectoryUtils.getRelativePath(rawBaseDir, file);
-			else
-				text = file.getAbsolutePath();
-		}
 		targetText.setText(text);
 		dispose();
-	}
-
-	@RequiredArgsConstructor
-	public static class PathTextListener implements ChangeListener {
-		protected final JTextField target;
-		protected final JLabel pathLabel;
-
-		@Override
-		public void stateChanged(ChangeEvent e) {
-			if (pathLabel!=null)
-				pathLabel.setVisible(!DirectoryUtils.isAbsolute(target.getText()));
-		}
 	}
 
 	/**
@@ -304,24 +300,29 @@ public class DirectorySelectionDialog extends JDialog {
 
 		public LinkedCheckBox(JCheckBox check) {
 			this.check = check;
-			this.check.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					onSetSelected(LinkedCheckBox.this.check.isSelected());
-				}
-			});
 			setSelected(false);
 		}
 
+		public void register() {
+			this.check.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					boolean b = LinkedCheckBox.this.check.isSelected();
+					if (!onSetSelected(b))
+						LinkedCheckBox.this.check.setSelected(!b);
+				}
+			});
+		}
+
 		public void setSelected(boolean b) {
-			this.check.setSelected(b);
-			onSetSelected(b);
+			if (onSetSelected(b))
+				this.check.setSelected(b);
 		}
 
 		public boolean isSelected() {
 			return this.check.isSelected();
 		}
 
-		protected abstract void onSetSelected(boolean b);
+		protected abstract boolean onSetSelected(boolean b);
 	}
 }

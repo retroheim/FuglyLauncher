@@ -37,6 +37,8 @@ public class Mover implements Callable<File>, ProgressObservable {
 
 	@Override
 	public File call() throws Exception {
+		Thread.sleep(2000);
+
 		checkInterrupted();
 
 		overall = DirectoryUtils.getFilesCount(src);
