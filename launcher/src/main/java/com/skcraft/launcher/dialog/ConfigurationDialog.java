@@ -261,14 +261,14 @@ public class ConfigurationDialog extends JDialog {
         pathCommonDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir"), launcherDirs.getDefaultCommonDataDir()).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir"), launcherDirs.getDefaultCommonDataDir(), null).setVisible(true);
 			}
 		});
 
         pathInstancesDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir"), launcherDirs.getDefaultInstancesDir()).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
 			}
 		});
     }
@@ -291,28 +291,28 @@ public class ConfigurationDialog extends JDialog {
     		saveAndClose.run();
     }
 
-    public void moveFiles(final Runnable callback) {
-    	File commonAssetsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getAssetsDir());
-    	File commonAssetsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getAssetsDir());
-    	File commonLibrariesDataDirSrc = DirectoryUtils.tryCanonical(launcher.getLibrariesDir());
-    	File commonLibrariesDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getLibrariesDir());
-    	File commonVersionsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getVersionsDir());
-    	File commonVersionsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getVersionsDir());
-    	File instancesDirSrc = DirectoryUtils.tryCanonical(launcher.getInstancesDir());
-    	File instancesDirDest = DirectoryUtils.tryCanonical(launcherDirs.getInstancesDir());
+	public void moveFiles(final Runnable callback) {
+		File commonAssetsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getAssetsDir());
+		File commonAssetsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getAssetsDir());
+		File commonLibrariesDataDirSrc = DirectoryUtils.tryCanonical(launcher.getLibrariesDir());
+		File commonLibrariesDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getLibrariesDir());
+		File commonVersionsDataDirSrc = DirectoryUtils.tryCanonical(launcher.getVersionsDir());
+		File commonVersionsDataDirDest = DirectoryUtils.tryCanonical(launcherDirs.getVersionsDir());
+		File instancesDirSrc = DirectoryUtils.tryCanonical(launcher.getInstancesDir());
+		File instancesDirDest = DirectoryUtils.tryCanonical(launcherDirs.getInstancesDir());
 
-    	DirectoryTasks tasks = new DirectoryTasks(launcher);
-    	List<ObservableFuture<File>> futures = Lists.newArrayList();
-    	if (!commonAssetsDataDirSrc.equals(commonAssetsDataDirDest))
-    		futures.add(tasks.move(this, commonAssetsDataDirSrc, commonAssetsDataDirDest));
-    	if (!commonLibrariesDataDirSrc.equals(commonLibrariesDataDirDest))
-    		futures.add(tasks.move(this, commonLibrariesDataDirSrc, commonLibrariesDataDirDest));
-    	if (!commonVersionsDataDirSrc.equals(commonVersionsDataDirDest))
-    		futures.add(tasks.move(this, commonVersionsDataDirSrc, commonVersionsDataDirDest));
-    	if (!instancesDirSrc.equals(instancesDirDest))
-    		futures.add(tasks.move(this, instancesDirSrc, instancesDirDest));
+		DirectoryTasks tasks = new DirectoryTasks(launcher);
+		List<ObservableFuture<File>> futures = Lists.newArrayList();
+		if (!commonAssetsDataDirSrc.equals(commonAssetsDataDirDest))
+			futures.add(tasks.move(this, commonAssetsDataDirSrc, commonAssetsDataDirDest));
+		if (!commonLibrariesDataDirSrc.equals(commonLibrariesDataDirDest))
+			futures.add(tasks.move(this, commonLibrariesDataDirSrc, commonLibrariesDataDirDest));
+		if (!commonVersionsDataDirSrc.equals(commonVersionsDataDirDest))
+			futures.add(tasks.move(this, commonVersionsDataDirSrc, commonVersionsDataDirDest));
+		if (!instancesDirSrc.equals(instancesDirDest))
+			futures.add(tasks.move(this, instancesDirSrc, instancesDirDest));
 
-    	Futures.addCallback(Futures.allAsList(futures), new FutureCallback<List<File>>() {
+		Futures.addCallback(Futures.allAsList(futures), new FutureCallback<List<File>>() {
 			@Override
 			public void onSuccess(List<File> result) {
 				callback.run();
@@ -320,7 +320,8 @@ public class ConfigurationDialog extends JDialog {
 
 			@Override
 			public void onFailure(Throwable t) {
+				moveFilesCheck.setSelected(false);
 			}
 		}, SwingExecutor.INSTANCE);
-    }
+	}
 }

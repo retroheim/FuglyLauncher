@@ -17,6 +17,8 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.ArrayUtils;
+
 import lombok.NonNull;
 import lombok.extern.java.Log;
 
@@ -60,7 +62,7 @@ public class SharedLocale {
             try {
                 return bundle.getString(key);
             } catch (MissingResourceException e) {
-                log.log(Level.WARNING, "Failed to find message", e);
+                log.log(Level.FINE, "Failed to find message", e);
             }
         }
 
@@ -83,11 +85,11 @@ public class SharedLocale {
                 formatter.setLocale(getLocale());
                 return formatter.format(args);
             } catch (MissingResourceException e) {
-                log.log(Level.WARNING, "Failed to find message", e);
+                log.log(Level.FINE, "Failed to find message", e);
             }
         }
 
-        return "${" + key + "}:" + args;
+        return "${" + key + ":" + ArrayUtils.toString(args) + "}";
     }
 
     /**

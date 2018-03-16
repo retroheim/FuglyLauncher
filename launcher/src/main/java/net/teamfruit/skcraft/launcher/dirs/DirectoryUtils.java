@@ -58,7 +58,7 @@ public class DirectoryUtils {
 	}
 
 	public static String getRelativePath(File baseDir, File targetDir) {
-		return baseDir.toURI().relativize(targetDir.toURI()).getPath();
+		return StringUtils.replace(StringUtils.stripEnd(baseDir.toURI().relativize(targetDir.toURI()).getPath(), "/"), "/", File.separator);
 	}
 
 	public static int getFilesCount(File file) {
@@ -86,8 +86,11 @@ public class DirectoryUtils {
 		if (!srcDir.isDirectory()) {
 			throw new IOException("Source '"+srcDir+"' is not a directory");
 		}
-		if (destDir.exists()&&destDir.length()>0) {
-			throw new IOException("Destination '"+destDir+"' already exists");
+		if (destDir.exists()) {
+			if (!destDir.isDirectory()||destDir.length()>0)
+				throw new IOException("Destination '"+destDir+"' already exists");
+			else
+				destDir.delete();
 		}
 		boolean rename = srcDir.renameTo(destDir);
 		if (!rename) {
