@@ -261,14 +261,14 @@ public class ConfigurationDialog extends JDialog {
 		pathCommonDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir"), launcherDirs.getDefaultCommonDataDir(), null).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir.settingsTitle"), launcherDirs.getDefaultCommonDataDir(), null).setVisible(true);
 			}
 		});
 
 		pathInstancesDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir.settingsTitle"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
 			}
 		});
 	}
@@ -317,14 +317,14 @@ public class ConfigurationDialog extends JDialog {
 		DirectoryTasks tasks = new DirectoryTasks(launcher);
 		List<ObservableFuture<File>> futures = Lists.newArrayList();
 		if (!commonDataDirSrc.equals(commonDataDirDest)) {
-			if (!commonAssetsDirSrc.equals(commonAssetsDirDest))
+			if (!commonAssetsDirSrc.equals(commonAssetsDirDest)&&commonAssetsDirSrc.isDirectory())
 				futures.add(tasks.move(this, commonAssetsDirSrc, commonAssetsDirDest));
-			if (!commonLibrariesDirSrc.equals(commonLibrariesDirDest))
+			if (!commonLibrariesDirSrc.equals(commonLibrariesDirDest)&&commonLibrariesDirSrc.isDirectory())
 				futures.add(tasks.move(this, commonLibrariesDirSrc, commonLibrariesDirDest));
-			if (!commonVersionsDirSrc.equals(commonVersionsDirDest))
+			if (!commonVersionsDirSrc.equals(commonVersionsDirDest)&&commonVersionsDirSrc.isDirectory())
 				futures.add(tasks.move(this, commonVersionsDirSrc, commonVersionsDirDest));
 		}
-		if (!instancesDirSrc.equals(instancesDirDest))
+		if (!instancesDirSrc.equals(instancesDirDest)&&instancesDirSrc.isDirectory())
 			futures.add(tasks.move(this, instancesDirSrc, instancesDirDest));
 
 		Futures.addCallback(Futures.allAsList(futures), new FutureCallback<List<File>>() {

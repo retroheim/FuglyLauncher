@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
+import javax.swing.JOptionPane;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -24,19 +25,31 @@ public class DirectoryUtils {
 	}
 
 	public static boolean checkMovable(Component parent, File srcDir, File destDir) {
-		if (!srcDir.isDirectory()) {
-			SwingHelper.showErrorDialog(parent, SharedLocale.tr("directoryMover.unmovableSrc", srcDir.getAbsolutePath(), destDir.getAbsolutePath()), SharedLocale.tr("directoryMover.unmovableTitle"));
+		/*if (!srcDir.isDirectory()) {
+			SwingHelper.showMessageDialog(parent,
+					SharedLocale.tr("directoryMover.unmovableSrc", srcDir.getAbsolutePath(), destDir.getAbsolutePath()),
+					SharedLocale.tr("directoryMover.unmovableTitle"),
+					SharedLocale.tr("directoryMover.unmovableSrcDetails", srcDir.getAbsolutePath(), destDir.getAbsolutePath()),
+					JOptionPane.ERROR_MESSAGE);
 			return false;
-		}
+		}*/
 		if (destDir.exists()) {
 			if (!destDir.isDirectory()||destDir.length()>0) {
-				SwingHelper.showErrorDialog(parent, SharedLocale.tr("directoryMover.unmovableDest", srcDir.getAbsolutePath(), destDir.getAbsolutePath()), SharedLocale.tr("directoryMover.unmovableTitle"));
+				SwingHelper.showMessageDialog(parent,
+						SharedLocale.tr("directoryMover.unmovableDest", srcDir.getAbsolutePath(), destDir.getAbsolutePath()),
+						SharedLocale.tr("directoryMover.unmovableTitle"),
+						SharedLocale.tr("directoryMover.unmovableDestDetails", srcDir.getAbsolutePath(), destDir.getAbsolutePath()),
+						JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 		}
 		try {
 			if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath()+File.separator)) {
-				SwingHelper.showErrorDialog(parent, SharedLocale.tr("directoryMover.unmovableInner", srcDir.getAbsolutePath(), destDir.getAbsolutePath()), SharedLocale.tr("directoryMover.unmovableTitle"));
+				SwingHelper.showMessageDialog(parent,
+						SharedLocale.tr("directoryMover.unmovableInner", srcDir.getAbsolutePath(), destDir.getAbsolutePath()),
+						SharedLocale.tr("directoryMover.unmovableTitle"),
+						SharedLocale.tr("directoryMover.unmovableInnerDetails", srcDir.getAbsolutePath(), destDir.getAbsolutePath()),
+						JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 		} catch (IOException e) {

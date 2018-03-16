@@ -62,7 +62,7 @@ public class DirectorySelectionDialog extends JDialog {
 
 	private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
 	private final JButton chooseDirButton = new JButton(SharedLocale.tr("options.chooseDirButton"));
-	private final JButton openDirButton = new JButton(SharedLocale.tr("options.openDirButton"));
+	private final JButton openDirButton = new JButton(SharedLocale.tr("features.openFolder"));
 	private final JButton okButton = new JButton(SharedLocale.tr("button.ok"));
 	private final JButton cancelButton = new JButton(SharedLocale.tr("button.cancel"));
 
@@ -145,11 +145,12 @@ public class DirectorySelectionDialog extends JDialog {
 
 		pathTextSuffixLinkedCheck.register();
 		pathTextAbsoluteLinkedCheck.register();
-		pathTextSuffixLinkedCheck.setSelected(true);
+		if (StringUtils.isEmpty(pathText.getText()))
+			pathTextSuffixLinkedCheck.setSelected(true);
 
 		if (name==null)
 			pathTextSuffixCheck.setEnabled(false);
-		pathTextPrefix.setText(SharedLocale.tr("options.baseDir", File.separator));
+		pathTextPrefix.setText(SharedLocale.tr("options.baseDir")+File.separator);
 		pathTextPrefix.setToolTipText(baseDir.getAbsolutePath());
 		pathTextPanel.add(pathTextPrefix, BorderLayout.WEST);
 		pathTextPanel.add(pathText, BorderLayout.CENTER);
