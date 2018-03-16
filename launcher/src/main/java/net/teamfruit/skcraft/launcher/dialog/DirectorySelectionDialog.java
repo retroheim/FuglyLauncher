@@ -7,6 +7,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JButton;
@@ -15,13 +17,18 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicFileChooserUI;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -41,15 +48,16 @@ public class DirectorySelectionDialog extends JDialog {
 	private final LauncherDirectories launcher;
 
 	private final JTextField targetText;
+	private final File rawBaseDir;
 	private File baseDir;
 	private final String name;
 
-	private final FormPanel pathDirPanel = new FormPanel();
+	private final FormPanel formpanel = new FormPanel();
 	private final JPanel pathTextPanel = new JPanel(new BorderLayout());
 	private final JTextField pathText = new JTextField();
 	private final JLabel pathTextPrefix = new JLabel();
 	private final JLabel pathTextSuffix = new JLabel();
-	private final JCheckBox fixedNameCheck = new JCheckBox(SharedLocale.tr("options.fixedName"));
+	private final JCheckBox pathTextPrefixCheck = new JCheckBox(SharedLocale.tr("options.fixedName"));
 	private final LinkedCheckBox linkedCheck;
 
 	private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
@@ -63,10 +71,10 @@ public class DirectorySelectionDialog extends JDialog {
 
 		this.launcher = launcher;
 		this.targetText = pathDirText;
-		this.baseDir = DirectoryUtils.tryCanonical(baseDir);
+		this.baseDir = this.rawBaseDir = DirectoryUtils.tryCanonical(baseDir);
 		this.name = name;
 
-		this.linkedCheck = new LinkedCheckBox(fixedNameCheck) {
+		this.linkedCheck = new LinkedCheckBox(pathTextPrefixCheck) {
 			@Override
 			protected void onSetSelected(boolean b) {
 				pathTextSuffix.setVisible(b);
@@ -93,8 +101,8 @@ public class DirectorySelectionDialog extends JDialog {
 	private void initComponents() {
 		PathTextListener listener = new PathTextListener(pathText, pathTextPrefix) {
 			@Override
-			public void changed() {
-				super.changed();
+			public void stateChanged(ChangeEvent e) {
+				super.stateChanged(e);
 				if (name!=null) {
 					final String text = target.getText();
 					pathTextSuffix.setText((StringUtils.endsWithAny(text, new String[] { "/", "\\" }) ? "" : File.separator)+name);
@@ -113,29 +121,33 @@ public class DirectorySelectionDialog extends JDialog {
 				}
 			}
 		};
-		listener.register(pathText);
-		pathText.setText(targetText.getText());
-		if (StringUtils.equalsIgnoreCase(DirectoryUtils.getDirFromOption(baseDir, pathText.getText()).getName(), name)) {
+		addChangeListener(pathText, listener);
+		String text = targetText.getText();
+		pathText.setText(text);
+		if (StringUtils.equalsIgnoreCase(baseDir.getName(), name)) {
 			File parent = baseDir.getParentFile();
 			if (parent!=null) {
 				baseDir = parent;
-				linkedCheck.setSelected(true);
+				if (StringUtils.isEmpty(text))
+					linkedCheck.setSelected(true);
 			}
 		}
-		listener.changed();
+		listener.stateChanged(new ChangeEvent(pathText));
 
+		if (name==null)
+			pathTextPrefixCheck.setEnabled(false);
 		pathTextPrefix.setText(SharedLocale.tr("options.baseDir", File.separator));
 		pathTextPrefix.setToolTipText(baseDir.getAbsolutePath());
 		pathTextPanel.add(pathTextPrefix, BorderLayout.WEST);
 		pathTextPanel.add(pathText, BorderLayout.CENTER);
 		pathTextPanel.add(pathTextSuffix, BorderLayout.EAST);
-		pathDirPanel.addRow(pathTextPanel);
-		SwingHelper.removeOpaqueness(pathDirPanel);
-		add(SwingHelper.alignTabbedPane(pathDirPanel), BorderLayout.CENTER);
+		formpanel.addRow(pathTextPanel);
+		SwingHelper.removeOpaqueness(formpanel);
+		add(SwingHelper.alignTabbedPane(formpanel), BorderLayout.CENTER);
 
 		buttonsPanel.addElement(chooseDirButton);
 		buttonsPanel.addElement(openDirButton);
-		buttonsPanel.addElement(fixedNameCheck);
+		buttonsPanel.addElement(pathTextPrefixCheck);
 		buttonsPanel.addGlue();
 		buttonsPanel.addElement(okButton);
 		buttonsPanel.addElement(cancelButton);
@@ -167,8 +179,6 @@ public class DirectorySelectionDialog extends JDialog {
 
 				File targetDir = DirectoryUtils.getDirFromOption(baseDir, pathText.getText());
 				File exists = DirectoryUtils.findExistsDirFromAncestors(targetDir);
-				if (exists!=null&&exists.equals(targetDir))
-					exists = exists.getParentFile();
 				filechooser.setCurrentDirectory(exists);
 				filechooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				filechooser.setFileFilter(new FileFilter() {
@@ -186,14 +196,15 @@ public class DirectorySelectionDialog extends JDialog {
 				if (componentUI instanceof BasicFileChooserUI)
 					((BasicFileChooserUI) componentUI).setFileName(targetDir.getAbsolutePath());
 
-				filechooser.showSaveDialog(DirectorySelectionDialog.this);
-				File file = filechooser.getSelectedFile();
-				if (file!=null) {
-					file = DirectoryUtils.tryCanonical(file);
-					if (DirectoryUtils.isInSubDirectory(baseDir, file))
-						pathText.setText(DirectoryUtils.getRelativePath(baseDir, file));
-					else
-						pathText.setText(file.getAbsolutePath());
+				if (filechooser.showSaveDialog(DirectorySelectionDialog.this)==JFileChooser.APPROVE_OPTION) {
+					File file = filechooser.getSelectedFile();
+					if (file!=null) {
+						file = DirectoryUtils.tryCanonical(file);
+						if (DirectoryUtils.isInSubDirectory(baseDir, file))
+							pathText.setText(DirectoryUtils.getRelativePath(baseDir, file));
+						else
+							pathText.setText(file.getAbsolutePath());
+					}
 				}
 			}
 		});
@@ -205,40 +216,87 @@ public class DirectorySelectionDialog extends JDialog {
 	public void save() {
 		String text = pathText.getText();
 		if (linkedCheck.isSelected())
-			text = new File(StringUtils.isEmpty(text)?null:text, name).getPath();
+			text = new File(StringUtils.isEmpty(text) ? null : text, name).getPath();
+		if (!DirectoryUtils.isAbsolute(text)) {
+			File file = DirectoryUtils.getDirFromOption(baseDir, text);
+			if (DirectoryUtils.isInSubDirectory(rawBaseDir, file))
+				text = DirectoryUtils.getRelativePath(rawBaseDir, file);
+			else
+				text = file.getAbsolutePath();
+		}
 		targetText.setText(text);
 		dispose();
 	}
 
 	@RequiredArgsConstructor
-	public static class PathTextListener extends DocumentChangeListener {
+	public static class PathTextListener implements ChangeListener {
 		protected final JTextField target;
 		protected final JLabel pathLabel;
 
-		public void changed() {
+		@Override
+		public void stateChanged(ChangeEvent e) {
 			if (pathLabel!=null)
-				pathLabel.setVisible(!new File(target.getText()).isAbsolute());
+				pathLabel.setVisible(!DirectoryUtils.isAbsolute(target.getText()));
 		}
 	}
 
-	public static abstract class DocumentChangeListener implements DocumentListener {
-		public void changedUpdate(DocumentEvent e) {
-			changed();
-		}
+	/**
+	 * Installs a listener to receive notification when the text of any
+	 * {@code JTextComponent} is changed. Internally, it installs a
+	 * {@link DocumentListener} on the text component's {@link Document},
+	 * and a {@link PropertyChangeListener} on the text component to detect
+	 * if the {@code Document} itself is replaced.
+	 *
+	 * @param text any text component, such as a {@link JTextField}
+	 *        or {@link JTextArea}
+	 * @param changeListener a listener to receieve {@link ChangeEvent}s
+	 *        when the text is changed; the source object for the events
+	 *        will be the text component
+	 * @throws NullPointerException if either parameter is null
+	 */
+	public static void addChangeListener(@NonNull final JTextComponent text, @NonNull final ChangeListener changeListener) {
+		final DocumentListener dl = new DocumentListener() {
+			private int lastChange = 0, lastNotifiedChange = 0;
 
-		public void removeUpdate(DocumentEvent e) {
-			changed();
-		}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				changedUpdate(e);
+			}
 
-		public void insertUpdate(DocumentEvent e) {
-			changed();
-		}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				changedUpdate(e);
+			}
 
-		public abstract void changed();
-
-		public void register(JTextField target) {
-			target.getDocument().addDocumentListener(this);
-		}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				lastChange++;
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (lastNotifiedChange!=lastChange) {
+							lastNotifiedChange = lastChange;
+							changeListener.stateChanged(new ChangeEvent(text));
+						}
+					}
+				});
+			}
+		};
+		text.addPropertyChangeListener("document", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				Document d1 = (Document) e.getOldValue();
+				Document d2 = (Document) e.getNewValue();
+				if (d1!=null)
+					d1.removeDocumentListener(dl);
+				if (d2!=null)
+					d2.addDocumentListener(dl);
+				dl.changedUpdate(null);
+			}
+		});
+		Document d = text.getDocument();
+		if (d!=null)
+			d.addDocumentListener(dl);
 	}
 
 	public static abstract class LinkedCheckBox {

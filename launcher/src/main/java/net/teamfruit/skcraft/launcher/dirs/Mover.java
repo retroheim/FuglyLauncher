@@ -36,17 +36,16 @@ public class Mover implements Callable<File>, ProgressObservable {
 	}
 
 	@Override
-    public File call() throws Exception {
-        checkInterrupted();
+	public File call() throws Exception {
+		checkInterrupted();
 
-        Thread.sleep(2000);
+		overall = DirectoryUtils.getFilesCount(src);
 
-        overall = DirectoryUtils.getFilesCount(src);
+		checkInterrupted();
 
-        checkInterrupted();
+		DirectoryUtils.interruptibleMoveDirectory(src, dest, done);
 
-        DirectoryUtils.interruptibleMoveDirectory(src, dest, done);
+		return dest;
+	}
 
-        return dest;
-    }
 }

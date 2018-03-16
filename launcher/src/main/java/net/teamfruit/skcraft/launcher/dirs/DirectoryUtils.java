@@ -1,5 +1,6 @@
 package net.teamfruit.skcraft.launcher.dirs;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -14,8 +15,35 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.skcraft.launcher.LauncherUtils;
+import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.util.SharedLocale;
 
 public class DirectoryUtils {
+	public static boolean isAbsolute(String path) {
+		return new File(path).isAbsolute();
+	}
+
+	public static boolean checkMovable(Component parent, File srcDir, File destDir) {
+		if (!srcDir.isDirectory()) {
+			SwingHelper.showErrorDialog(parent, SharedLocale.tr("directoryMover.unmovableSrc", srcDir.getAbsolutePath(), destDir.getAbsolutePath()), SharedLocale.tr("directoryMover.unmovableTitle"));
+			return false;
+		}
+		if (destDir.exists()) {
+			if (!destDir.isDirectory()||destDir.length()>0) {
+				SwingHelper.showErrorDialog(parent, SharedLocale.tr("directoryMover.unmovableDest", srcDir.getAbsolutePath(), destDir.getAbsolutePath()), SharedLocale.tr("directoryMover.unmovableTitle"));
+				return false;
+			}
+		}
+		try {
+			if (destDir.getCanonicalPath().startsWith(srcDir.getCanonicalPath()+File.separator)) {
+				SwingHelper.showErrorDialog(parent, SharedLocale.tr("directoryMover.unmovableInner", srcDir.getAbsolutePath(), destDir.getAbsolutePath()), SharedLocale.tr("directoryMover.unmovableTitle"));
+				return false;
+			}
+		} catch (IOException e) {
+		}
+		return true;
+	}
+
 	public static @Nullable File findExistsDirFromAncestors(File file) {
 		if (file.isDirectory())
 			return file;
