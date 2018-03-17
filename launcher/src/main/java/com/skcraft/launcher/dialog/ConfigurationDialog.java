@@ -195,7 +195,7 @@ public class ConfigurationDialog extends JDialog {
 		SwingHelper.removeOpaqueness(advancedPanel);
 		tabbedPane.addTab(SharedLocale.tr("options.advancedTab"), SwingHelper.alignTabbedPane(advancedPanel));
 
-		File pathCurrentDir = DirectoryUtils.tryCanonical(launcher.getBaseDir());
+		File pathCurrentDir = DirectoryUtils.tryCanonical(new File("."));
 		JTextField pathCurrentDirText = new JTextField(pathCurrentDir.getAbsolutePath());
 		JButton openCurrentDirButton = new JButton(SharedLocale.tr("features.openFolder"));
 		pathDirPanel.addRow(new JLabel(SharedLocale.tr("options.pathCurrentDir")), openCurrentDirButton);
