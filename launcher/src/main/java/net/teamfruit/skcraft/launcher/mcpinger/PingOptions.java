@@ -2,11 +2,12 @@ package net.teamfruit.skcraft.launcher.mcpinger;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 /**
  * Storage class for {@link Pinger} options.
  */
-@Accessors(chain = true)
+@Accessors(fluent = true)
 @Data
 public class PingOptions {
 
@@ -14,5 +15,11 @@ public class PingOptions {
 	private int port = 25565;
 	private int timeout = 2000;
 	private String charset = "UTF-8";
+
+	public PingOptions withServer(ConnectServerInfo serverInfo) {
+		if (serverInfo.isValid())
+			hostname(serverInfo.getServerHost()).port(serverInfo.getServerPort());
+		return this;
+	}
 
 }

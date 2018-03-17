@@ -21,18 +21,6 @@ public class Pinger {
 	public static int STATUS_HANDSHAKE = 1;
 
 	/**
-	 * Fetches a {@link PingResult} for the supplied hostname.
-	 * <b>Assumed timeout of 2s and port of 25565.</b>
-	 *
-	 * @param hostname - a valid String hostname
-	 * @return {@link PingResult}
-	 * @throws IOException
-	 */
-	public PingResult ping(final String hostname) throws IOException {
-		return this.ping(new PingOptions().setHostname(hostname));
-	}
-
-	/**
 	 * Fetches a {@link PingResult} for the supplied options.
 	 *
 	 * @param options - a filled instance of {@link PingOptions}
@@ -40,11 +28,11 @@ public class Pinger {
 	 * @throws IOException
 	 */
 	public PingResult ping(final PingOptions options) throws IOException {
-		Validate.notNull(options.getHostname(), "Hostname cannot be null.");
-		Validate.notNull(options.getPort(), "Port cannot be null.");
+		Validate.notNull(options.hostname(), "Hostname cannot be null.");
+		Validate.notNull(options.port(), "Port cannot be null.");
 
 		final Socket socket = new Socket();
-		socket.connect(new InetSocketAddress(options.getHostname(), options.getPort()), options.getTimeout());
+		socket.connect(new InetSocketAddress(options.hostname(), options.port()), options.timeout());
 
 		final DataInputStream in = new DataInputStream(socket.getInputStream());
 		final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -56,9 +44,9 @@ public class Pinger {
 
 		handshake.writeByte(PACKET_HANDSHAKE);
 		writeVarInt(handshake, PROTOCOL_VERSION);
-		writeVarInt(handshake, options.getHostname().length());
-		handshake.writeBytes(options.getHostname());
-		handshake.writeShort(options.getPort());
+		writeVarInt(handshake, options.hostname().length());
+		handshake.writeBytes(options.hostname());
+		handshake.writeShort(options.port());
 		writeVarInt(handshake, STATUS_HANDSHAKE);
 
 		writeVarInt(out, handshake_bytes.size());
@@ -83,7 +71,7 @@ public class Pinger {
 
 		byte[] data = new byte[length];
 		in.readFully(data);
-		String json = new String(data, options.getCharset());
+		String json = new String(data, options.charset());
 
 		//> Ping
 
