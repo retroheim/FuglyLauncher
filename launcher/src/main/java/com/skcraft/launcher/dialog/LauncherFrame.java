@@ -527,6 +527,7 @@ public class LauncherFrame extends JFrame {
     }
 
 	public boolean processRun() {
+		launcher.getOptions().processURI();
 		String runid = launcher.getOptions().getRun();
 		if (!StringUtils.isEmpty(runid)) {
 			log.info("Trying to launch "+runid);

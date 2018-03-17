@@ -20,41 +20,41 @@ import lombok.Data;
 @Data
 public class LauncherArguments {
 
-    @Parameter(names = "--dir")
-    private File dir;
+	@Parameter(names = "--dir")
+	private File dir;
 
-    @Parameter(names = "--bootstrap-version")
-    private Integer bootstrapVersion;
+	@Parameter(names = "--bootstrap-version")
+	private Integer bootstrapVersion;
 
-    @Parameter(names = "--portable")
-    private boolean portable;
+	@Parameter(names = "--portable")
+	private boolean portable;
 
-    @Parameter(names = "--uripath")
-    private String uriPath;
+	@Parameter(names = "--uripath")
+	private String uriPath;
 
-    @Parameter(names = "--run")
-    private String run;
+	@Parameter(names = "--run")
+	private String run;
 
-    public void processURI() {
-    	String uripath = getUriPath();
-    	if (!StringUtils.isEmpty(uripath)) {
-	    	if (StringUtils.startsWith(uripath, "'")&&StringUtils.endsWith(uripath, "'"))
-	    		uripath = StringUtils.substringBetween(uripath, "'");
-	    	if (StringUtils.contains(uripath, "://"))
-	    		uripath = StringUtils.substringAfter(uripath, "://");
-	    	if (!StringUtils.isEmpty(uripath)) {
-	        	String[] uripaths = StringUtils.split(uripath, "/");
+	public void processURI() {
+		String uripath = getUriPath();
+		if (!StringUtils.isEmpty(uripath)) {
+			if (StringUtils.startsWith(uripath, "'")&&StringUtils.endsWith(uripath, "'"))
+				uripath = StringUtils.substringBetween(uripath, "'");
+			if (StringUtils.contains(uripath, "://"))
+				uripath = StringUtils.substringAfter(uripath, "://");
+			if (!StringUtils.isEmpty(uripath)) {
+				String[] uripaths = StringUtils.split(uripath, "/");
 
-	        	if (uripaths.length>0) {
-	        		String type = uripaths[0];
-	        		if (type.equals("run")) {
-	        			if (uripaths.length>1) {
-	        				String runid = uripaths[1];
-	        				setRun(runid);
-	        			}
-	        		}
-	        	}
-	    	}
-    	}
-    }
+				if (uripaths.length>0) {
+					String type = uripaths[0];
+					if (type.equals("run")) {
+						if (uripaths.length>1) {
+							String runid = uripaths[1];
+							setRun(runid);
+						}
+					}
+				}
+			}
+		}
+	}
 }

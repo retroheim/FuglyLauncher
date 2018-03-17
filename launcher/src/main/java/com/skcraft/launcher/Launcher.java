@@ -60,6 +60,8 @@ public final class Launcher {
 
     public static final int PROTOCOL_VERSION = 2;
 
+    public static final int DEBUG_VERSION = 1;
+
     @Getter
     private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     @Getter @Setter private Supplier<Window> mainWindowSupplier = new DefaultLauncherSupplier(this);
@@ -141,7 +143,7 @@ public final class Launcher {
         });
 
         //SwingHelper.showErrorDialog(null, "["+getOptions().getUriPath()+"]", "URI Path");
-        getOptions().processURI();
+        //getOptions().processURI();
     }
 
     /**
