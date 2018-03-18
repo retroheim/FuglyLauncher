@@ -12,8 +12,8 @@ import javax.swing.JComponent;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Data;
@@ -43,7 +43,7 @@ public class ServerInfoPanel {
 			InfoMessage infoMessage = getMessage();
 			String message = infoMessage.getMessage();
 			String details = infoMessage.getDetails();
-			if (message!=null) {
+			if (!StringUtils.isEmpty(message)) {
 				Rectangle rect = new Rectangle(r.x+50, r.y+0, r.width-50-25, 20);
 				final Graphics2D g2d = (Graphics2D) g.create();
 				g2d.translate(rect.x, rect.y);
@@ -60,13 +60,14 @@ public class ServerInfoPanel {
 			}
 			if (style==ServerInfoStyle.DETAILS)
 				if (instancePanel!=null)
-					instancePanel.setToolTipText(details==null ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
+					instancePanel.setToolTipText(StringUtils.isEmpty(details) ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
 		}
 	}
 
 	private ListenableFuture<PingResult> resultFuture;
 
 	private InfoMessage getMessage() {
+		InfoMessage.InfoMessageBuilder builder = InfoMessage.builder();
 		try {
 			{
 				ListenableFuture<PingResult> future = futureSupplier.call();
@@ -83,7 +84,7 @@ public class ServerInfoPanel {
 			}
 			if (resultFuture!=null) {
 				if (!resultFuture.isDone())
-					return InfoMessage.builder().message("Pinging...").build();
+					builder.message(SharedLocale.tr("mcpinger.message.pinging"));
 				else {
 					PingResult result = null;
 					String error = null;
@@ -96,40 +97,56 @@ public class ServerInfoPanel {
 						Players players = result.getPlayers();
 						Version version = result.getVersion();
 						Description description = result.getDescription();
-						InfoMessage.InfoMessageBuilder builder = InfoMessage.builder();
+
+						String online = "?";
+						String max = "?";
 						if (players!=null) {
-							builder.message((style!=ServerInfoStyle.SIMPLE ? server+" | " : "")+"✓ "+(players.getOnline()+" / "+players.getMax()));
+							online = String.valueOf(players.getOnline());
+							max = String.valueOf(players.getMax());
+						}
+
+						builder.message(SharedLocale.tr(
+								(style==ServerInfoStyle.SIMPLE?
+										"mcpinger.message.statusOnlineSimple":
+											"mcpinger.message.statusOnline"), server, online, max));
+
+						StringBuilder stb = new StringBuilder();
+						stb.append(SharedLocale.tr("mcpinger.details.ip", server)).append("\n");
+						stb.append(SharedLocale.tr("mcpinger.details.statusOnline")).append("\n");
+						if (version!=null)
+							stb.append(SharedLocale.tr("mcpinger.details.version", version.getName())).append("\n");
+						if (description!=null) {
+							HTMLLog htmllog = new HTMLLog();
+							ChatMessagePanel.log(description.getText(), htmllog);
+							stb.append(SharedLocale.tr("mcpinger.details.description", htmllog)).append("\n");
+						}
+						stb.append(SharedLocale.tr("mcpinger.details.players", online, max)).append("\n");
+						if (players!=null) {
 							List<Player> sampleplayers = players.getSample();
-							List<String> samples = Lists.newArrayList();
 							if (sampleplayers!=null)
 								for (Player player : sampleplayers)
 									if (player!=null)
-										samples.add(player.getName());
-							StringBuilder stb = new StringBuilder();
-							stb.append("ip: ").append(server).append("\n");
-							stb.append("status: online").append("\n");
-							stb.append("version: ").append(version.getName()).append("\n");
-							HTMLLog htmllog = new HTMLLog();
-							ChatMessagePanel.log(description.getText(), htmllog);
-							stb.append("description: ").append(htmllog).append("\n");
-							stb.append("players: ").append(players.getOnline()+" / "+players.getMax())
-									.append("   ").append(StringUtils.join(samples, "\n   ")).append("\n");
-							builder.details(stb.toString());
-							return builder.build();
+										stb.append(SharedLocale.tr("mcpinger.details.playerLine", player.getName())).append("\n");
 						}
-					} else if (style!=ServerInfoStyle.SIMPLE) {
+						builder.details(stb.toString());
+					} else {
+						builder.message(SharedLocale.tr(
+								(style==ServerInfoStyle.SIMPLE?
+										"mcpinger.message.statusOfflineSimple":
+											"mcpinger.message.statusOffline"), server));
+
 						StringBuilder stb = new StringBuilder();
-						stb.append("ip: ").append(server).append("\n");
-						stb.append("status: offline").append("\n");
+						stb.append(SharedLocale.tr("mcpinger.details.ip", server)).append("\n");
+						stb.append(SharedLocale.tr("mcpinger.details.statusOffline")).append("\n");
 						if (error!=null)
-							stb.append("error: "+error).append("\n");
-						return InfoMessage.builder().message("✘").details(stb.toString()).build();
+							stb.append(SharedLocale.tr("mcpinger.details.error", error)).append("\n");
+						builder.details(stb.toString());
 					}
 				}
 			}
 		} catch (Exception e1) {
 		}
-		return InfoMessage.builder().build();
+		return builder.build();
 	}
 
 	@Builder(fluent = true)
