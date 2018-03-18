@@ -53,11 +53,12 @@ import com.skcraft.launcher.util.SimpleLogFormatter;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.teamfruit.skcraft.launcher.swing.AttributeLog;
 
 /**
  * A simple message log.
  */
-public class MessageLog extends JTabbedPane {
+public class MessageLog extends JTabbedPane implements AttributeLog {
 
     private static final Logger rootLogger = Logger.getLogger("");
 

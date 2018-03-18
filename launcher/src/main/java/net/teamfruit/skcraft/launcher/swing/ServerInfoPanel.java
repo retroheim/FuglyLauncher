@@ -26,6 +26,7 @@ import net.teamfruit.skcraft.launcher.mcpinger.PingResult.Player;
 import net.teamfruit.skcraft.launcher.mcpinger.PingResult.Players;
 import net.teamfruit.skcraft.launcher.mcpinger.PingResult.Version;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
+import net.teamfruit.skcraft.launcher.swing.ChatMessagePanel.HTMLLog;
 
 @Log
 @RequiredArgsConstructor
@@ -57,9 +58,9 @@ public class ServerInfoPanel {
 				g2d.drawString(message, rect.width-width-padding, rect.height-fontMetrics.getDescent());
 				g2d.dispose();
 			}
-			if (style!=ServerInfoStyle.SIMPLE)
+			if (style==ServerInfoStyle.DETAILS)
 				if (instancePanel!=null)
-					instancePanel.setToolTipText(details);
+					instancePanel.setToolTipText(details==null ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
 		}
 	}
 
@@ -85,10 +86,11 @@ public class ServerInfoPanel {
 					return InfoMessage.builder().message("Pinging...").build();
 				else {
 					PingResult result = null;
+					String error = null;
 					try {
 						result = resultFuture.get();
 					} catch (Exception e) {
-						;//log.info(server+": "+e.getMessage());
+						error = e.getMessage();
 					}
 					if (result!=null) {
 						Players players = result.getPlayers();
@@ -96,7 +98,7 @@ public class ServerInfoPanel {
 						Description description = result.getDescription();
 						InfoMessage.InfoMessageBuilder builder = InfoMessage.builder();
 						if (players!=null) {
-							builder.message((style!=ServerInfoStyle.SIMPLE ? server + " | " : "")+"✓ "+(players.getOnline()+" / "+players.getMax()));
+							builder.message((style!=ServerInfoStyle.SIMPLE ? server+" | " : "")+"✓ "+(players.getOnline()+" / "+players.getMax()));
 							List<Player> sampleplayers = players.getSample();
 							List<String> samples = Lists.newArrayList();
 							if (sampleplayers!=null)
@@ -104,14 +106,25 @@ public class ServerInfoPanel {
 									if (player!=null)
 										samples.add(player.getName());
 							StringBuilder stb = new StringBuilder();
+							stb.append("ip: ").append(server).append("\n");
+							stb.append("status: online").append("\n");
 							stb.append("version: ").append(version.getName()).append("\n");
-							stb.append("description: ").append(description.getText()).append("\n");
-							stb.append("players: ").append(StringUtils.join(samples, ", ")).append("\n");
+							HTMLLog htmllog = new HTMLLog();
+							ChatMessagePanel.log(description.getText(), htmllog);
+							stb.append("description: ").append(htmllog).append("\n");
+							stb.append("players: ").append(players.getOnline()+" / "+players.getMax())
+									.append("   ").append(StringUtils.join(samples, "\n   ")).append("\n");
 							builder.details(stb.toString());
 							return builder.build();
 						}
-					} else if (style!=ServerInfoStyle.SIMPLE)
-						return InfoMessage.builder().message("✘").build();
+					} else if (style!=ServerInfoStyle.SIMPLE) {
+						StringBuilder stb = new StringBuilder();
+						stb.append("ip: ").append(server).append("\n");
+						stb.append("status: offline").append("\n");
+						if (error!=null)
+							stb.append("error: "+error).append("\n");
+						return InfoMessage.builder().message("✘").details(stb.toString()).build();
+					}
 				}
 			}
 		} catch (Exception e1) {
@@ -119,7 +132,7 @@ public class ServerInfoPanel {
 		return InfoMessage.builder().build();
 	}
 
-	@Builder(fluent=true)
+	@Builder(fluent = true)
 	@Data
 	private static class InfoMessage {
 		private String message;
