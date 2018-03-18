@@ -76,7 +76,8 @@ import net.teamfruit.skcraft.launcher.appicon.AppIcon;
 import net.teamfruit.skcraft.launcher.integration.AppleHandler;
 import net.teamfruit.skcraft.launcher.swing.BoardPanel;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
-import net.teamfruit.skcraft.launcher.swing.InstanceTableCellPanel;
+import net.teamfruit.skcraft.launcher.swing.InstanceCellPanel;
+import net.teamfruit.skcraft.launcher.swing.ServerInfoStyle;
 import net.teamfruit.skcraft.launcher.swing.TipsPanel;
 import net.teamfruit.skcraft.launcher.swing.WebpageScrollBarUI;
 
@@ -94,7 +95,7 @@ public class LauncherFrame extends JFrame {
     @Getter
     private final JScrollPane instanceScroll = new JScrollPane(this.instancesTable);
     private WebpagePanel webView;
-    private BoardPanel<InstanceTableCellPanel> selectedPane;
+    private BoardPanel<InstanceCellPanel> selectedPane;
     private JPanel splitPane;
     private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
     private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
@@ -160,7 +161,7 @@ public class LauncherFrame extends JFrame {
 
         this.splitPane = new JPanel(new BorderLayout());
 
-        this.selectedPane = new BoardPanel<InstanceTableCellPanel>();
+        this.selectedPane = new BoardPanel<InstanceCellPanel>();
         this.selectedPane.setOpaque(false);
         this.selectedPane.setPreferredSize(new Dimension(250, 60));
         this.selectedPane.setToolTipText(tr("launcher.launchButton"));
@@ -295,7 +296,7 @@ public class LauncherFrame extends JFrame {
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				InstanceTableCellPanel panel = selectedPane.get();
+				InstanceCellPanel panel = selectedPane.get();
 				if (panel!=null) {
 					panel.setShowSelected(true);
 					selectedPane.repaint();
@@ -304,7 +305,7 @@ public class LauncherFrame extends JFrame {
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				InstanceTableCellPanel panel = selectedPane.get();
+				InstanceCellPanel panel = selectedPane.get();
 				if (panel!=null) {
 					panel.setShowSelected(false);
 					selectedPane.repaint();
@@ -325,8 +326,6 @@ public class LauncherFrame extends JFrame {
 			}
 		});
 		this.instancesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			private final InstanceCellFactory factory = new InstanceCellFactory();
-
 			@Override
 			public void valueChanged(final ListSelectionEvent e) {
 		        if (!e.getValueIsAdjusting()) {
@@ -335,7 +334,7 @@ public class LauncherFrame extends JFrame {
 		        		index = 0;
 		        	final Instance instance = LauncherFrame.this.instancesModel.getValueAt(index, 0);
 
-		        	final InstanceTableCellPanel tablecell = this.factory.getCellComponent(LauncherFrame.this.selectedPane, instance, false);
+		        	final InstanceCellPanel tablecell = InstanceCellFactory.instance.getCellComponent(LauncherFrame.this.selectedPane, instance, false, ServerInfoStyle.NORMAL);
 		        	tablecell.setShowPlayIcon(true);
 		    		LauncherFrame.this.selectedPane.set(tablecell);
 		        }

@@ -22,7 +22,7 @@ public class InstanceTable extends DefaultTable {
 	public void setModel(final TableModel dataModel) {
 		super.setModel(dataModel);
 		try {
-			getColumnModel().getColumn(0).setCellRenderer(new InstanceCellFactory());
+			getColumnModel().getColumn(0).setCellRenderer(InstanceCellFactory.instance);
 		} catch (final ArrayIndexOutOfBoundsException e) {
 		}
 	}

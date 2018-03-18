@@ -11,14 +11,17 @@ import org.apache.commons.lang.Validate;
 
 import com.skcraft.launcher.persistence.Persistence;
 
+import lombok.extern.java.Log;
+
+@Log
 public class Pinger {
 
-	public static byte PACKET_HANDSHAKE = 0x00;
-	public static byte PACKET_STATUSREQUEST = 0x00;
-	public static byte PACKET_PING = 0x01;
+	public static final byte PACKET_HANDSHAKE = 0x00;
+	public static final byte PACKET_STATUSREQUEST = 0x00;
+	public static final byte PACKET_PING = 0x01;
 
-	public static int PROTOCOL_VERSION = 4;
-	public static int STATUS_HANDSHAKE = 1;
+	public static final int PROTOCOL_VERSION = 4;
+	public static final int STATUS_HANDSHAKE = 1;
 
 	/**
 	 * Fetches a {@link PingResult} for the supplied options.
@@ -27,9 +30,11 @@ public class Pinger {
 	 * @return {@link PingResult}
 	 * @throws IOException
 	 */
-	public PingResult ping(final PingOptions options) throws IOException {
+	public static PingResult ping(final PingOptions options) throws IOException {
 		Validate.notNull(options.hostname(), "Hostname cannot be null.");
 		Validate.notNull(options.port(), "Port cannot be null.");
+
+		log.info("pinging to "+options.hostname()+":"+options.port());
 
 		final Socket socket = new Socket();
 		socket.connect(new InetSocketAddress(options.hostname(), options.port()), options.timeout());
@@ -98,9 +103,8 @@ public class Pinger {
 	}
 
 	private static void io(final boolean b, final String m) throws IOException {
-		if (b) {
+		if (b)
 			throw new IOException(m);
-		}
 	}
 
 	private static int readVarInt(DataInputStream in) throws IOException {
