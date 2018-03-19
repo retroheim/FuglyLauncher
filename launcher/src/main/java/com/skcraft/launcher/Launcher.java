@@ -50,6 +50,7 @@ import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.dirs.ConfigLauncherDirectories;
 import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherDiscord;
 import net.teamfruit.skcraft.launcher.integration.UriScheme;
 
 /**
@@ -117,6 +118,8 @@ public final class Launcher {
 			@Getter private final File configDir = argConfigDir;
 			@Getter private final File baseDir = argBaseDir;
 		};
+
+		LauncherDiscord.init(directories);
 
         DefaultFont.configUIFont();
 

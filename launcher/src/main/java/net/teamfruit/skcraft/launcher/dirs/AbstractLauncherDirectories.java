@@ -40,6 +40,11 @@ public abstract class AbstractLauncherDirectories implements LauncherDirectories
 	}
 
 	@Override
+	public File getNativeDir() {
+		return new File(getTemporaryDir(), "natives");
+	}
+
+	@Override
 	public File getIconDir() {
 		return new File(getBaseDir(), "icons");
 	}

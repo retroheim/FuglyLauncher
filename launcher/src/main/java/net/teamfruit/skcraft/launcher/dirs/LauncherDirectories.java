@@ -57,6 +57,13 @@ public interface LauncherDirectories {
 	File getInstallerDir();
 
 	/**
+	 * Get the directory to store temporary native files.
+	 *
+	 * @return the temporary native directory
+	 */
+	File getNativeDir();
+
+	/**
 	 * Get the directory to store icons.
 	 *
 	 * @return the icons directory

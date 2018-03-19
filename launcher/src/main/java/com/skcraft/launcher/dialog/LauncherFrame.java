@@ -51,6 +51,7 @@ import javax.swing.plaf.basic.BasicPanelUI;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.ImmutableMap;
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
@@ -73,6 +74,7 @@ import lombok.NonNull;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
+import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.integration.AppleHandler;
 import net.teamfruit.skcraft.launcher.swing.BoardPanel;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
@@ -521,6 +523,7 @@ public class LauncherFrame extends JFrame {
 	private void onInstanceReady() {
         if (first_loaded) {
         	first_loaded = false;
+            DiscordStatus.MENU.update(ImmutableMap.<String, String>of());
         	processRun();
         }
     }

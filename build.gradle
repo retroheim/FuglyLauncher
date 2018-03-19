@@ -31,7 +31,8 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven { url "http://repo.maven.apache.org/maven2" }
+        maven { url 'http://repo.maven.apache.org/maven2' }
+        maven { url 'https://jitpack.io' }
     }
 
     if (JavaVersion.current().isJava8Compatible()) {
