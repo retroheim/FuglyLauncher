@@ -37,7 +37,7 @@ public class ServerInfoPanel {
 	private final ConnectServerInfo server;
 	private final Callable<ListenableFuture<PingResult>> futureSupplier;
 	private InstanceCellPanel instancePanel;
-	private InfoMessageStatus lastStatus = InfoMessageStatus.OFFLINE;
+	private InfoMessageStatus lastStatus = InfoMessageStatus.ONLINE;
 
 	public void paint(final Graphics g, Rectangle r, InstanceCellPanel instancePanel) {
 		this.instancePanel = instancePanel;

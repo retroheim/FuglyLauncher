@@ -34,7 +34,7 @@ public class Pinger {
 		Validate.notNull(options.hostname(), "Hostname cannot be null.");
 		Validate.notNull(options.port(), "Port cannot be null.");
 
-		log.info("pinging to "+options.hostname()+":"+options.port());
+		//log.info("pinging to "+options.hostname()+":"+options.port());
 
 		final Socket socket = new Socket();
 		socket.connect(new InetSocketAddress(options.hostname(), options.port()), options.timeout());
