@@ -26,6 +26,7 @@ import net.teamfruit.skcraft.launcher.mcpinger.PingResult.Player;
 import net.teamfruit.skcraft.launcher.mcpinger.PingResult.Players;
 import net.teamfruit.skcraft.launcher.mcpinger.PingResult.Version;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
+import net.teamfruit.skcraft.launcher.sounds.Sounds;
 import net.teamfruit.skcraft.launcher.swing.ChatMessagePanel.HTMLLog;
 
 @Log
@@ -36,11 +37,13 @@ public class ServerInfoPanel {
 	private final ConnectServerInfo server;
 	private final Callable<ListenableFuture<PingResult>> futureSupplier;
 	private InstanceCellPanel instancePanel;
+	private InfoMessageStatus lastStatus = InfoMessageStatus.OFFLINE;
 
 	public void paint(final Graphics g, Rectangle r, InstanceCellPanel instancePanel) {
 		this.instancePanel = instancePanel;
 		if (futureSupplier!=null) {
 			InfoMessage infoMessage = getMessage();
+			InfoMessageStatus status = infoMessage.getStatus();
 			String message = infoMessage.getMessage();
 			String details = infoMessage.getDetails();
 			if (!StringUtils.isEmpty(message)) {
@@ -58,6 +61,12 @@ public class ServerInfoPanel {
 				g2d.drawString(message, rect.width-width-padding, rect.height-fontMetrics.getDescent());
 				g2d.dispose();
 			}
+			if (style!=ServerInfoStyle.SIMPLE)
+				if (status!=InfoMessageStatus.PINGING) {
+					if (lastStatus==InfoMessageStatus.OFFLINE&&status==InfoMessageStatus.ONLINE)
+						Sounds.play("notice.wav");
+					lastStatus = status;
+				}
 			if (style==ServerInfoStyle.DETAILS)
 				if (instancePanel!=null)
 					instancePanel.setToolTipText(StringUtils.isEmpty(details) ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
@@ -83,9 +92,10 @@ public class ServerInfoPanel {
 				}
 			}
 			if (resultFuture!=null) {
-				if (!resultFuture.isDone())
+				if (!resultFuture.isDone()) {
+					builder.status(InfoMessageStatus.PINGING);
 					builder.message(SharedLocale.tr("mcpinger.message.pinging"));
-				else {
+				} else {
 					PingResult result = null;
 					String error = null;
 					try {
@@ -94,6 +104,7 @@ public class ServerInfoPanel {
 						error = e.getMessage();
 					}
 					if (result!=null) {
+						builder.status(InfoMessageStatus.ONLINE);
 						Players players = result.getPlayers();
 						Version version = result.getVersion();
 						Description description = result.getDescription();
@@ -106,9 +117,7 @@ public class ServerInfoPanel {
 						}
 
 						builder.message(SharedLocale.tr(
-								(style==ServerInfoStyle.SIMPLE?
-										"mcpinger.message.statusOnlineSimple":
-											"mcpinger.message.statusOnline"), server, online, max));
+								(style==ServerInfoStyle.SIMPLE ? "mcpinger.message.statusOnlineSimple" : "mcpinger.message.statusOnline"), server, online, max));
 
 						StringBuilder stb = new StringBuilder();
 						stb.append(SharedLocale.tr("mcpinger.details.ip", server)).append("\n");
@@ -130,10 +139,9 @@ public class ServerInfoPanel {
 						}
 						builder.details(stb.toString());
 					} else {
+						builder.status(InfoMessageStatus.OFFLINE);
 						builder.message(SharedLocale.tr(
-								(style==ServerInfoStyle.SIMPLE?
-										"mcpinger.message.statusOfflineSimple":
-											"mcpinger.message.statusOffline"), server));
+								(style==ServerInfoStyle.SIMPLE ? "mcpinger.message.statusOfflineSimple" : "mcpinger.message.statusOffline"), server));
 
 						StringBuilder stb = new StringBuilder();
 						stb.append(SharedLocale.tr("mcpinger.details.ip", server)).append("\n");
@@ -152,8 +160,15 @@ public class ServerInfoPanel {
 	@Builder(fluent = true)
 	@Data
 	private static class InfoMessage {
+		private InfoMessageStatus status;
 		private String message;
 		private String details;
+	}
+
+	private static enum InfoMessageStatus {
+		ONLINE,
+		OFFLINE,
+		PINGING,
 	}
 
 	public void update() {
