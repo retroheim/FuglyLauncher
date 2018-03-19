@@ -46,13 +46,6 @@ public class Instance implements Comparable<Instance> {
     @JsonIgnore private boolean selected;
     @JsonIgnore private boolean local;
 
-    public ConnectServerInfo getServer() {
-    	if (Math.random()>.5)
-    		return new ConnectServerInfo("teamfruit.net", 25565);
-    	else
-    		return new ConnectServerInfo("namahamu.teamfruit.net", 25565);
-    }
-
     /**
      * Get the tile of the instance, which might be the same as the
      * instance name if no title is set.

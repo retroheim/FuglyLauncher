@@ -12,12 +12,15 @@ import javax.swing.JComponent;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Predicate;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Builder;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.mcpinger.PingResult;
@@ -37,7 +40,7 @@ public class ServerInfoPanel {
 	private final ConnectServerInfo server;
 	private final Callable<ListenableFuture<PingResult>> futureSupplier;
 	private InstanceCellPanel instancePanel;
-	private InfoMessageStatus lastStatus = InfoMessageStatus.ONLINE;
+	private InfoMessageStatus lastStatus = InfoMessageStatus.PINGING;
 
 	public void paint(final Graphics g, Rectangle r, InstanceCellPanel instancePanel) {
 		this.instancePanel = instancePanel;
@@ -63,8 +66,12 @@ public class ServerInfoPanel {
 			}
 			if (style!=ServerInfoStyle.SIMPLE)
 				if (status!=InfoMessageStatus.PINGING) {
-					if (lastStatus==InfoMessageStatus.OFFLINE&&status==InfoMessageStatus.ONLINE)
+					if (lastStatus==InfoMessageStatus.OFFLINE&&status==InfoMessageStatus.ONLINE) {
 						Sounds.play("notice.wav");
+					}
+					if (lastStatus!=status)
+						if (statusCallback!=null)
+							statusCallback.apply(status==InfoMessageStatus.ONLINE);
 					lastStatus = status;
 				}
 			if (style==ServerInfoStyle.DETAILS)
@@ -72,6 +79,14 @@ public class ServerInfoPanel {
 					instancePanel.setToolTipText(StringUtils.isEmpty(details) ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
 		}
 	}
+
+	public boolean isOnline() {
+		return lastStatus==InfoMessageStatus.ONLINE;
+	}
+
+	@Getter
+	@Setter
+	private Predicate<Boolean> statusCallback;
 
 	private ListenableFuture<PingResult> resultFuture;
 

@@ -30,13 +30,14 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -67,6 +68,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
+import net.teamfruit.skcraft.launcher.swing.InstanceCellPanel;
 import net.teamfruit.skcraft.launcher.swing.ServerInfoStyle;
 
 /**
@@ -169,10 +171,12 @@ public class LoginDialog extends JDialog {
 		this.buttonsPanel.addElement(this.loginButton);
 		this.buttonsPanel.addElement(this.cancelButton);
 
+		final InstanceCellPanel title;
 		if (instance!=null) {
-			final JPanel title = InstanceCellFactory.instance.getCellComponent(this.getRootPane(), instance, false, ServerInfoStyle.DETAILS);
+			title = InstanceCellFactory.instance.getCellComponent(this.getRootPane(), instance, false, ServerInfoStyle.DETAILS);
 			add(title, BorderLayout.NORTH);
-		}
+		} else
+			title = null;
 		add(this.formPanel, BorderLayout.CENTER);
 		add(this.buttonsPanel, BorderLayout.SOUTH);
 
@@ -197,11 +201,56 @@ public class LoginDialog extends JDialog {
 		this.recoverButton.addActionListener(
 				ActionListeners.openURL(this.recoverButton, this.launcher.getProperties().getProperty("resetPasswordUrl")));
 
+		final Predicate<Boolean> updateMessagePredicate = new Predicate<Boolean>() {
+			@Override
+			public boolean apply(Boolean input) {
+				if (input!=null&&input)
+					loginServerButton.setText(SharedLocale.tr("login.loginServer"));
+				else
+					loginServerButton.setText(SharedLocale.tr("login.loginServerOffline"));
+				return true;
+			}
+		};
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				if (title!=null)
+					updateMessagePredicate.apply(title.getServerInfoPanel().isOnline());
+			}
+		});
 		this.loginServerButton.addActionListener(new ActionListener() {
+			private boolean enable;
+			private Predicate<Boolean> joinPredicate = new Predicate<Boolean>() {
+				@Override
+				public boolean apply(Boolean input) {
+					updateMessagePredicate.apply(input);
+					if (enable&&input!=null&&input) {
+						enable = false;
+						connectServer = true;
+						prepareLogin();
+					}
+					return true;
+				}
+			};
+
+			{
+				if (title!=null)
+					title.getServerInfoPanel().setStatusCallback(joinPredicate);
+			}
+
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				connectServer = true;
-				prepareLogin();
+				enable = true;
+				if (title==null)
+					joinPredicate.apply(true);
+				else {
+					boolean online = title.getServerInfoPanel().isOnline();
+					updateMessagePredicate.apply(online);
+					if (online)
+						joinPredicate.apply(true);
+					else
+						loginServerButton.setText(SharedLocale.tr("login.loginServerWaiting"));
+				}
 			}
 		});
 
