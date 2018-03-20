@@ -63,16 +63,6 @@ public enum DiscordStatus {
 			return presence;
 		}
 	},
-	ABOUT {
-		@Override
-		public DiscordRichPresence createRPC(final Map<String, String> args) {
-			DiscordRichPresence presence = new DiscordRichPresence();
-			presence.largeImageKey = "idle";
-			presence.largeImageText = "FruitLauncher";
-			presence.state = "Viewing About Launcher";
-			return presence;
-		}
-	},
 	DOWNLOADING {
 		@Override
 		public DiscordRichPresence createRPC(final Map<String, String> args) {

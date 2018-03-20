@@ -26,6 +26,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -46,6 +47,8 @@ import net.teamfruit.skcraft.launcher.dialog.DirectorySelectionDialog;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryTasks;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
 import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
+import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 
 /**
  * A dialog to modify configuration options.
@@ -271,6 +274,8 @@ public class ConfigurationDialog extends JDialog {
 				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir.settingsTitle"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
 			}
 		});
+
+		LauncherStatus.instance.open(this, DiscordStatus.CONFIG, ImmutableMap.<String, String>of());
 	}
 
 	/**
@@ -289,6 +294,12 @@ public class ConfigurationDialog extends JDialog {
 			moveFiles(saveAndClose);
 		else
 			saveAndClose.run();
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		LauncherStatus.instance.close(ConfigurationDialog.this);
 	}
 
 	public void moveFiles(final Runnable callback) {

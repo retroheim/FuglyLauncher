@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.skcraft.concurrency.ObservableFuture;
@@ -66,6 +67,8 @@ import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Getter;
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellPanel;
@@ -128,6 +131,21 @@ public class LoginDialog extends JDialog {
 				dispose();
 			}
 		});
+
+		String title = null;
+		if (options!=null) {
+			Instance instance = options.getInstance();
+			if (instance!=null)
+				title = instance.getTitle();
+		}
+
+		LauncherStatus.instance.open(this, DiscordStatus.LOGIN, ImmutableMap.<String, String>of("instance", title));
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		LauncherStatus.instance.close(LoginDialog.this);
 	}
 
 	private void removeListeners() {

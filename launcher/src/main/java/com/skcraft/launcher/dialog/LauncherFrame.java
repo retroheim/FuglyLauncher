@@ -75,6 +75,7 @@ import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.integration.AppleHandler;
 import net.teamfruit.skcraft.launcher.swing.BoardPanel;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
@@ -523,10 +524,16 @@ public class LauncherFrame extends JFrame {
 	private void onInstanceReady() {
         if (first_loaded) {
         	first_loaded = false;
-            DiscordStatus.MENU.update(ImmutableMap.<String, String>of());
+            LauncherStatus.instance.open(this, DiscordStatus.MENU, ImmutableMap.<String, String>of());
         	processRun();
         }
     }
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		LauncherStatus.instance.close(this);
+	}
 
 	public boolean processRun() {
 		launcher.getOptions().processURI();

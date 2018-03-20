@@ -6,7 +6,6 @@
 
 package com.skcraft.launcher.dialog;
 
-import static com.skcraft.launcher.util.SharedLocale.*;
 import static javax.swing.BorderFactory.*;
 
 import java.awt.BorderLayout;
@@ -38,7 +37,9 @@ import javax.swing.text.html.HTMLEditorKit;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.ImmutableMap;
 import com.skcraft.launcher.Instance;
+import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.model.modpack.Feature;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
@@ -52,12 +53,16 @@ import com.skcraft.launcher.util.Platform;
 import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.model.modpack.SupportOS;
 
 public class FeatureSelectionDialog extends JDialog {
 
+	private final Launcher launcher;
+	private final Instance instance;
+
     private final List<Feature> features;
-    private final File contentDir;
     private final JPanel container = new JPanel(new BorderLayout());
     private final JEditorPane descText = new JEditorPane(new HTMLEditorKit().getContentType(), SharedLocale.tr("features.selectForInfo"));
     private final JScrollPane descScroll = new JScrollPane(this.descText);
@@ -68,11 +73,12 @@ public class FeatureSelectionDialog extends JDialog {
     private final JButton openDirButton = new JButton(SharedLocale.tr("features.openFolder"));
     private final JButton installButton = new JButton(SharedLocale.tr("features.install"));
 
-    public FeatureSelectionDialog(final Window owner, @NonNull final List<Feature> features, File contentDir) {
+    public FeatureSelectionDialog(final Window owner, @NonNull final List<Feature> features, Launcher launcher, Instance instance) {
         super(owner, ModalityType.DOCUMENT_MODAL);
 
         this.features = features;
-        this.contentDir = contentDir;
+        this.launcher = launcher;
+        this.instance = instance;
 
         setTitle(SharedLocale.tr("features.title"));
         initComponents();
@@ -80,9 +86,17 @@ public class FeatureSelectionDialog extends JDialog {
         setSize(new Dimension(500, 400));
         setResizable(false);
         setLocationRelativeTo(owner);
+
+		LauncherStatus.instance.open(this, DiscordStatus.FEATURE_SELECT, ImmutableMap.<String, String>of("instance", instance.getName()));
     }
 
-    private void initComponents() {
+    @Override
+    public void dispose() {
+    	super.dispose();
+    	LauncherStatus.instance.close(FeatureSelectionDialog.this);
+    }
+
+	private void initComponents() {
         this.componentsTable.setModel(new FeatureTableModel(this.features) {
         	@Override
         	protected boolean checkFeature(Feature feature, boolean newvalue) {
@@ -178,6 +192,8 @@ public class FeatureSelectionDialog extends JDialog {
      * @param selected the selected instance, possibly null
      */
     private void popupInstanceMenu(final Component component, final int x, final int y) {
+    	final File contentDir = instance.getContentDir();
+
         final JPopupMenu popup = new JPopupMenu();
         JMenuItem menuItem;
 
