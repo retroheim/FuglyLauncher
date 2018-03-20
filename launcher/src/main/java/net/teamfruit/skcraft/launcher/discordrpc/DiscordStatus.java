@@ -47,7 +47,7 @@ public enum DiscordStatus {
 			presence.smallImageKey = "icon_login";
 			presence.largeImageKey = "fruit_general";
 			presence.smallImageText = args.get("server");
-			presence.largeImageText = args.get("instance");
+			presence.details = args.get("instance");
 			presence.state = "Logging in";
 			return presence;
 		}
@@ -59,7 +59,7 @@ public enum DiscordStatus {
 			presence.smallImageKey = "icon_waiting";
 			presence.largeImageKey = "fruit_general";
 			presence.smallImageText = args.get("server");
-			presence.largeImageText = args.get("instance");
+			presence.details = args.get("instance");
 			presence.state = "Waiting";
 			return presence;
 		}
@@ -71,7 +71,7 @@ public enum DiscordStatus {
 			presence.smallImageKey = "icon_feature_select";
 			presence.largeImageKey = "fruit_general";
 			presence.smallImageText = args.get("server");
-			presence.largeImageText = args.get("instance");
+			presence.details = args.get("instance");
 			presence.state = "Selecting Mods";
 			return presence;
 		}
@@ -83,7 +83,7 @@ public enum DiscordStatus {
 			presence.smallImageKey = "icon_download";
 			presence.largeImageKey = "fruit_general";
 			presence.smallImageText = args.get("server");
-			presence.largeImageText = args.get("instance");
+			presence.details = args.get("instance");
 			presence.state = "Downloading Minecraft";
 			return presence;
 		}
@@ -95,8 +95,8 @@ public enum DiscordStatus {
 			presence.smallImageKey = "icon_launching";
 			presence.largeImageKey = "fruit_general";
 			presence.smallImageText = args.get("server");
-			presence.largeImageText = args.get("instance");
-			presence.details = "Name: "+args.get("player");
+			presence.details = args.get("instance");
+			presence.largeImageText = "Player: "+args.get("player");
 			presence.state = "Loading Minecraft";
 			presence.startTimestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 			return presence;
@@ -109,8 +109,8 @@ public enum DiscordStatus {
 			presence.smallImageKey = "icon_playing";
 			presence.largeImageKey = "fruit_general";
 			presence.smallImageText = args.get("server");
-			presence.largeImageText = args.get("instance");
-			presence.details = "Name: "+args.get("player");
+			presence.details = args.get("instance");
+			presence.largeImageText = "Player: "+args.get("player");
 			presence.state = "Playing Minecraft";
 			presence.startTimestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 			return presence;
