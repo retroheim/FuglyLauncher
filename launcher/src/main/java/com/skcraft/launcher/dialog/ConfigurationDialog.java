@@ -200,7 +200,6 @@ public class ConfigurationDialog extends JDialog {
 		SwingHelper.removeOpaqueness(proxySettingsPanel);
 		tabbedPane.addTab(SharedLocale.tr("options.proxyTab"), SwingHelper.alignTabbedPane(proxySettingsPanel));
 
-		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.gameKey")), gameKeyText);
 		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.secretUnlock")), secretUnlockButton);
 		advancedPanel.addRow(secretKeyText);
 		advancedPanel.addRow(offlineModeEnabledCheck);
