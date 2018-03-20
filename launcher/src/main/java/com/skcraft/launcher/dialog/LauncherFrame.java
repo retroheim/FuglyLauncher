@@ -543,10 +543,16 @@ public class LauncherFrame extends JFrame {
 			log.info("Trying to launch "+runid);
 			Instance runinstance = null;
 			for (Instance instance: launcher.getInstances().getInstances())
-				if (StringUtils.equalsIgnoreCase(runid, instance.getName())) {
+				if (StringUtils.equalsIgnoreCase(runid, instance.getName())||StringUtils.equalsIgnoreCase(runid, instance.getKey())) {
 					runinstance = instance;
 					break;
 				}
+			if (runinstance==null)
+				for (Instance instance: launcher.getInstances().getInstancesSecret())
+					if (StringUtils.equalsIgnoreCase(runid, instance.getKey())) {
+						runinstance = instance;
+						break;
+					}
 			if (runinstance!=null) {
 				log.info("Launching "+runinstance.getName());
 				launch(runinstance);
@@ -617,11 +623,11 @@ public class LauncherFrame extends JFrame {
         configDialog.setVisible(true);
     }
 
-    private void launch() {
+    public void launch() {
     	launch(this.launcher.getInstances().get(this.instancesTable.getSelectedRow()));
     }
 
-    private void launch(Instance instance) {
+    public void launch(Instance instance) {
         final boolean permitUpdate = this.updateCheck.isSelected();
 
         final LaunchOptions options = new LaunchOptions.Builder()

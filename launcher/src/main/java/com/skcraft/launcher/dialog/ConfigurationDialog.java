@@ -26,12 +26,15 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Configuration;
+import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.ActionListeners;
@@ -43,6 +46,7 @@ import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.NonNull;
+import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.dialog.DirectorySelectionDialog;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryTasks;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
@@ -54,6 +58,7 @@ import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable
 /**
  * A dialog to modify configuration options.
  */
+@Log
 public class ConfigurationDialog extends JDialog {
 
 	private final Launcher launcher;
@@ -84,6 +89,8 @@ public class ConfigurationDialog extends JDialog {
 	private final JPasswordField proxyPasswordText = new JPasswordField();
 	private final FormPanel advancedPanel = new FormPanel();
 	private final JTextField gameKeyText = new JTextField();
+	private final JTextField secretKeyText = new JTextField();
+	private final JButton secretUnlockButton = new JButton(SharedLocale.tr("options.secretUnlockButton"));
 	private final JCheckBox offlineModeEnabledCheck = new JCheckBox(SharedLocale.tr("options.offlineModeEnabled"));
 	private final JTextField offlineModePlayerNameText = new JTextField();
 	private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
@@ -194,6 +201,8 @@ public class ConfigurationDialog extends JDialog {
 		tabbedPane.addTab(SharedLocale.tr("options.proxyTab"), SwingHelper.alignTabbedPane(proxySettingsPanel));
 
 		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.gameKey")), gameKeyText);
+		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.secretUnlock")), secretUnlockButton);
+		advancedPanel.addRow(secretKeyText);
 		advancedPanel.addRow(offlineModeEnabledCheck);
 		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.offlineModePlayerName")), offlineModePlayerNameText);
 		SwingHelper.removeOpaqueness(advancedPanel);
@@ -275,6 +284,34 @@ public class ConfigurationDialog extends JDialog {
 				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir.settingsTitle"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
 			}
 		});
+
+		Window owner = getOwner();
+		if (owner instanceof LauncherFrame) {
+			final LauncherFrame frame = (LauncherFrame) owner;
+			secretUnlockButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					String runid = secretKeyText.getText();
+					Instance runinstance = null;
+					for (Instance instance: launcher.getInstances().getInstancesSecret())
+						if (StringUtils.equalsIgnoreCase(runid, instance.getKey())) {
+							runinstance = instance;
+							break;
+						}
+					if (runinstance!=null) {
+						dispose();
+						log.info("Launching "+runinstance.getName());
+						frame.launch(runinstance);
+					} else {
+						log.warning("Unable to find "+runid);
+						SwingHelper.showErrorDialog(frame,
+								SharedLocale.tr("errors.missingInstance", runid),
+								SharedLocale.tr("errors.missingInstanceTitle", runid));
+					}
+				}
+			});
+		} else
+			secretUnlockButton.setEnabled(false);
 
 		LauncherStatus.instance.open(DiscordStatus.CONFIG, new WindowDisablable(this), ImmutableMap.<String, String>of());
 	}

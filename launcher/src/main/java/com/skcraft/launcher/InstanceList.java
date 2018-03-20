@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.lang.StringUtils;
 
 import com.skcraft.concurrency.DefaultProgress;
 import com.skcraft.concurrency.ProgressObservable;
@@ -39,6 +40,7 @@ public class InstanceList {
 
     private final Launcher launcher;
     private final @Getter List<Instance> instances = new ArrayList<Instance>();
+    private final @Getter List<Instance> instancesSecret = new ArrayList<Instance>();
 
     /**
      * Create a new instance list.
@@ -112,6 +114,7 @@ public class InstanceList {
 
             final List<Instance> local = new ArrayList<Instance>();
             final List<Instance> remote = new ArrayList<Instance>();
+            final List<Instance> remoteSecret = new ArrayList<Instance>();
 
             final File[] dirs = InstanceList.this.launcher.getInstancesDir().listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
             if (dirs != null)
@@ -184,7 +187,11 @@ public class InstanceList {
                         instance.setManifestURL(concat(packagesURL, manifest.getLocation()));
                         instance.setUpdatePending(true);
                         instance.setLocal(false);
-                        remote.add(instance);
+
+                        if (StringUtils.isEmpty(instance.getKey()))
+                        	remote.add(instance);
+                    	else
+                        	remoteSecret.add(instance);
 
                         log.info("Available remote instance: '" + instance.getName() +
                                 "' at version " + instance.getVersion());
@@ -197,6 +204,9 @@ public class InstanceList {
                     InstanceList.this.instances.clear();
                     InstanceList.this.instances.addAll(local);
                     InstanceList.this.instances.addAll(remote);
+
+                    InstanceList.this.instancesSecret.clear();
+                    InstanceList.this.instancesSecret.addAll(remoteSecret);
 
                     log.info(InstanceList.this.instances.size() + " instance(s) enumerated.");
                 }
