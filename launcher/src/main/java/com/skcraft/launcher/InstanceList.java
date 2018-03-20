@@ -175,6 +175,7 @@ public class InstanceList {
                         instance.setDir(dir);
                         instance.setTitle(manifest.getTitle());
                         instance.setThumb(manifest.getThumb());
+                        instance.setKey(manifest.getKey());
                         instance.setServer(manifest.getServer());
                         instance.setName(manifest.getName());
                         instance.setVersion(manifest.getVersion());
