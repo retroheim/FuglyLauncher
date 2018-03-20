@@ -81,7 +81,7 @@ public class LauncherDiscord {
 	}
 
 	public void updateStatusImpl(DiscordRichPresence presence) throws UnsatisfiedLinkError {
-		log.info("[DiscordRPC] : "+presence.details+", "+presence.state);
+		//log.info("[DiscordRPC] : "+presence.details+", "+presence.state);
 		lib.Discord_UpdatePresence(presence);
 	}
 
