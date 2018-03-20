@@ -12,6 +12,9 @@ import javax.swing.text.StyleConstants;
 import com.google.common.collect.Maps;
 import com.skcraft.launcher.swing.MessageLog;
 
+import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+
 public class ChatMessagePanel extends MessageLog.MessagePanel {
 	public ChatMessagePanel(MessageLog messageLog) {
 		messageLog.super();
@@ -47,6 +50,8 @@ public class ChatMessagePanel extends MessageLog.MessagePanel {
 
 	private static final Color defaultColor = new Color(0xFFFFFF);
 
+	private boolean forge;
+
 	@Override
 	public void log(String line, AttributeSet attributes) {
 		if (line.contains("[CHAT] ")) {
@@ -68,7 +73,10 @@ public class ChatMessagePanel extends MessageLog.MessagePanel {
 
 				out.log("\n", attributes);
 			}
-		}
+		} else if ((forge&&line.contains("SoundSystem shutting down..."))||(!forge&&line.contains("Starting up SoundSystem...")))
+			LauncherStatus.instance.update(DiscordStatus.LAUNCHING, DiscordStatus.PLAYING, null);
+		else if (line.contains("[MinecraftForge]: Completed early MinecraftForge initialization"))
+			forge = true;
 	}
 
 	public static void log(String chatText, AttributeLog out) {

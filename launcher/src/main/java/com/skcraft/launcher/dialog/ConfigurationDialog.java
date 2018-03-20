@@ -49,6 +49,7 @@ import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
 import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
 
 /**
  * A dialog to modify configuration options.
@@ -275,7 +276,7 @@ public class ConfigurationDialog extends JDialog {
 			}
 		});
 
-		LauncherStatus.instance.open(this, DiscordStatus.CONFIG, ImmutableMap.<String, String>of());
+		LauncherStatus.instance.open(DiscordStatus.CONFIG, new WindowDisablable(this), ImmutableMap.<String, String>of());
 	}
 
 	/**
@@ -299,7 +300,7 @@ public class ConfigurationDialog extends JDialog {
 	@Override
 	public void dispose() {
 		super.dispose();
-		LauncherStatus.instance.close(ConfigurationDialog.this);
+		LauncherStatus.instance.close(DiscordStatus.CONFIG);
 	}
 
 	public void moveFiles(final Runnable callback) {

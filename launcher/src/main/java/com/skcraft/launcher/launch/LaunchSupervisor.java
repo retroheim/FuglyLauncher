@@ -9,14 +9,12 @@ package com.skcraft.launcher.launch;
 import static com.google.common.util.concurrent.MoreExecutors.*;
 import static com.skcraft.launcher.util.SharedLocale.*;
 
-import java.awt.Component;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
 
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
@@ -43,6 +41,7 @@ import com.skcraft.launcher.util.SwingExecutor;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.NullDisablable;
 import net.teamfruit.skcraft.launcher.launch.ExitHandler;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
@@ -141,8 +140,6 @@ public class LaunchSupervisor {
 		ProgressDialog.showProgress(
 				window, processFuture, SharedLocale.tr("launcher.launchingTItle"), tr("launcher.launchingStatus", instance.getTitle()));
 
-		final Component discordobj2 = new JPanel();
-
 		// If the process is started, get rid of this window
 		Futures.addCallback(processFuture, new FutureCallback<Process>() {
 			@Override
@@ -151,7 +148,8 @@ public class LaunchSupervisor {
 					@Override
 					public void run() {
 						listener.gameStarted();
-						LauncherStatus.instance.open(discordobj2, DiscordStatus.PLAYING, ImmutableMap.of("instance", instance.getTitle(), "player", session.getName()));
+						ConnectServerInfo server = instance.getServer();
+						LauncherStatus.instance.open(DiscordStatus.LAUNCHING, new NullDisablable(), ImmutableMap.of("instance", instance.getTitle(), "server", (server==null)?null:server.toString(), "player", session.getName()));
 					}
 				});
 			}
@@ -170,7 +168,8 @@ public class LaunchSupervisor {
 		Futures.addCallback(future, new FutureCallback<ProcessConsoleFrame>() {
 			@Override
 			public void onSuccess(final ProcessConsoleFrame consoleFrame) {
-				LauncherStatus.instance.close(discordobj2);
+				LauncherStatus.instance.close(DiscordStatus.LAUNCHING);
+				LauncherStatus.instance.close(DiscordStatus.PLAYING);
 				try {
 					log.info("Process ended; cleaning up "+extractDir.getAbsolutePath());
 					FileUtils.deleteDirectory(extractDir);

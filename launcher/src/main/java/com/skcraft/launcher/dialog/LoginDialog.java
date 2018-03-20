@@ -69,6 +69,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellPanel;
@@ -133,19 +134,23 @@ public class LoginDialog extends JDialog {
 		});
 
 		String title = null;
+		ConnectServerInfo server = null;
 		if (options!=null) {
 			Instance instance = options.getInstance();
-			if (instance!=null)
+			if (instance!=null) {
 				title = instance.getTitle();
+				server = instance.getServer();
+			}
 		}
 
-		LauncherStatus.instance.open(this, DiscordStatus.LOGIN, ImmutableMap.<String, String>of("instance", title));
+		LauncherStatus.instance.open(DiscordStatus.LOGIN, new WindowDisablable(this), ImmutableMap.<String, String>of("instance", title, "server", (server==null)?null:server.toString()));
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		LauncherStatus.instance.close(LoginDialog.this);
+		LauncherStatus.instance.close(DiscordStatus.WAITING);
+		LauncherStatus.instance.close(DiscordStatus.LOGIN);
 	}
 
 	private void removeListeners() {
@@ -170,9 +175,11 @@ public class LoginDialog extends JDialog {
 		this.formPanel.addRow(new JLabel(), this.rememberPassCheck);
 		this.buttonsPanel.setBorder(BorderFactory.createEmptyBorder(26, 13, 13, 13));
 
-		Instance instance = null;
+		final Instance instance;
 		if (options!=null)
 			instance = options.getInstance();
+		else
+			instance = null;
 
 		if (this.launcher.getConfig().isOfflineModeEnabled()) {
 			this.buttonsPanel.addElement(this.offlineButton);
@@ -266,8 +273,16 @@ public class LoginDialog extends JDialog {
 					updateMessagePredicate.apply(online);
 					if (online)
 						joinPredicate.apply(true);
-					else
+					else {
 						loginServerButton.setText(SharedLocale.tr("login.loginServerWaiting"));
+						String title = null;
+						ConnectServerInfo server = null;
+						if (instance!=null) {
+							title = instance.getTitle();
+							server = instance.getServer();
+						}
+						LauncherStatus.instance.open(DiscordStatus.WAITING, new WindowDisablable(LoginDialog.this), ImmutableMap.<String, String>of("instance", title, "server", (server==null)?null:server.toString()));
+					}
 				}
 			}
 		});

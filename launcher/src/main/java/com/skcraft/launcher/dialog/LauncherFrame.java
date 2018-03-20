@@ -76,6 +76,7 @@ import net.teamfruit.skcraft.launcher.TipList;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
 import net.teamfruit.skcraft.launcher.integration.AppleHandler;
 import net.teamfruit.skcraft.launcher.swing.BoardPanel;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
@@ -524,7 +525,7 @@ public class LauncherFrame extends JFrame {
 	private void onInstanceReady() {
         if (first_loaded) {
         	first_loaded = false;
-            LauncherStatus.instance.open(this, DiscordStatus.MENU, ImmutableMap.<String, String>of());
+            LauncherStatus.instance.open(DiscordStatus.MENU, new WindowDisablable(this), ImmutableMap.<String, String>of());
         	processRun();
         }
     }
@@ -532,7 +533,7 @@ public class LauncherFrame extends JFrame {
 	@Override
 	public void dispose() {
 		super.dispose();
-		LauncherStatus.instance.close(this);
+		LauncherStatus.instance.close(DiscordStatus.MENU);
 	}
 
 	public boolean processRun() {

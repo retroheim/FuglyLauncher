@@ -8,7 +8,6 @@ package com.skcraft.launcher.update;
 
 import static com.skcraft.launcher.util.HttpRequest.*;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -17,8 +16,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-
-import javax.swing.JPanel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
@@ -41,6 +38,8 @@ import lombok.Setter;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.NullDisablable;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 
 @Log
 public class Updater extends BaseUpdater implements Callable<Instance>, ProgressObservable {
@@ -73,8 +72,8 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
     public Instance call() throws Exception {
         log.info("Checking for an update for '" + instance.getName() + "'...");
 
-		final Component discordobj1 = new JPanel();
-		LauncherStatus.instance.open(discordobj1, DiscordStatus.DOWNLOADING, ImmutableMap.of("instance", instance.getTitle()));
+		ConnectServerInfo server = instance.getServer();
+		LauncherStatus.instance.open(DiscordStatus.DOWNLOADING, new NullDisablable(), ImmutableMap.of("instance", instance.getTitle(), "server", (server==null)?null:server.toString()));
 
         try {
 
@@ -110,7 +109,7 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
 	        }
 
         } finally {
-			LauncherStatus.instance.close(discordobj1);
+			LauncherStatus.instance.close(DiscordStatus.DOWNLOADING);
 		}
 
         return instance;

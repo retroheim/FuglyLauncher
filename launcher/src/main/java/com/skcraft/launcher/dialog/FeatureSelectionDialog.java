@@ -55,6 +55,8 @@ import com.skcraft.launcher.util.SharedLocale;
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
+import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
 import net.teamfruit.skcraft.launcher.model.modpack.SupportOS;
 
 public class FeatureSelectionDialog extends JDialog {
@@ -87,13 +89,14 @@ public class FeatureSelectionDialog extends JDialog {
         setResizable(false);
         setLocationRelativeTo(owner);
 
-		LauncherStatus.instance.open(this, DiscordStatus.FEATURE_SELECT, ImmutableMap.<String, String>of("instance", instance.getName()));
+        ConnectServerInfo server = instance.getServer();
+		LauncherStatus.instance.open(DiscordStatus.FEATURE_SELECT, new WindowDisablable(this), ImmutableMap.<String, String>of("instance", instance.getName(), "server", (server==null)?null:server.toString()));
     }
 
     @Override
     public void dispose() {
     	super.dispose();
-    	LauncherStatus.instance.close(FeatureSelectionDialog.this);
+    	LauncherStatus.instance.close(DiscordStatus.FEATURE_SELECT);
     }
 
 	private void initComponents() {

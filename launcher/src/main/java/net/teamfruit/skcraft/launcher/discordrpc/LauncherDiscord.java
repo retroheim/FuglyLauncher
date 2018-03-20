@@ -55,7 +55,7 @@ public class LauncherDiscord {
 		lib.Discord_Initialize(applicationId, handlers, true, steamId);
 
 		log.info("[DiscordRPC] starting.");
-		updateStatusImpl(DiscordStatus.DEFAULT.createRPC(ImmutableMap.<String, String> of()));
+		updateStatusImpl(DiscordStatus.DEFAULT.createRPC(new DiscordRichPresence(), ImmutableMap.<String, String> of()));
 
 		// in a worker thread
 		new Thread(new Runnable() {
