@@ -24,6 +24,7 @@ public class BuilderConfig {
     private String name;
     private String title;
     private String thumb;
+    private String key;
     private String gameVersion;
     private ConnectServerInfo server;
     @JsonProperty("launch")
@@ -47,6 +48,7 @@ public class BuilderConfig {
         manifest.updateName(getName());
         manifest.updateTitle(getTitle());
         manifest.updateThumb(getThumb());
+        manifest.updateKey(getKey());
         manifest.updateServer(getServer());
         manifest.updateGameVersion(getGameVersion());
         manifest.setLaunchModifier(getLaunchModifier());

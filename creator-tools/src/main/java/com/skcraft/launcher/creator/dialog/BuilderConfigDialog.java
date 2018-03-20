@@ -42,6 +42,7 @@ public class BuilderConfigDialog extends JDialog {
 	private final JTextField titleText = new JTextField(30);
 	private final JTextField thumbText = new JTextField(30);
 	private final JTextField gameVersionText = new JTextField(10);
+	private final JTextField keyText = new JTextField(30);
 	private final JTextField serverHostText = new JTextField(30);
 	private final JSpinner serverPortSpinner = new JSpinner();
 	private final JTextArea launchFlagsArea = new JTextArea(10, 40);
@@ -144,6 +145,9 @@ public class BuilderConfigDialog extends JDialog {
 		container.add(new JLabel("Game Version:"));
 		container.add(gameVersionText, "span");
 
+		container.add(new JLabel("Secret Key:"));
+		container.add(keyText, "span");
+
 		container.add(new JLabel("Server Host:"));
 		container.add(serverHostText, "span");
 
@@ -227,6 +231,7 @@ public class BuilderConfigDialog extends JDialog {
 		SwingHelper.setTextAndResetCaret(titleText, config.getTitle());
 		SwingHelper.setTextAndResetCaret(thumbText, config.getThumb());
 		SwingHelper.setTextAndResetCaret(gameVersionText, config.getGameVersion());
+		SwingHelper.setTextAndResetCaret(keyText, config.getKey());
 		final ConnectServerInfo server = config.getServer();
 		if (server!=null&&server.isValid()) {
 			SwingHelper.setTextAndResetCaret(serverHostText, server.getServerHost());
@@ -245,6 +250,7 @@ public class BuilderConfigDialog extends JDialog {
 		config.setTitle(Strings.emptyToNull(titleText.getText().trim()));
 		config.setThumb(Strings.emptyToNull(thumbText.getText()));
 		config.setGameVersion(gameVersionText.getText().trim());
+		config.setKey(Strings.emptyToNull(keyText.getText()));
 		final Object port = serverPortSpinner.getValue();
 		if (port instanceof Integer)
 			config.setServer(new ConnectServerInfo(serverHostText.getText().trim(), (int) port));

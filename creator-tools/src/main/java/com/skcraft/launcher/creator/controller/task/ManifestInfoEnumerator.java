@@ -38,6 +38,7 @@ public class ManifestInfoEnumerator implements Function<List<ManifestEntry>, Lis
                     info.setTitle(manifest.getTitle());
                     info.setThumb(manifest.getThumb());
                     info.setServer(manifest.getServer());
+                    info.setKey(manifest.getKey());
                     info.setVersion(manifest.getVersion());
                     info.setPriority(0);
                     info.setLocation(location);

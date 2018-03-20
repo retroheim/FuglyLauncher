@@ -43,6 +43,8 @@ public class PackTableModel extends AbstractTableModel {
                 return "Location";
             case 5:
                 return "Thumbnail";
+            case 6:
+                return "Secret Key";
             default:
                 return null;
         }
@@ -74,7 +76,7 @@ public class PackTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 6;
+        return 7;
     }
 
     @Override
@@ -96,6 +98,8 @@ public class PackTableModel extends AbstractTableModel {
                 return pack.getLocation();
             case 5:
                 return config != null ? config.getThumb() : "?";
+            case 6:
+                return config != null ? config.getKey() : "?";
             default:
                 return null;
         }

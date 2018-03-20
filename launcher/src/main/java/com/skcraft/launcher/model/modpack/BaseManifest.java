@@ -19,6 +19,7 @@ public class BaseManifest {
     private String thumb;
     private String name;
     private String version;
+    private String key;
     private ConnectServerInfo server;
 
 }

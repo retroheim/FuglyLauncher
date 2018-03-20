@@ -6,24 +6,25 @@
 
 package com.skcraft.launcher.model.modpack;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.LauncherUtils;
-import com.skcraft.launcher.model.minecraft.VersionManifest;
 import com.skcraft.launcher.install.Installer;
+import com.skcraft.launcher.model.minecraft.VersionManifest;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -92,6 +93,12 @@ public class Manifest extends BaseManifest {
     public void updateGameVersion(String gameVersion) {
         if (gameVersion != null) {
             setGameVersion(gameVersion);
+        }
+    }
+
+    public void updateKey(String key) {
+        if (key != null) {
+            setKey(key);
         }
     }
 

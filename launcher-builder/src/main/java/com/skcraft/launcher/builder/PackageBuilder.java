@@ -385,6 +385,7 @@ public class PackageBuilder {
         manifest.updateTitle(options.getTitle());
         manifest.updateGameVersion(options.getGameVersion());
         manifest.updateThumb(options.getThumb());
+        manifest.updateKey(options.getKey());
         manifest.updateServer(options.getServerHost(), options.getServerPort());
 
         manifest.setVersion(options.getVersion());
