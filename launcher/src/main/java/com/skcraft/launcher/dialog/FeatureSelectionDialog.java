@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -37,7 +38,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.ImmutableMap;
+import com.beust.jcommander.internal.Maps;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.model.modpack.Feature;
@@ -89,10 +90,14 @@ public class FeatureSelectionDialog extends JDialog {
         setResizable(false);
         setLocationRelativeTo(owner);
 
-        ConnectServerInfo server = null;
-		if (StringUtils.isEmpty(instance.getKey()))
-			server = instance.getServer();
-		LauncherStatus.instance.open(DiscordStatus.FEATURE_SELECT, new WindowDisablable(this), ImmutableMap.<String, String>of("instance", instance.getName(), "server", (server==null)?null:server.toString()));
+		Map<String, String> status = Maps.newHashMap();
+		status.put("instance", instance.getTitle());
+		if (StringUtils.isEmpty(instance.getKey())) {
+			ConnectServerInfo server = instance.getServer();
+			if (server!=null)
+				status.put("server", server.toString());
+		}
+		LauncherStatus.instance.open(DiscordStatus.FEATURE_SELECT, new WindowDisablable(this), status);
     }
 
     @Override

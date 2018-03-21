@@ -19,6 +19,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import javax.swing.BorderFactory;
@@ -37,9 +38,9 @@ import javax.swing.WindowConstants;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.skcraft.concurrency.ObservableFuture;
@@ -133,17 +134,19 @@ public class LoginDialog extends JDialog {
 			}
 		});
 
-		String title = null;
-		ConnectServerInfo server = null;
+		Map<String, String> status = Maps.newHashMap();
 		if (options!=null) {
 			Instance instance = options.getInstance();
 			if (instance!=null) {
-				title = instance.getTitle();
-				if (StringUtils.isEmpty(instance.getKey()))
-					server = instance.getServer();
+				status.put("instance", instance.getTitle());
+				if (StringUtils.isEmpty(instance.getKey())) {
+					ConnectServerInfo server = instance.getServer();
+					if (server!=null)
+						status.put("server", server.toString());
+				}
 			}
 		}
-		LauncherStatus.instance.open(DiscordStatus.LOGIN, new WindowDisablable(this), ImmutableMap.<String, String>of("instance", title, "server", (server==null)?null:server.toString()));
+		LauncherStatus.instance.open(DiscordStatus.LOGIN, new WindowDisablable(this), status);
 	}
 
 	@Override
@@ -275,14 +278,16 @@ public class LoginDialog extends JDialog {
 						joinPredicate.apply(true);
 					else {
 						loginServerButton.setText(SharedLocale.tr("login.loginServerWaiting"));
-						String title = null;
-						ConnectServerInfo server = null;
+						Map<String, String> status = Maps.newHashMap();
 						if (instance!=null) {
-							title = instance.getTitle();
-							if (StringUtils.isEmpty(instance.getKey()))
-								server = instance.getServer();
+							status.put("instance", instance.getTitle());
+							if (StringUtils.isEmpty(instance.getKey())) {
+								ConnectServerInfo server = instance.getServer();
+								if (server!=null)
+									status.put("server", server.toString());
+							}
 						}
-						LauncherStatus.instance.open(DiscordStatus.WAITING, new WindowDisablable(LoginDialog.this), ImmutableMap.<String, String>of("instance", title, "server", (server==null)?null:server.toString()));
+						LauncherStatus.instance.open(DiscordStatus.WAITING, new WindowDisablable(LoginDialog.this), status);
 					}
 				}
 			}

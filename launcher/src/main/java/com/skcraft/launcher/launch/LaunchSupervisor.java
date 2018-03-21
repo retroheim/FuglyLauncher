@@ -13,6 +13,7 @@ import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import java.util.logging.Level;
 
 import javax.swing.SwingUtilities;
@@ -20,7 +21,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.ImmutableMap;
+import com.beust.jcommander.internal.Maps;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -149,10 +150,15 @@ public class LaunchSupervisor {
 					@Override
 					public void run() {
 						listener.gameStarted();
-						ConnectServerInfo server = null;
-						if (StringUtils.isEmpty(instance.getKey()))
-							server = instance.getServer();
-						LauncherStatus.instance.open(DiscordStatus.LAUNCHING, new NullDisablable(), ImmutableMap.of("instance", instance.getTitle(), "server", (server==null)?null:server.toString(), "player", session.getName()));
+						Map<String, String> status = Maps.newHashMap();
+						status.put("instance", instance.getTitle());
+						if (StringUtils.isEmpty(instance.getKey())) {
+							ConnectServerInfo server = instance.getServer();
+							if (server!=null)
+								status.put("server", server.toString());
+						}
+						status.put("player", session.getName());
+						LauncherStatus.instance.open(DiscordStatus.LAUNCHING, new NullDisablable(), status);
 					}
 				});
 			}

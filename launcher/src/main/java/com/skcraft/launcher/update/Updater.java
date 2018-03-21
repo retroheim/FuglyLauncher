@@ -13,14 +13,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.beust.jcommander.internal.Maps;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import com.skcraft.concurrency.DefaultProgress;
 import com.skcraft.concurrency.ProgressFilter;
 import com.skcraft.concurrency.ProgressObservable;
@@ -74,10 +75,14 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
     public Instance call() throws Exception {
         log.info("Checking for an update for '" + instance.getName() + "'...");
 
-		ConnectServerInfo server = null;
-		if (StringUtils.isEmpty(instance.getKey()))
-			server = instance.getServer();
-		LauncherStatus.instance.open(DiscordStatus.DOWNLOADING, new NullDisablable(), ImmutableMap.of("instance", instance.getTitle(), "server", (server==null)?null:server.toString()));
+		Map<String, String> status = Maps.newHashMap();
+		status.put("instance", instance.getTitle());
+		if (StringUtils.isEmpty(instance.getKey())) {
+			ConnectServerInfo server = instance.getServer();
+			if (server!=null)
+				status.put("server", server.toString());
+		}
+		LauncherStatus.instance.open(DiscordStatus.DOWNLOADING, new NullDisablable(), status);
 
         try {
 
