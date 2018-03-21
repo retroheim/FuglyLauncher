@@ -30,6 +30,7 @@ import javax.swing.JTable;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.skcraft.concurrency.Deferred;
@@ -81,6 +82,9 @@ import com.skcraft.launcher.util.MorePaths;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Getter;
+import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.NullDisablable;
 
 public class PackManagerController {
 
@@ -127,6 +131,8 @@ public class PackManagerController {
         builder.setBaseDir(webRoot);
         builder.setPort(0);
         testServer = builder.build();
+
+        LauncherStatus.instance.open(DiscordStatus.CREATING, new NullDisablable(), ImmutableMap.<String, String>of());
     }
 
     public void show() {

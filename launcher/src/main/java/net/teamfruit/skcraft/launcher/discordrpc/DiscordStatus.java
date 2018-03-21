@@ -25,6 +25,15 @@ public enum DiscordStatus {
 			return STARTING.createRPC(lastPresence, args);
 		}
 	},
+	CREATING {
+		@Override
+		public DiscordRichPresence createRPC(final DiscordRichPresence lastPresence, final Map<String, String> args) {
+			DiscordRichPresence presence = new DiscordRichPresence();
+			presence.largeImageKey = "fruit_general";
+			presence.state = SharedLocale.tr("discordrpc.status.creating.state");
+			return presence;
+		}
+	},
 	MENU {
 		@Override
 		public DiscordRichPresence createRPC(final DiscordRichPresence lastPresence, final Map<String, String> args) {
