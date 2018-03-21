@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.FutureCallback;
@@ -148,7 +149,9 @@ public class LaunchSupervisor {
 					@Override
 					public void run() {
 						listener.gameStarted();
-						ConnectServerInfo server = instance.getServer();
+						ConnectServerInfo server = null;
+						if (StringUtils.isEmpty(instance.getKey()))
+							server = instance.getServer();
 						LauncherStatus.instance.open(DiscordStatus.LAUNCHING, new NullDisablable(), ImmutableMap.of("instance", instance.getTitle(), "server", (server==null)?null:server.toString(), "player", session.getName()));
 					}
 				});

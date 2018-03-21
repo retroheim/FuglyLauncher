@@ -17,6 +17,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.skcraft.concurrency.DefaultProgress;
@@ -72,7 +74,9 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
     public Instance call() throws Exception {
         log.info("Checking for an update for '" + instance.getName() + "'...");
 
-		ConnectServerInfo server = instance.getServer();
+		ConnectServerInfo server = null;
+		if (StringUtils.isEmpty(instance.getKey()))
+			server = instance.getServer();
 		LauncherStatus.instance.open(DiscordStatus.DOWNLOADING, new NullDisablable(), ImmutableMap.of("instance", instance.getTitle(), "server", (server==null)?null:server.toString()));
 
         try {

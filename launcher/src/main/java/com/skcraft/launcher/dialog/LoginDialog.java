@@ -139,10 +139,10 @@ public class LoginDialog extends JDialog {
 			Instance instance = options.getInstance();
 			if (instance!=null) {
 				title = instance.getTitle();
-				server = instance.getServer();
+				if (StringUtils.isEmpty(instance.getKey()))
+					server = instance.getServer();
 			}
 		}
-
 		LauncherStatus.instance.open(DiscordStatus.LOGIN, new WindowDisablable(this), ImmutableMap.<String, String>of("instance", title, "server", (server==null)?null:server.toString()));
 	}
 
@@ -279,7 +279,8 @@ public class LoginDialog extends JDialog {
 						ConnectServerInfo server = null;
 						if (instance!=null) {
 							title = instance.getTitle();
-							server = instance.getServer();
+							if (StringUtils.isEmpty(instance.getKey()))
+								server = instance.getServer();
 						}
 						LauncherStatus.instance.open(DiscordStatus.WAITING, new WindowDisablable(LoginDialog.this), ImmutableMap.<String, String>of("instance", title, "server", (server==null)?null:server.toString()));
 					}

@@ -89,7 +89,9 @@ public class FeatureSelectionDialog extends JDialog {
         setResizable(false);
         setLocationRelativeTo(owner);
 
-        ConnectServerInfo server = instance.getServer();
+        ConnectServerInfo server = null;
+		if (StringUtils.isEmpty(instance.getKey()))
+			server = instance.getServer();
 		LauncherStatus.instance.open(DiscordStatus.FEATURE_SELECT, new WindowDisablable(this), ImmutableMap.<String, String>of("instance", instance.getName(), "server", (server==null)?null:server.toString()));
     }
 
