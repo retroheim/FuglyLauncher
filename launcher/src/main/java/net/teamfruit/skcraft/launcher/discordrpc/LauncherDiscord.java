@@ -29,6 +29,7 @@ public class LauncherDiscord {
 
 	public static void init(LauncherDirectories dirs) {
 		try {
+			System.setProperty("jna.encoding", "UTF-8");
 			loadLibs(dirs.getNativeDir());
 			instance = new LauncherDiscord();
 		} catch (Exception e) {
