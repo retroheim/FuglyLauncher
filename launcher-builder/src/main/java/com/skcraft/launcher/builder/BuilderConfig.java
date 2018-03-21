@@ -6,6 +6,7 @@
 
 package com.skcraft.launcher.builder;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.skcraft.launcher.model.modpack.LaunchModifier;
@@ -19,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class BuilderConfig {
 
     private String name;
