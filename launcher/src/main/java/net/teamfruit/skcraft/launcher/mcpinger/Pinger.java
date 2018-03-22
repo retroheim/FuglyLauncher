@@ -89,7 +89,7 @@ public class Pinger {
 		readVarInt(in); // Size
 		id = readVarInt(in);
 		io(id==-1, "Server prematurely ended stream.");
-		io(id!=PACKET_PING, "Server returned invalid packet.");
+		//io(id!=PACKET_PING, "Server returned invalid packet.");
 
 		// Close
 
