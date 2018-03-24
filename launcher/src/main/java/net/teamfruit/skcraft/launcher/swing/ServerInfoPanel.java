@@ -19,6 +19,7 @@ import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Builder;
@@ -42,7 +43,7 @@ public class ServerInfoPanel {
 	private InstanceCellPanel instancePanel;
 	private InfoMessageStatus lastStatus = InfoMessageStatus.PINGING;
 
-	public void paint(final Graphics g, Rectangle r, InstanceCellPanel instancePanel) {
+	public void paint(final Graphics g, Rectangle r, @NonNull InstanceCellPanel instancePanel) {
 		this.instancePanel = instancePanel;
 		if (futureSupplier!=null) {
 			InfoMessage infoMessage = getMessage();
@@ -187,9 +188,11 @@ public class ServerInfoPanel {
 	}
 
 	public void update() {
-		JComponent updateComponent = instancePanel.getUpdateComponent();
-		if (updateComponent!=null)
-			updateComponent.repaint();
+		if (instancePanel!=null) {
+			JComponent updateComponent = instancePanel.getUpdateComponent();
+			if (updateComponent!=null)
+				updateComponent.repaint();
+		}
 	}
 
 }
