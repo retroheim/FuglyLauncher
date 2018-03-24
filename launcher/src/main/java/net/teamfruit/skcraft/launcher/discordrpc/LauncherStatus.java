@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Maps;
 
-import club.minnced.discord.rpc.DiscordRichPresence;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

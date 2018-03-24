@@ -1,24 +1,14 @@
 package net.teamfruit.skcraft.launcher.discordrpc;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.logging.Level;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
-import com.google.common.io.InputSupplier;
-import com.skcraft.launcher.util.Environment;
-import com.skcraft.launcher.util.Platform;
+import com.jagrosh.discordipc.IPCClient;
+import com.jagrosh.discordipc.IPCListener;
+import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
 
-import club.minnced.discord.rpc.DiscordEventHandlers;
-import club.minnced.discord.rpc.DiscordEventHandlers.OnReady;
-import club.minnced.discord.rpc.DiscordRPC;
-import club.minnced.discord.rpc.DiscordRichPresence;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
 
@@ -29,9 +19,10 @@ public class LauncherDiscord {
 
 	public static void init(LauncherDirectories dirs) {
 		try {
-			System.setProperty("jna.encoding", "UTF-8");
-			loadLibs(dirs.getNativeDir());
 			instance = new LauncherDiscord();
+		} catch (NoDiscordClientException e) {
+			log.log(Level.INFO, "[DiscordRPC] No client detected");
+			log.log(Level.FINE, "[DiscordRPC] No client detected: ", e);
 		} catch (Exception e) {
 			log.log(Level.WARNING, "[DiscordRPC] exception: ", e);
 		} catch (Throwable t) {
@@ -39,55 +30,39 @@ public class LauncherDiscord {
 		}
 	}
 
-	private final DiscordRPC lib;
+	private final IPCClient client;
 
 	private LauncherDiscord() throws Exception {
-		lib = DiscordRPC.INSTANCE;
-		String applicationId = "425297966069317632";
-		String steamId = null;
-		DiscordEventHandlers handlers = new DiscordEventHandlers();
-		handlers.ready = new OnReady() {
-			@Override
-			public void accept() {
-				log.info("[DiscordRPC] online.");
-			}
-		};
 		log.info("[DiscordRPC] initializing.");
-		lib.Discord_Initialize(applicationId, handlers, true, steamId);
+		client = new IPCClient(425297966069317632L);
+
+		client.setListener(new IPCListener() {
+			@Override
+			public void onReady(IPCClient client) {
+				log.info("[DiscordRPC] online.");
+				updateStatusImpl(DiscordStatus.DEFAULT.createRPC(new DiscordRichPresence(), ImmutableMap.<String, String> of()));
+			}
+		});
 
 		log.info("[DiscordRPC] starting.");
-		updateStatusImpl(DiscordStatus.DEFAULT.createRPC(new DiscordRichPresence(), ImmutableMap.<String, String> of()));
-
-		// in a worker thread
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (!Thread.currentThread().isInterrupted()) {
-					lib.Discord_RunCallbacks();
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException ignored) {
-					}
-				}
-			}
-		}, "RPC-Callback-Handler").start();
+		client.connect();
 
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
 				log.info("[DiscordRPC] shutting down.");
-				lib.Discord_Shutdown();
+				client.close();
 			}
 		}));
 	}
 
-	public void updateStatusImpl(DiscordRichPresence presence) throws UnsatisfiedLinkError {
+	public void updateStatusImpl(DiscordRichPresence presence) {
 		//log.info("[DiscordRPC] : "+presence.details+", "+presence.state);
-		lib.Discord_UpdatePresence(presence);
+		client.sendRichPresence(presence.toRichPresence());
 	}
 
 	public void clearStatusImpl() throws UnsatisfiedLinkError {
-		lib.Discord_ClearPresence();
+		client.sendRichPresence(null);
 	}
 
 	public static void updateStatus(DiscordRichPresence presence) {
@@ -101,48 +76,5 @@ public class LauncherDiscord {
 			} catch (Throwable t) {
 				log.log(Level.WARNING, "[DiscordRPC] update status error: ", t);
 			}
-	}
-
-	private static void loadLibs(File nativedir) throws Exception {
-		try {
-			Platform platform = Environment.getInstance().getPlatform();
-			switch (platform) {
-				case WINDOWS:
-					if (StringUtils.equals(System.getProperty("sun.arch.data.model"), "32"))
-						loadFile(nativedir, "win32-x86/discord-rpc.dll");
-					else
-						loadFile(nativedir, "win32-x86-64/discord-rpc.dll");
-					break;
-				case LINUX:
-					loadFile(nativedir, "linux-x86-64/libdiscord-rpc.so");
-					break;
-				case MAC_OS_X:
-					loadFile(nativedir, "darwin/libdiscord-rpc.dylib");
-					break;
-				default:
-					log.info("[DiscordRPC] THIS OPERATING SYSTEM IS NOT SUPPORTED!!");
-					break;
-			}
-		} catch (IOException e) {
-			throw new Exception("Could not load DiscordRPC libraries: ", e);
-		} catch (UnsatisfiedLinkError e) {
-			throw new Exception("Could not link DiscordRPC libraries: ", e);
-		}
-	}
-
-	private static void loadFile(File nativedir, final String name) throws IOException, UnsatisfiedLinkError {
-		nativedir.mkdirs();
-		String filename = new File(LauncherDiscord.class.getResource("/"+name).getPath()).getName();
-		File lib = new File(nativedir, filename);
-		if (!lib.exists()) {
-			lib.createNewFile();
-			Files.copy(new InputSupplier<InputStream>() {
-				@Override
-				public InputStream getInput() throws IOException {
-					return LauncherDiscord.class.getResourceAsStream("/"+name);
-				}
-			}, lib);
-		}
-		System.load(lib.getAbsolutePath());
 	}
 }

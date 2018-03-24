@@ -7,8 +7,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.skcraft.launcher.util.SharedLocale;
 
-import club.minnced.discord.rpc.DiscordRichPresence;
-
 public enum DiscordStatus {
 	STARTING {
 		@Override

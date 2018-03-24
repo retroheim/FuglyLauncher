@@ -23,7 +23,7 @@ subprojects {
     apply plugin: 'eclipse'
 
     group = 'com.skcraft'
-    version = '1.2.7'
+    version = '1.2.8'
 
     sourceCompatibility = 1.6
     targetCompatibility = 1.6
@@ -31,6 +31,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        jcenter()
         maven { url 'http://repo.maven.apache.org/maven2' }
         maven { url 'https://jitpack.io' }
     }
