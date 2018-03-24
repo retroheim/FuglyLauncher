@@ -34,6 +34,7 @@ import com.skcraft.launcher.util.SharedLocale;
 import lombok.Getter;
 import lombok.NonNull;
 import net.teamfruit.skcraft.launcher.appicon.AppIcon;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 
 /**
  * A frame capable of showing messages.
@@ -119,6 +120,13 @@ public class ConsoleFrame extends JFrame {
                 pastebinLog();
             }
         });
+
+        addWindowListener(new WindowAdapter() {
+        	@Override
+        	public void windowActivated(WindowEvent e) {
+        		LauncherStatus.instance.update();
+        	}
+		});
     }
 
     /**

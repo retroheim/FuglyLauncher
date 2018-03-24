@@ -11,6 +11,8 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.List;
 
@@ -313,6 +315,13 @@ public class ConfigurationDialog extends JDialog {
 			secretUnlockButton.setEnabled(false);
 
 		LauncherStatus.instance.open(DiscordStatus.CONFIG, new WindowDisablable(this), ImmutableMap.<String, String>of());
+
+        addWindowListener(new WindowAdapter() {
+        	@Override
+        	public void windowActivated(WindowEvent e) {
+        		LauncherStatus.instance.update();
+        	}
+		});
 	}
 
 	/**

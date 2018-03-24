@@ -147,6 +147,13 @@ public class LoginDialog extends JDialog {
 			}
 		}
 		LauncherStatus.instance.open(DiscordStatus.LOGIN, new WindowDisablable(this), status);
+
+        addWindowListener(new WindowAdapter() {
+        	@Override
+        	public void windowActivated(WindowEvent e) {
+        		LauncherStatus.instance.update();
+        	}
+		});
 	}
 
 	@Override

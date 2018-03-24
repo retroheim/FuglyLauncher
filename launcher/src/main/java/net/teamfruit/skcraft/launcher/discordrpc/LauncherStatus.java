@@ -56,6 +56,12 @@ public class LauncherStatus {
 		}
 	}
 
+	public void update() {
+		StatusNode node = last;
+		if (node!=null)
+			node.getStatus().update(node.getPresence(), node.getMap());
+	}
+
 	private StatusNode getAvailableNode(StatusNode node) {
 		if (node!=null)
 			do {

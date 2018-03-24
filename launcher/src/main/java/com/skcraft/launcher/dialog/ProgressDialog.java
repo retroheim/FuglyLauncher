@@ -42,6 +42,7 @@ import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.swing.TipsPanel;
 
 @Log
@@ -159,6 +160,13 @@ public class ProgressDialog extends JDialog {
                 ConsoleFrame.showMessages();
             }
         });
+
+        addWindowListener(new WindowAdapter() {
+        	@Override
+        	public void windowActivated(WindowEvent e) {
+        		LauncherStatus.instance.update();
+        	}
+		});
     }
 
     private boolean confirmCancel() {
