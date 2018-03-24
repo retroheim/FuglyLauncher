@@ -194,7 +194,7 @@ public class LaunchSupervisor {
 								final MessageLog gameLog = consoleFrame.getMessageLog();
 								int exitcode = process.exitValue();
 
-								ExitHandler exitHandler = new ExitHandler(exitcode, consoleFrame.getMessageLog());
+								ExitHandler exitHandler = new ExitHandler(exitcode, consoleFrame.getMessageLog(), instance, session, server);
 								if (exitHandler.handleRestart()) {
 									LaunchOptions.Builder builder = new LaunchOptions.Builder();
 									builder.setWindow(window);

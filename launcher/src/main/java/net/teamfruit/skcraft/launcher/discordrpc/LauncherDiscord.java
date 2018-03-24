@@ -1,5 +1,6 @@
 package net.teamfruit.skcraft.launcher.discordrpc;
 
+import java.util.function.Consumer;
 import java.util.logging.Level;
 
 import javax.annotation.Nullable;
@@ -7,6 +8,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableMap;
 import com.jagrosh.discordipc.IPCClient;
 import com.jagrosh.discordipc.IPCListener;
+import com.jagrosh.discordipc.entities.Callback;
 import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
 
 import lombok.extern.java.Log;
@@ -58,10 +60,16 @@ public class LauncherDiscord {
 
 	public void updateStatusImpl(DiscordRichPresence presence) {
 		//log.info("[DiscordRPC] : "+presence.details+", "+presence.state);
-		client.sendRichPresence(presence.toRichPresence());
+		//log.info("[DiscordRPC] : check: "+(client.getStatus()!=PipeStatus.DISCONNECTED&&client.getStatus()!=PipeStatus.CLOSED));
+		client.sendRichPresence(presence.toRichPresence(), new Callback(new Consumer<String>() {
+			@Override
+			public void accept(String t) {
+				log.info("[DiscordRPC] status update failed: "+t);
+			}
+		}));
 	}
 
-	public void clearStatusImpl() throws UnsatisfiedLinkError {
+	public void clearStatusImpl() {
 		client.sendRichPresence(null);
 	}
 
@@ -74,7 +82,7 @@ public class LauncherDiscord {
 				else
 					inst.clearStatusImpl();
 			} catch (Throwable t) {
-				log.log(Level.WARNING, "[DiscordRPC] update status error: ", t);
+				log.log(Level.WARNING, "[DiscordRPC] status update error: ", t);
 			}
 	}
 }

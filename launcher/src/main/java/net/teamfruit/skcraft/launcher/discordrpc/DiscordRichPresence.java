@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Objects;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.jagrosh.discordipc.entities.RichPresence;
 
 public class DiscordRichPresence {
@@ -127,8 +129,8 @@ public class DiscordRichPresence {
 				.setDetails(details)
 				.setStartTimestamp(startTimestamp<=0?null:Instant.ofEpochMilli(startTimestamp).atZone(ZoneId.systemDefault()).toOffsetDateTime())
 				.setEndTimestamp(endTimestamp<=0?null:Instant.ofEpochMilli(endTimestamp).atZone(ZoneId.systemDefault()).toOffsetDateTime())
-				.setLargeImage(largeImageKey, largeImageText)
-				.setSmallImage(smallImageKey, smallImageText)
+				.setLargeImage(largeImageKey, StringUtils.length(largeImageText)<2?null:largeImageText)
+				.setSmallImage(smallImageKey, StringUtils.length(smallImageText)<2?null:smallImageText)
 				.setParty(partyId, partySize, partyMax)
 				.setMatchSecret(matchSecret)
 				.setJoinSecret(joinSecret)

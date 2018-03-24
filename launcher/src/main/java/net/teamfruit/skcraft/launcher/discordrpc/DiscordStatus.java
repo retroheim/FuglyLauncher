@@ -141,6 +141,23 @@ public enum DiscordStatus {
 			return presence;
 		}
 	},
+	CRASHED {
+		@Override
+		public DiscordRichPresence createRPC(final DiscordRichPresence lastPresence, final Map<String, String> args) {
+			DiscordRichPresence presence = new DiscordRichPresence();
+			presence.smallImageKey = "icon_crashed";
+			presence.largeImageKey = "fruit_general";
+			String server = args.get("server");
+			presence.smallImageText = !StringUtils.isEmpty(server) ? SharedLocale.tr("discordrpc.server", server) : SharedLocale.tr("discordrpc.server.nothing");
+			String instance = args.get("instance");
+			presence.details = !StringUtils.isEmpty(instance) ? SharedLocale.tr("discordrpc.instance", instance) : SharedLocale.tr("discordrpc.instance.nothing");
+			String player = args.get("player");
+			presence.largeImageText = !StringUtils.isEmpty(player) ? SharedLocale.tr("discordrpc.player", player) : SharedLocale.tr("discordrpc.player.nothing");
+			presence.state = SharedLocale.tr("discordrpc.status.crashed.state");
+			presence.endTimestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+			return presence;
+		}
+	},
 
 	;
 
