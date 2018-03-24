@@ -154,7 +154,6 @@ public enum DiscordStatus {
 			String player = args.get("player");
 			presence.largeImageText = !StringUtils.isEmpty(player) ? SharedLocale.tr("discordrpc.player", player) : SharedLocale.tr("discordrpc.player.nothing");
 			presence.state = SharedLocale.tr("discordrpc.status.crashed.state");
-			presence.endTimestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 			return presence;
 		}
 	},

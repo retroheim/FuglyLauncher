@@ -22,6 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.beust.jcommander.internal.Maps;
+import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -190,32 +191,42 @@ public class LaunchSupervisor {
 					@Override
 					public void onSuccess(Process process) {
 						try {
-							if (consoleFrame!=null&&process!=null&&!process.isAlive()) {
-								final MessageLog gameLog = consoleFrame.getMessageLog();
-								int exitcode = process.exitValue();
+							MessageLog gameLog = null;
+							try {
+								if (consoleFrame!=null&&process!=null&&!process.isAlive()) {
+									gameLog = consoleFrame.getMessageLog();
+									int exitcode = process.exitValue();
 
-								ExitHandler exitHandler = new ExitHandler(exitcode, consoleFrame.getMessageLog(), instance, session, server);
-								if (exitHandler.handleRestart()) {
-									LaunchOptions.Builder builder = new LaunchOptions.Builder();
-									builder.setWindow(window);
-									builder.setInstance(instance);
-									builder.setUpdatePolicy(LaunchOptions.UpdatePolicy.ALWAYS_UPDATE);
-									builder.setSession(session);
-									builder.setListener(listener);
+									ExitHandler exitHandler = new ExitHandler(exitcode, gameLog, instance, session, server);
+									if (exitHandler.handleRestart()) {
+										LaunchOptions.Builder builder = new LaunchOptions.Builder();
+										builder.setWindow(window);
+										builder.setInstance(instance);
+										builder.setUpdatePolicy(LaunchOptions.UpdatePolicy.ALWAYS_UPDATE);
+										builder.setSession(session);
+										builder.setListener(listener);
 
-									ConnectServerInfo connectedServer = exitHandler.getRestartServer();
-									if (connectedServer!=null&&connectedServer.isValid()) {
-										gameLog.log(tr("console.processRestartServer", connectedServer.getServerHost(), connectedServer.getServerPort()), gameLog.asHighlighted());
-										builder.setServer(connectedServer);
-									} else
-										gameLog.log(tr("console.processRestart"), gameLog.asHighlighted());
+										ConnectServerInfo connectedServer = exitHandler.getRestartServer();
+										if (connectedServer!=null&&connectedServer.isValid()) {
+											gameLog.log(tr("console.processRestartServer", connectedServer.getServerHost(), connectedServer.getServerPort()), gameLog.asHighlighted());
+											builder.setServer(connectedServer);
+										} else
+											gameLog.log(tr("console.processRestart"), gameLog.asHighlighted());
 
-									launch(builder.build());
-									return;
-								} else if (exitHandler.handleCrashReport()) {
-									gameLog.log(tr("console.processCrashed", exitHandler.getErrorFile().getAbsolutePath()), gameLog.asHighlighted());
-									exitHandler.showCrashReport();
+										launch(builder.build());
+										return;
+									} else if (exitHandler.handleCrashReport()) {
+										gameLog.log(tr("console.processCrashed", exitHandler.getErrorFile().getAbsolutePath()), gameLog.asHighlighted());
+										exitHandler.showCrashReport();
+									}
 								}
+							} catch (Exception e) {
+								try {
+									if (gameLog!=null)
+										gameLog.log(tr("errors.reportErrorKnown", Throwables.getStackTraceAsString(e)), gameLog.asError());
+								} catch (Exception ex) {
+								}
+								log.log(Level.WARNING, "[Bug] An internal error has occurred while processing exit log. please report to us: ", e);
 							}
 
 							SwingUtilities.invokeLater(new Runnable() {
