@@ -11,6 +11,7 @@ import java.util.concurrent.Callable;
 import javax.swing.JComponent;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -148,10 +149,17 @@ public class ServerInfoPanel {
 						stb.append(SharedLocale.tr("mcpinger.details.players", online, max)).append("\n");
 						if (players!=null) {
 							List<Player> sampleplayers = players.getSample();
-							if (sampleplayers!=null)
+							if (sampleplayers!=null) {
 								for (Player player : sampleplayers)
 									if (player!=null)
 										stb.append(SharedLocale.tr("mcpinger.details.playerLine", player.getName())).append("\n");
+								if (NumberUtils.isNumber(online)) {
+									int intonline = NumberUtils.toInt(online);
+									int samplesize = sampleplayers.size();
+									if (intonline>samplesize)
+										stb.append(SharedLocale.tr("mcpinger.details.playerRemaining", intonline-samplesize));
+								}
+							}
 						}
 						builder.details(stb.toString());
 					} else {
