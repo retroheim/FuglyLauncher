@@ -32,6 +32,9 @@ public class LauncherArguments {
 	@Parameter(names = "--uripath")
 	private String uriPath;
 
+	@Parameter(names = "--edition")
+	private String edition;
+
 	@Parameter(names = "--run")
 	private String run;
 

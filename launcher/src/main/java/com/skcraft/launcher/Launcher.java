@@ -23,6 +23,8 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Strings;
@@ -211,6 +213,10 @@ public final class Launcher {
      */
     public URL getNewsURL() {
         try {
+        	if (StringUtils.equals("finalcity", getOptions().getEdition()))
+                return HttpRequest.url(
+                        String.format("https://finalcity.github.io/FinalcitySkin/news.html",
+                                URLEncoder.encode(getVersion(), "UTF-8")));
             return HttpRequest.url(
                     String.format(getProperties().getProperty("newsUrl"),
                             URLEncoder.encode(getVersion(), "UTF-8")));
@@ -226,6 +232,10 @@ public final class Launcher {
      */
     public URL getTipsURL() {
         try {
+        	if (StringUtils.equals("finalcity", getOptions().getEdition()))
+                return HttpRequest.url(
+                        String.format("https://finalcity.github.io/FinalcitySkin/tips.json",
+                                URLEncoder.encode(getVersion(), "UTF-8")));
             return HttpRequest.url(
                     String.format(getProperties().getProperty("tipsUrl"),
                             URLEncoder.encode(getVersion(), "UTF-8")));
