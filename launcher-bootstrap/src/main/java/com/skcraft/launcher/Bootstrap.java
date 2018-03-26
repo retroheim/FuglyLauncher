@@ -143,26 +143,23 @@ public class Bootstrap {
 
     public void execute(Class<?> clazz) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method method = clazz.getDeclaredMethod("main", String[].class);
-        String[] launcherArgs;
+        List<String> launcherArgs = new ArrayList<String>();
 
-        if (portable) {
-            launcherArgs = new String[] {
-                    "--portable",
-                    "--dir",
-                    baseDir.getAbsolutePath(),
-                    "--bootstrap-version",
-                    String.valueOf(BOOTSTRAP_VERSION) };
-        } else {
-            launcherArgs = new String[] {
-                    "--dir",
-                    baseDir.getAbsolutePath(),
-                    "--bootstrap-version",
-                    String.valueOf(BOOTSTRAP_VERSION)  };
+        String editon = getProperties().getProperty("edition");
+
+        if (portable)
+            launcherArgs.add("--portable");
+        launcherArgs.add("--dir");
+        launcherArgs.add(baseDir.getAbsolutePath());
+        launcherArgs.add("--bootstrap-version");
+        launcherArgs.add(String.valueOf(BOOTSTRAP_VERSION));
+        if (editon!= null&&editon.length()>0) {
+            launcherArgs.add("--edition");
+            launcherArgs.add(editon);
         }
+        launcherArgs.addAll(Arrays.asList(originalArgs));
 
-        String[] args = new String[originalArgs.length + launcherArgs.length];
-        System.arraycopy(launcherArgs, 0, args, 0, launcherArgs.length);
-        System.arraycopy(originalArgs, 0, args, launcherArgs.length, originalArgs.length);
+        String[] args = launcherArgs.toArray(new String[launcherArgs.size()]);
 
         log.info("Launching with arguments " + Arrays.toString(args));
 
