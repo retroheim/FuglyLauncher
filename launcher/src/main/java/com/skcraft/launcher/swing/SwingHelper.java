@@ -62,6 +62,7 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.text.JTextComponent;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -184,7 +185,7 @@ public final class SwingHelper {
                 detailsText, JOptionPane.ERROR_MESSAGE);
     }
 
-    private static @Setter URL supportURL;
+    private static @Setter Supplier<URL> supportURL;
 
     /**
      * Show a message dialog using
@@ -246,8 +247,9 @@ public final class SwingHelper {
 	                supportButton.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							if (supportURL!=null)
-								SwingHelper.openURL(supportURL, supportButton);
+							URL url = supportURL.get();
+							if (url!=null)
+								SwingHelper.openURL(url, supportButton);
 						}
 					});
 

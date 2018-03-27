@@ -14,5 +14,5 @@ public interface Skin {
 
 	Image getBackgroundImage();
 
-	void downlaodResources() throws Exception;
+	void downloadResources() throws Exception;
 }

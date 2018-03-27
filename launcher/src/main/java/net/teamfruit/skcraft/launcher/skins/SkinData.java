@@ -75,7 +75,7 @@ public class SkinData implements Skin {
 	}
 
 	@Override
-	public void downlaodResources() throws Exception {
+	public void downloadResources() throws Exception {
 		resourceDir.mkdirs();
 		byte[] bytes = HttpRequest
 				.get(HttpRequest.url(skinInfo.getLangURL()))

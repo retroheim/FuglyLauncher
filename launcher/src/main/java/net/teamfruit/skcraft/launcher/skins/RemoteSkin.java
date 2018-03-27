@@ -85,7 +85,7 @@ public class RemoteSkin {
 						.saveContent(localSkin.getFile())
 						.asJson(SkinInfo.class));
 
-				localSkin.getSkin().downlaodResources();
+				localSkin.getSkin().downloadResources();
 
 			} catch (final IOException e) {
 				log.log(Level.WARNING, "The skin could not be downloaded.", e);

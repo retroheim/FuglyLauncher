@@ -17,6 +17,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
@@ -133,9 +134,23 @@ public final class Launcher {
         if (localSkin!=null)
         	skin = localSkin.getSkin();
 
-        try {
-        	SwingHelper.setSupportURL(getSupportURL());
-        } catch(Exception e) {}
+        SharedLocale.setBundleSupplier(new Supplier<ResourceBundle>() {
+			@Override
+			public ResourceBundle get() {
+				return skin.getLang();
+			}
+		});
+
+		SwingHelper.setSupportURL(new Supplier<URL>() {
+			@Override
+			public URL get() {
+				try {
+					return getSupportURL();
+				} catch (Exception e) {
+				}
+				return null;
+			}
+		});
 
         if (accounts.getSize() > 0) {
             accounts.setSelectedItem(accounts.getElementAt(0));

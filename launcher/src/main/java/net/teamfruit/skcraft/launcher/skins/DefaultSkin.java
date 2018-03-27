@@ -1,10 +1,16 @@
 package net.teamfruit.skcraft.launcher.skins;
 
 import java.awt.Image;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ResourceBundle;
 
+import javax.imageio.ImageIO;
+
+import com.skcraft.launcher.FancyBackgroundPanel;
 import com.skcraft.launcher.Launcher;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -31,16 +37,21 @@ public class DefaultSkin implements Skin {
 		return null;
 	}
 
-	@Override
-	public Image getBackgroundImage() {
-		// TODO 自動生成されたメソッド・スタブ
+	@Getter(lazy = true)
+	private final Image backgroundImage = createBackgroundImage();
+
+	public Image createBackgroundImage() {
+		try {
+			InputStream input = FancyBackgroundPanel.class.getResourceAsStream("launcher_bg.jpg");
+			if (input!=null)
+				return ImageIO.read(input);
+		} catch (IOException e) {
+		}
 		return null;
 	}
 
 	@Override
-	public void downlaodResources() throws Exception {
-		// TODO 自動生成されたメソッド・スタブ
-
+	public void downloadResources() throws Exception {
 	}
 
 }

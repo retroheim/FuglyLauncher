@@ -19,7 +19,10 @@ import java.util.logging.Level;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import com.google.common.base.Supplier;
+
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.java.Log;
 
 /**
@@ -30,6 +33,14 @@ public class SharedLocale {
 
     private static Locale locale = Locale.getDefault();
     private static ResourceBundle bundle;
+    @Setter private static Supplier<ResourceBundle> bundleSupplier;
+
+    private static ResourceBundle getBundle() {
+    	ResourceBundle b = bundleSupplier.get();
+    	if (b!=null)
+    		return b;
+    	return bundle;
+    }
 
     /**
      * Get the current locale.
@@ -41,15 +52,6 @@ public class SharedLocale {
     }
 
     /**
-     * Get the current resource bundle.
-     *
-     * @return the current resource bundle, or null if not available
-     */
-    public static ResourceBundle getBundle() {
-        return bundle;
-    }
-
-    /**
      * Translate a string.
      *
      * <p>If the string is not available, then ${key} will be returned.</p>
@@ -58,6 +60,7 @@ public class SharedLocale {
      * @return the translated string
      */
     public static String tr(String key) {
+    	ResourceBundle bundle = getBundle();
         if (bundle != null) {
             try {
                 return bundle.getString(key);
@@ -79,6 +82,7 @@ public class SharedLocale {
      * @return a translated string
      */
     public static String tr(String key, Object... args) {
+    	ResourceBundle bundle = getBundle();
         if (bundle != null) {
             try {
                 MessageFormat formatter = new MessageFormat(bundle.getString(key));

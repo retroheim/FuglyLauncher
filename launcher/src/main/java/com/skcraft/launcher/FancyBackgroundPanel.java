@@ -6,31 +6,25 @@
 
 package com.skcraft.launcher;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
+import java.awt.Graphics;
+import java.awt.Image;
 
+import javax.swing.JPanel;
+
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class FancyBackgroundPanel extends JPanel {
 
-    private Image background;
+	private final Launcher launcher;
 
-    public FancyBackgroundPanel() {
-        try {
-        	InputStream input = FancyBackgroundPanel.class.getResourceAsStream("launcher_bg.jpg");
-        	if (input!=null)
-        		background = ImageIO.read(input);
-        } catch (IOException e) {
-        }
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (background != null) {
-            g.drawImage(background, 0, 0, null);
-        }
-    }
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		Image background = launcher.getSkin().getBackgroundImage();
+		if (background!=null) {
+			g.drawImage(background, 0, 0, null);
+		}
+	}
 
 }

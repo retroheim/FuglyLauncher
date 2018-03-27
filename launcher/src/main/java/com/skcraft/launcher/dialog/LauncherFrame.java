@@ -405,7 +405,7 @@ public class LauncherFrame extends JFrame {
     }
 
     protected JPanel createContainerPanel() {
-        return new FancyBackgroundPanel();
+        return new FancyBackgroundPanel(launcher);
     }
 
     /**
