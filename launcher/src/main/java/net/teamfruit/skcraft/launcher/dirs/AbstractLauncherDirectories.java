@@ -50,6 +50,11 @@ public abstract class AbstractLauncherDirectories implements LauncherDirectories
 	}
 
 	@Override
+	public File getSkinDir() {
+		return new File(getBaseDir(), "skins");
+	}
+
+	@Override
 	public File getExtractDir() {
 		return new File(getTemporaryDir(), "extract");
 	}

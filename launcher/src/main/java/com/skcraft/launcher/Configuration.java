@@ -23,6 +23,7 @@ import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Configuration {
 
+	private String skin;
     private boolean offlineEnabled = false;
     private boolean offlineModeEnabled = false;
     private String offlineModePlayerName;

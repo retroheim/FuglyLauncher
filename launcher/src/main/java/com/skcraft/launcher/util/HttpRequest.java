@@ -6,18 +6,40 @@
 
 package com.skcraft.launcher.util;
 
+import static com.skcraft.launcher.LauncherUtils.*;
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skcraft.concurrency.ProgressObservable;
+
 import lombok.Getter;
 import lombok.extern.java.Log;
-
-import java.io.*;
-import java.net.*;
-import java.util.*;
-
-import static com.skcraft.launcher.LauncherUtils.checkInterrupted;
-import static org.apache.commons.io.IOUtils.closeQuietly;
 
 /**
  * A simple fluent interface for performing HTTP requests that uses
@@ -468,6 +490,18 @@ public class HttpRequest implements Closeable, ProgressObservable {
          */
         public <T> T asJson(TypeReference type) throws IOException {
             return mapper.readValue(asString("UTF-8"), type);
+        }
+
+        /**
+         * Return the result as an instance of the properties
+         *
+         * @return the properties
+         * @throws java.io.IOException on I/O error
+         */
+        public Properties asProperties() throws IOException {
+            Properties prop = new Properties();
+            prop.load(new InputStreamReader(new ByteArrayInputStream(data), "UTF-8"));
+            return prop;
         }
 
         /**

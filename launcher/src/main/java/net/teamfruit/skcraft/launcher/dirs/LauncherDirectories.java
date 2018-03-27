@@ -71,6 +71,13 @@ public interface LauncherDirectories {
 	File getIconDir();
 
 	/**
+	 * Get the directory to store skins.
+	 *
+	 * @return the skins directory
+	 */
+	File getSkinDir();
+
+	/**
 	 * Get the directory to store temporarily extracted files.
 	 *
 	 * @return the directory

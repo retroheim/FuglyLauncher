@@ -54,6 +54,8 @@ import net.teamfruit.skcraft.launcher.dirs.ConfigLauncherDirectories;
 import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherDiscord;
 import net.teamfruit.skcraft.launcher.integration.UriScheme;
+import net.teamfruit.skcraft.launcher.skins.LocalSkinList;
+import net.teamfruit.skcraft.launcher.skins.Skin;
 
 /**
  * The main entry point for the launcher.
@@ -76,6 +78,8 @@ public final class Launcher {
     @Getter private final TipList tips;
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
+    @Getter final private LocalSkinList localSkins;
+    @Getter @Setter private Skin skin;
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
     @Getter private final UpdateManager updateManager = new UpdateManager(this);
     @Getter private final InstanceTasks instanceTasks = new InstanceTasks(this);
@@ -109,9 +113,6 @@ public final class Launcher {
         this.options = options;
         this.args = args;
         this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
-        try {
-        	SwingHelper.setSupportURL(getSupportURL());
-        } catch(Exception e) {}
         this.instances = new InstanceList(this);
         this.tips = new TipList(this);
         this.config = Persistence.load(new File(argConfigDir, "config.json"), Configuration.class);
@@ -126,6 +127,13 @@ public final class Launcher {
         DefaultFont.configUIFont();
 
         setDefaultConfig();
+
+        localSkins = new LocalSkinList(this);
+        skin = localSkins.getLocalSkin(config.getSkin()).getSkin();
+
+        try {
+        	SwingHelper.setSupportURL(getSupportURL());
+        } catch(Exception e) {}
 
         if (accounts.getSize() > 0) {
             accounts.setSelectedItem(accounts.getElementAt(0));
@@ -206,7 +214,22 @@ public final class Launcher {
         return new AssetsRoot(getAssetsDir());
     }
 
-    /**
+	/**
+     * Get the skins URL.
+     *
+     * @return the skins URL
+     */
+    public URL getSkinsURL() {
+        try {
+            return HttpRequest.url(
+                    String.format(getProperties().getProperty("skinsUrl"),
+                            URLEncoder.encode(getVersion(), "UTF-8")));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+	}
+
+	/**
      * Get the news URL.
      *
      * @return the news URL
