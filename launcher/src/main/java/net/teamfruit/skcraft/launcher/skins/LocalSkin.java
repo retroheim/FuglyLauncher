@@ -38,11 +38,13 @@ public class LocalSkin {
 	private final SkinInfo backingSkin = Persistence.load(getFile(), SkinInfo.class, true);
 
 	@Setter
-	private SkinInfo skin;
+	private SkinInfo skinInfo;
 
 	public Skin getSkin() {
-		if (skin==null)
-			skin = getBackingSkin();
-		return new SkinData(launcher, skin, getResourceDir());
+		if (skinInfo==null)
+			skinInfo = getBackingSkin();
+		if (skinInfo!=null)
+			return new SkinData(launcher, skinInfo, getResourceDir());
+		return new DefaultSkin(launcher);
 	}
 }

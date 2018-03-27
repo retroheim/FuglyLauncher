@@ -8,6 +8,8 @@ public interface Skin {
 
 	String getTipsURL();
 
+	String getSupportURL();
+
 	ResourceBundle getLang();
 
 	Image getBackgroundImage();

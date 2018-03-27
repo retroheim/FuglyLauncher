@@ -41,6 +41,13 @@ public class SkinData implements Skin {
 		return skinInfo.getTipsURL();
 	}
 
+	@Override
+	public String getSupportURL() {
+		if (skinInfo==null)
+			return null;
+		return skinInfo.getSupportURL();
+	}
+
 	private ResourceBundle lang;
 
 	@Override

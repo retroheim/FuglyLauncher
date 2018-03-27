@@ -77,14 +77,14 @@ public class RemoteSkin {
 				final URL skinsURL = RemoteSkin.this.launcher.getSkinsURL();
 
 				localSkin.getDir().mkdirs();
-				localSkin.setSkin(HttpRequest
+				localSkin.setSkinInfo(HttpRequest
 						.get(skinsURL)
 						.execute()
 						.expectResponseCode(200)
 						.returnContent()
 						.saveContent(localSkin.getFile())
 						.asJson(SkinInfo.class));
-				
+
 				localSkin.getSkin().downlaodResources();
 
 			} catch (final IOException e) {

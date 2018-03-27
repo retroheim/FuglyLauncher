@@ -22,6 +22,11 @@ public class DefaultSkin implements Skin {
 	}
 
 	@Override
+	public String getSupportURL() {
+		return launcher.getProperties().getProperty("supportUrl");
+	}
+
+	@Override
 	public ResourceBundle getLang() {
 		return null;
 	}

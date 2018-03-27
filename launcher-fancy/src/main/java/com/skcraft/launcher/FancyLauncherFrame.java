@@ -7,7 +7,6 @@
 package com.skcraft.launcher;
 
 import javax.swing.BorderFactory;
-import javax.swing.JPanel;
 
 import com.skcraft.launcher.dialog.LauncherFrame;
 import com.skcraft.launcher.swing.SwingHelper;
@@ -31,11 +30,6 @@ public class FancyLauncherFrame extends LauncherFrame {
         SwingHelper.removeOpaqueness(getInstancesTable());
         SwingHelper.removeOpaqueness(getInstanceScroll());
         getInstanceScroll().setBorder(BorderFactory.createEmptyBorder());
-    }
-
-    @Override
-    protected JPanel createContainerPanel() {
-        return new FancyBackgroundPanel();
     }
 
     @Override

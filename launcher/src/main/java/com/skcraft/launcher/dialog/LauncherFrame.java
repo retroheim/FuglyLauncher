@@ -55,6 +55,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.common.collect.ImmutableMap;
 import com.skcraft.concurrency.ObservableFuture;
+import com.skcraft.launcher.FancyBackgroundPanel;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.InstanceList;
 import com.skcraft.launcher.Launcher;
@@ -401,7 +402,7 @@ public class LauncherFrame extends JFrame {
     }
 
     protected JPanel createContainerPanel() {
-        return new JPanel();
+        return new FancyBackgroundPanel();
     }
 
     /**

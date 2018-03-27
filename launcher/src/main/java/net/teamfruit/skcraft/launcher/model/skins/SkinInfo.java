@@ -9,6 +9,7 @@ import lombok.Data;
 public class SkinInfo {
 	private String newsURL;
 	private String tipsURL;
+	private String supportURL;
 	private String langURL;
 	private String backgroundURL;
 }

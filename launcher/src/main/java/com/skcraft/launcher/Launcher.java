@@ -23,8 +23,6 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Strings;
@@ -54,6 +52,8 @@ import net.teamfruit.skcraft.launcher.dirs.ConfigLauncherDirectories;
 import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherDiscord;
 import net.teamfruit.skcraft.launcher.integration.UriScheme;
+import net.teamfruit.skcraft.launcher.skins.DefaultSkin;
+import net.teamfruit.skcraft.launcher.skins.LocalSkin;
 import net.teamfruit.skcraft.launcher.skins.LocalSkinList;
 import net.teamfruit.skcraft.launcher.skins.Skin;
 
@@ -79,7 +79,7 @@ public final class Launcher {
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
     @Getter final private LocalSkinList localSkins;
-    @Getter @Setter private Skin skin;
+    @Getter @Setter private Skin skin = new DefaultSkin(this);
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
     @Getter private final UpdateManager updateManager = new UpdateManager(this);
     @Getter private final InstanceTasks instanceTasks = new InstanceTasks(this);
@@ -129,7 +129,9 @@ public final class Launcher {
         setDefaultConfig();
 
         localSkins = new LocalSkinList(this);
-        skin = localSkins.getLocalSkin(config.getSkin()).getSkin();
+        LocalSkin localSkin = localSkins.getLocalSkin(config.getSkin());
+        if (localSkin!=null)
+        	skin = localSkin.getSkin();
 
         try {
         	SwingHelper.setSupportURL(getSupportURL());
@@ -236,12 +238,8 @@ public final class Launcher {
      */
     public URL getNewsURL() {
         try {
-        	if (StringUtils.equals("finalcity", getOptions().getEdition()))
-                return HttpRequest.url(
-                        String.format("https://finalcity.github.io/FinalcitySkin/news.html",
-                                URLEncoder.encode(getVersion(), "UTF-8")));
             return HttpRequest.url(
-                    String.format(getProperties().getProperty("newsUrl"),
+                    String.format(getSkin().getNewsURL(),
                             URLEncoder.encode(getVersion(), "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
@@ -255,12 +253,8 @@ public final class Launcher {
      */
     public URL getTipsURL() {
         try {
-        	if (StringUtils.equals("finalcity", getOptions().getEdition()))
-                return HttpRequest.url(
-                        String.format("https://finalcity.github.io/FinalcitySkin/tips.json",
-                                URLEncoder.encode(getVersion(), "UTF-8")));
             return HttpRequest.url(
-                    String.format(getProperties().getProperty("tipsUrl"),
+                    String.format(getSkin().getTipsURL(),
                             URLEncoder.encode(getVersion(), "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
@@ -275,7 +269,7 @@ public final class Launcher {
     public URL getSupportURL() {
         try {
             return HttpRequest.url(
-                    String.format(getProperties().getProperty("supportUrl"),
+                    String.format(getSkin().getSupportURL(),
                             URLEncoder.encode(getVersion(), "UTF-8")));
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
