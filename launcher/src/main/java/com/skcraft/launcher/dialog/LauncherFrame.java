@@ -230,10 +230,11 @@ public class LauncherFrame extends JFrame {
         expandButton.setToolTipText(tr("launcher.expandButton"));
         expandButton.setText(null);
         buttons.add(expandButton);
-        buttons.setOpaque(false);
+        SwingHelper.removeOpaqueness(buttons);
         final JPanel leftBottomTopPanel = new JPanel(new GridBagLayout());
         final JLabel leftBottomTopText = new JLabel(tr("launcher.launchTitle"));
         leftBottomTopText.setFont(new Font(leftBottomTopText.getFont().getName(), Font.PLAIN, 16));
+        leftBottomTopText.setForeground(Color.WHITE);
         leftBottomTopPanel.add(leftBottomTopText);
         leftBottomTopPanel.setUI(new BasicPanelUI());
         leftBottomTopPanel.setBackground(new Color(32, 30, 98));
@@ -249,6 +250,7 @@ public class LauncherFrame extends JFrame {
         final JLabel instanceLabel = new JLabel(tr("launcher.instance"),SwingHelper.createIcon(Launcher.class, "package_icon.png", 20, 20),SwingConstants.LEFT);
         instanceLabel.setFont(new Font(instanceLabel.getFont().getName(), Font.PLAIN, 16));
         instanceLabel.setBorder(new EmptyBorder(3, 3, 3, 3));
+        instanceLabel.setForeground(Color.WHITE);
         final JPanel rightPane = new JPanel(new BorderLayout()) {
         	@Override
         	protected void paintComponent(Graphics g) {
@@ -269,6 +271,7 @@ public class LauncherFrame extends JFrame {
         rightPane.add(instanceLabel, BorderLayout.NORTH);
         rightPane.add(this.instanceScroll, BorderLayout.CENTER);
         //rightPane.setVisible(true);
+        SwingHelper.removeOpaqueness(instanceScroll);
         rightPane.setOpaque(false);
         this.splitPane.add(leftPane, BorderLayout.CENTER);
         this.splitPane.add(rightPane, BorderLayout.EAST);
