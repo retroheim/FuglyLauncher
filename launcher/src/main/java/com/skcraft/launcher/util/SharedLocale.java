@@ -35,13 +35,6 @@ public class SharedLocale {
     private static ResourceBundle bundle;
     @Setter private static Supplier<ResourceBundle> bundleSupplier;
 
-    private static ResourceBundle getBundle() {
-    	ResourceBundle b = bundleSupplier.get();
-    	if (b!=null)
-    		return b;
-    	return bundle;
-    }
-
     /**
      * Get the current locale.
      *
@@ -60,7 +53,15 @@ public class SharedLocale {
      * @return the translated string
      */
     public static String tr(String key) {
-    	ResourceBundle bundle = getBundle();
+    	ResourceBundle skinbundle = bundleSupplier.get();
+        if (skinbundle != null) {
+            try {
+                return skinbundle.getString(key);
+            } catch (MissingResourceException e) {
+                log.log(Level.FINE, "Failed to find message from skin", e);
+            }
+        }
+
         if (bundle != null) {
             try {
                 return bundle.getString(key);
@@ -82,7 +83,17 @@ public class SharedLocale {
      * @return a translated string
      */
     public static String tr(String key, Object... args) {
-    	ResourceBundle bundle = getBundle();
+    	ResourceBundle skinbundle = bundleSupplier.get();
+        if (skinbundle != null) {
+            try {
+                MessageFormat formatter = new MessageFormat(skinbundle.getString(key));
+                formatter.setLocale(getLocale());
+                return formatter.format(args);
+            } catch (MissingResourceException e) {
+                log.log(Level.FINE, "Failed to find message from skin", e);
+            }
+        }
+
         if (bundle != null) {
             try {
                 MessageFormat formatter = new MessageFormat(bundle.getString(key));

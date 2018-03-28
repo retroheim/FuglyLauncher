@@ -2,6 +2,8 @@ package net.teamfruit.skcraft.launcher.skins;
 
 import java.io.File;
 
+import javax.annotation.Nonnull;
+
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.persistence.Persistence;
 
@@ -40,7 +42,7 @@ public class LocalSkin {
 	@Setter
 	private SkinInfo skinInfo;
 
-	public Skin getSkin() {
+	public @Nonnull Skin getSkin() {
 		if (skinInfo==null)
 			skinInfo = getBackingSkin();
 		if (skinInfo!=null)

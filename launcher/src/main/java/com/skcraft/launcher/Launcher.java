@@ -24,6 +24,8 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.common.base.Strings;
@@ -56,6 +58,7 @@ import net.teamfruit.skcraft.launcher.integration.UriScheme;
 import net.teamfruit.skcraft.launcher.skins.DefaultSkin;
 import net.teamfruit.skcraft.launcher.skins.LocalSkin;
 import net.teamfruit.skcraft.launcher.skins.LocalSkinList;
+import net.teamfruit.skcraft.launcher.skins.RemoteSkinList;
 import net.teamfruit.skcraft.launcher.skins.Skin;
 
 /**
@@ -79,6 +82,7 @@ public final class Launcher {
     @Getter private final TipList tips;
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
+    @Getter final private RemoteSkinList remoteSkins;
     @Getter final private LocalSkinList localSkins;
     @Getter @Setter private Skin skin = new DefaultSkin(this);
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
@@ -129,7 +133,9 @@ public final class Launcher {
 
         setDefaultConfig();
 
+        remoteSkins = new RemoteSkinList(this);
         localSkins = new LocalSkinList(this);
+
         LocalSkin localSkin = localSkins.getLocalSkin(config.getSkin());
         if (localSkin!=null)
         	skin = localSkin.getSkin();
@@ -198,6 +204,10 @@ public final class Launcher {
         if (config.getMaxMemory() <= 0 || configMax >= available - 1) {
             config.setMaxMemory((int) (suggestedMax * 1024));
         }
+
+        String edition = options.getEdition();
+        if (!StringUtils.isEmpty(edition)&&!StringUtils.isEmpty(config.getSkin()))
+        	config.setSkin(edition);
     }
 
     /**

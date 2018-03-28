@@ -53,7 +53,10 @@ import javax.swing.plaf.basic.BasicPanelUI;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.FancyBackgroundPanel;
 import com.skcraft.launcher.Instance;
@@ -81,6 +84,11 @@ import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
 import net.teamfruit.skcraft.launcher.integration.AppleHandler;
+import net.teamfruit.skcraft.launcher.skins.LocalSkin;
+import net.teamfruit.skcraft.launcher.skins.RemoteSkin;
+import net.teamfruit.skcraft.launcher.skins.RemoteSkinList;
+import net.teamfruit.skcraft.launcher.skins.Skin;
+import net.teamfruit.skcraft.launcher.skins.SkinUtils;
 import net.teamfruit.skcraft.launcher.swing.BoardPanel;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellFactory;
 import net.teamfruit.skcraft.launcher.swing.InstanceCellPanel;
@@ -96,7 +104,9 @@ public class LauncherFrame extends JFrame {
 
     private final Launcher launcher;
 
-    @Getter
+    private JPanel container;
+
+	@Getter
     private final InstanceTable instancesTable = new InstanceTable();
     private final InstanceTableModel instancesModel;
     @Getter
@@ -134,17 +144,9 @@ public class LauncherFrame extends JFrame {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-            	final ObservableFuture<TipList> future = launcher.getInstanceTasks().reloadTips(LauncherFrame.this);
-            	future.addListener(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							TipsPanel.instance.updateTipList(future.get().getTipList());
-						} catch (final Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}, SwingExecutor.INSTANCE);
+            	loadTips();
+
+            	loadSkinList();
 
                 loadInstances();
             }
@@ -158,10 +160,60 @@ public class LauncherFrame extends JFrame {
 		});
     }
 
+    private void loadTips() {
+    	final ObservableFuture<TipList> future = launcher.getInstanceTasks().reloadTips(LauncherFrame.this);
+    	Futures.addCallback(future, new FutureCallback<TipList>() {
+			@Override
+			public void onSuccess(TipList result) {
+				if (result!=null)
+					TipsPanel.instance.updateTipList(result.getTipList());
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+			}
+		}, SwingExecutor.INSTANCE);
+    }
+
+    private void loadSkinList() {
+    	SkinUtils.loadSkinList(this, launcher, new Predicate<RemoteSkinList>() {
+			@Override
+			public boolean apply(RemoteSkinList remoteSkinList) {
+				if (remoteSkinList!=null) {
+					String skinname = launcher.getConfig().getSkin();
+					RemoteSkin remoteSkin = remoteSkinList.getRemoteSkin(skinname);
+					SkinUtils.loadSkin(LauncherFrame.this, launcher, new Predicate<RemoteSkin>() {
+						@Override
+						public boolean apply(RemoteSkin remoteSkin) {
+							if (remoteSkin!=null) {
+								LocalSkin localSkin = remoteSkin.getLocalSkin();
+								if (localSkin!=null) {
+									Skin skin = localSkin.getSkin();
+									launcher.setSkin(skin);
+									updateSkin(skin);
+								}
+							}
+							return true;
+						}
+					}, remoteSkin);
+				}
+				return true;
+			}
+		});
+    }
+
+    public void updateSkin(Skin skin) {
+		if (skin!=null&&!skin.equals(launcher.getSkin())) {
+			webView.browse(launcher.getNewsURL(), true);
+			container.repaint();
+			loadTips();
+		}
+    }
+
     private void initComponents() {
     	setResizable(false);
 
-        final JPanel container = createContainerPanel();
+        container = createContainerPanel();
         container.setBackground(Color.WHITE);
         container.setLayout(new BorderLayout());
 
@@ -613,7 +665,7 @@ public class LauncherFrame extends JFrame {
         }, SwingExecutor.INSTANCE);
     }
 
-    private void loadInstances() {
+    public void loadInstances() {
         final ObservableFuture<InstanceList> future = this.launcher.getInstanceTasks().reloadInstances(this);
 
         future.addListener(new Runnable() {

@@ -50,12 +50,15 @@ import com.skcraft.launcher.util.SwingExecutor;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.dialog.DirectorySelectionDialog;
+import net.teamfruit.skcraft.launcher.dialog.SkinSelectionDialog;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryTasks;
 import net.teamfruit.skcraft.launcher.dirs.DirectoryUtils;
 import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
+import net.teamfruit.skcraft.launcher.skins.LocalSkin;
+import net.teamfruit.skcraft.launcher.skins.Skin;
 
 /**
  * A dialog to modify configuration options.
@@ -90,6 +93,8 @@ public class ConfigurationDialog extends JDialog {
 	private final JTextField proxyUsernameText = new JTextField();
 	private final JPasswordField proxyPasswordText = new JPasswordField();
 	private final FormPanel advancedPanel = new FormPanel();
+	private final JTextField skinText = new JTextField();
+	private final JButton skinButton = new JButton(SharedLocale.tr("options.skinButton"));
 	private final JTextField gameKeyText = new JTextField();
 	private final JTextField secretKeyText = new JTextField();
 	private final JButton secretUnlockButton = new JButton(SharedLocale.tr("options.secretUnlockButton"));
@@ -165,6 +170,7 @@ public class ConfigurationDialog extends JDialog {
 		mapper.map(proxyPortText, "proxyPort");
 		mapper.map(proxyUsernameText, "proxyUsername");
 		mapper.map(proxyPasswordText, "proxyPassword");
+		mapper.map(skinText, "skin");
 		mapper.map(gameKeyText, "gameKey");
 		mapper.map(offlineModeEnabledCheck, "offlineModeEnabled");
 		mapper.map(offlineModePlayerNameText, "offlineModePlayerName");
@@ -202,6 +208,9 @@ public class ConfigurationDialog extends JDialog {
 		SwingHelper.removeOpaqueness(proxySettingsPanel);
 		tabbedPane.addTab(SharedLocale.tr("options.proxyTab"), SwingHelper.alignTabbedPane(proxySettingsPanel));
 
+		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.skin")), skinButton);
+		skinText.setEditable(false);
+		advancedPanel.addRow(skinText);
 		advancedPanel.addRow(new JLabel(SharedLocale.tr("options.secretUnlock")), secretUnlockButton);
 		advancedPanel.addRow(secretKeyText);
 		advancedPanel.addRow(offlineModeEnabledCheck);
@@ -272,6 +281,13 @@ public class ConfigurationDialog extends JDialog {
 			}
 		});
 
+		skinButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new SkinSelectionDialog(ConfigurationDialog.this, launcher, skinText).setVisible(true);
+			}
+		});
+
 		pathCommonDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -302,6 +318,7 @@ public class ConfigurationDialog extends JDialog {
 					if (runinstance!=null) {
 						dispose();
 						log.info("Launching "+runinstance.getName());
+						frame.loadInstances();
 						frame.launch(runinstance);
 					} else {
 						log.warning("Unable to find "+runid);
@@ -331,7 +348,24 @@ public class ConfigurationDialog extends JDialog {
 		Runnable saveAndClose = new Runnable() {
 			@Override
 			public void run() {
+				String oldskin = config.getSkin();
 				mapper.copyFromSwing();
+				String newskin = config.getSkin();
+
+				if (!StringUtils.equals(oldskin, config.getSkin())) {
+					LocalSkin localSkin = launcher.getLocalSkins().getLocalSkin(newskin);
+					if (localSkin!=null&&localSkin.exists()) {
+						Skin skin = localSkin.getSkin();
+						launcher.setSkin(skin);
+
+						Window owner = getOwner();
+						if (owner instanceof LauncherFrame) {
+							final LauncherFrame frame = (LauncherFrame) owner;
+							frame.updateSkin(skin);
+						}
+					}
+				}
+
 				Persistence.commitAndForget(config);
 				dispose();
 			}

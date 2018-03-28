@@ -7,6 +7,8 @@ import java.net.URLEncoder;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
+import javax.annotation.Nullable;
+
 import com.skcraft.concurrency.DefaultProgress;
 import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.Launcher;
@@ -46,7 +48,7 @@ public class RemoteSkin {
 	 *
 	 * @return the local skin list
 	 */
-	public LocalSkin getLocalSkin() {
+	public @Nullable LocalSkin getLocalSkin() {
 		return localSkin;
 	}
 
@@ -57,6 +59,11 @@ public class RemoteSkin {
 	 */
 	public Enumerator createEnumerator() {
 		return new Enumerator();
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 
 	public final class Enumerator implements Callable<RemoteSkin>, ProgressObservable {
@@ -74,11 +81,9 @@ public class RemoteSkin {
 			this.progress = new DefaultProgress(0.3, SharedLocale.tr("skinLoader.checkingRemote"));
 
 			try {
-				final URL skinsURL = RemoteSkin.this.launcher.getSkinsURL();
-
 				localSkin.getDir().mkdirs();
 				localSkin.setSkinInfo(HttpRequest
-						.get(skinsURL)
+						.get(getRemoteURL())
 						.execute()
 						.expectResponseCode(200)
 						.returnContent()

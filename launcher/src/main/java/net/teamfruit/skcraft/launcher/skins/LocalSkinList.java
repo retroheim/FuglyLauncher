@@ -1,5 +1,7 @@
 package net.teamfruit.skcraft.launcher.skins;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.skcraft.launcher.Launcher;
@@ -24,7 +26,7 @@ public class LocalSkinList {
 	 *
 	 * @return the local skin
 	 */
-	public LocalSkin getLocalSkin(String name) {
+	public @Nullable LocalSkin getLocalSkin(String name) {
 		if (!StringUtils.isEmpty(name)) {
 			LocalSkin skin = new LocalSkin(launcher, name);
 			if (skin.exists())

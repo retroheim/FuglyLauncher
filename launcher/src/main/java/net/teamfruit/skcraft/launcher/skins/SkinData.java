@@ -15,12 +15,14 @@ import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.LauncherUtils;
 import com.skcraft.launcher.util.HttpRequest;
 
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.model.skins.SkinInfo;
 
 @Log
 @RequiredArgsConstructor
+@EqualsAndHashCode(exclude = "launcher")
 public class SkinData implements Skin {
 	private final Launcher launcher;
 	@Nullable
