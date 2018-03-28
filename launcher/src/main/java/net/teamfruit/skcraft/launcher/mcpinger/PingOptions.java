@@ -13,7 +13,7 @@ public class PingOptions {
 
 	private String hostname;
 	private int port = 25565;
-	private int timeout = 2000;
+	private int timeout = 8000;
 	private String charset = "UTF-8";
 
 	public PingOptions withServer(ConnectServerInfo serverInfo) {

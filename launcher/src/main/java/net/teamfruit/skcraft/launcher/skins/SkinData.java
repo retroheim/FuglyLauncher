@@ -13,9 +13,12 @@ import com.beust.jcommander.internal.Nullable;
 import com.google.common.io.Closer;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.LauncherUtils;
+import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.HttpRequest;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.model.skins.SkinInfo;
@@ -69,11 +72,13 @@ public class SkinData implements Skin {
 		return new File(resourceDir, "lang.properties");
 	}
 
+	@Getter(lazy = true, value = AccessLevel.PRIVATE) private final Image backingBackgroundImage = SwingHelper.createImage(skinInfo.getBackgroundURL());
+
 	@Override
 	public Image getBackgroundImage() {
 		if (skinInfo==null)
 			return null;
-		return null;
+		return getBackingBackgroundImage();
 	}
 
 	@Override

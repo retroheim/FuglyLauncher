@@ -32,7 +32,7 @@ public class RemoteSkinList {
 	}
 
 	public RemoteSkin getRemoteSkin(String name) {
-		if (skinProperties==null)
+		if (name==null||skinProperties==null)
 			return null;
 		String url = skinProperties.getProperty(name);
 		if (url==null)

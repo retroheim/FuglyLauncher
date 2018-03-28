@@ -17,6 +17,8 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.ArrayUtils;
 
 import com.google.common.base.Supplier;
@@ -33,7 +35,7 @@ public class SharedLocale {
 
     private static Locale locale = Locale.getDefault();
     private static ResourceBundle bundle;
-    @Setter private static Supplier<ResourceBundle> bundleSupplier;
+    @Setter @Nullable private static Supplier<ResourceBundle> bundleSupplier;
 
     /**
      * Get the current locale.
@@ -53,14 +55,16 @@ public class SharedLocale {
      * @return the translated string
      */
     public static String tr(String key) {
-    	ResourceBundle skinbundle = bundleSupplier.get();
-        if (skinbundle != null) {
-            try {
-                return skinbundle.getString(key);
-            } catch (MissingResourceException e) {
-                log.log(Level.FINE, "Failed to find message from skin", e);
-            }
-        }
+    	if (bundleSupplier!=null) {
+	    	ResourceBundle skinbundle = bundleSupplier.get();
+	        if (skinbundle != null) {
+	            try {
+	                return skinbundle.getString(key);
+	            } catch (MissingResourceException e) {
+	                log.log(Level.FINE, "Failed to find message from skin", e);
+	            }
+	        }
+    	}
 
         if (bundle != null) {
             try {
@@ -83,16 +87,18 @@ public class SharedLocale {
      * @return a translated string
      */
     public static String tr(String key, Object... args) {
-    	ResourceBundle skinbundle = bundleSupplier.get();
-        if (skinbundle != null) {
-            try {
-                MessageFormat formatter = new MessageFormat(skinbundle.getString(key));
-                formatter.setLocale(getLocale());
-                return formatter.format(args);
-            } catch (MissingResourceException e) {
-                log.log(Level.FINE, "Failed to find message from skin", e);
-            }
-        }
+    	if (bundleSupplier!=null) {
+	    	ResourceBundle skinbundle = bundleSupplier.get();
+	        if (skinbundle != null) {
+	            try {
+	                MessageFormat formatter = new MessageFormat(skinbundle.getString(key));
+	                formatter.setLocale(getLocale());
+	                return formatter.format(args);
+	            } catch (MissingResourceException e) {
+	                log.log(Level.FINE, "Failed to find message from skin", e);
+	            }
+	        }
+    	}
 
         if (bundle != null) {
             try {

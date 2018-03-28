@@ -23,7 +23,7 @@ public class FancyBackgroundPanel extends JPanel {
 		super.paintComponent(g);
 		Image background = launcher.getSkin().getBackgroundImage();
 		if (background!=null) {
-			g.drawImage(background, 0, 0, null);
+			g.drawImage(background, 0, 0, this);
 		}
 	}
 
