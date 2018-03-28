@@ -30,6 +30,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -160,6 +161,13 @@ public class LauncherFrame extends JFrame {
 		});
     }
 
+    private void setExpand(boolean visible) {
+		rightPane.setVisible(visible);
+		final int rightWidth = rightPane.getWidth();
+		setMinimumSize(new Dimension(visible?750:500, 500));
+		setSize(new Dimension(visible?750:750-rightWidth, getHeight()));
+    }
+
     private void loadTips() {
     	final ObservableFuture<TipList> future = launcher.getInstanceTasks().reloadTips(LauncherFrame.this);
     	Futures.addCallback(future, new FutureCallback<TipList>() {
@@ -204,9 +212,13 @@ public class LauncherFrame extends JFrame {
 
     public void updateSkin(Skin skin) {
 		if (skin!=null&&!skin.equals(launcher.getSkin())) {
+			setExpand(launcher.getSkin().isShowList());
 			webView.browse(launcher.getNewsURL(), true);
 			container.repaint();
 			loadTips();
+			String defaultModPack = skin.getDefaultModPack();
+			if (!StringUtils.isEmpty(defaultModPack))
+				selectInstance(defaultModPack);
 		}
     }
 
@@ -303,7 +315,7 @@ public class LauncherFrame extends JFrame {
         instanceLabel.setFont(new Font(instanceLabel.getFont().getName(), Font.PLAIN, 16));
         instanceLabel.setBorder(new EmptyBorder(3, 3, 3, 3));
         instanceLabel.setForeground(Color.WHITE);
-        final JPanel rightPane = new JPanel(new BorderLayout()) {
+        rightPane = new JPanel(new BorderLayout()) {
         	@Override
         	protected void paintComponent(Graphics g) {
         		if(!isOpaque()) {
@@ -329,16 +341,13 @@ public class LauncherFrame extends JFrame {
         this.splitPane.add(rightPane, BorderLayout.EAST);
         this.splitPane.setOpaque(false);
 
+        setExpand(launcher.getSkin().isShowList());
+
         expandButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				final boolean visible = !rightPane.isVisible();
-				rightPane.setVisible(visible);
-
-				final int totalWidth = getWidth();
-				final int rightWidth = rightPane.getWidth();
-				setMinimumSize(new Dimension(750-(visible?0:rightWidth), 500));
-				setSize(visible?totalWidth+rightWidth:totalWidth-rightWidth, getHeight());
+				setExpand(visible);
 			}
 		});
         // SwingHelper.flattenJSplitPane(this.splitPane);
@@ -409,6 +418,10 @@ public class LauncherFrame extends JFrame {
 		        }
 			}
 		});
+
+		String defaultModPack = launcher.getSkin().getDefaultModPack();
+		if (!StringUtils.isEmpty(defaultModPack))
+			selectInstance(defaultModPack);
 
         this.refreshButton.addActionListener(new ActionListener() {
             @Override
@@ -587,6 +600,8 @@ public class LauncherFrame extends JFrame {
 
     @Getter private boolean first_loaded = true;
 
+	private JPanel rightPane;
+
 	private void onInstanceReady() {
         if (first_loaded) {
         	first_loaded = false;
@@ -631,6 +646,18 @@ public class LauncherFrame extends JFrame {
 		}
 
     	return false;
+	}
+
+	private void selectInstance(String instanceName) {
+		int findindex = -1;
+		for (ListIterator<Instance> itr = instancesModel.getInstances().getInstances().listIterator(); itr.hasNext();) {
+			int index = itr.nextIndex();
+			Instance instance = itr.next();
+			if (StringUtils.equals(instance.getName(), instanceName))
+				findindex = index;
+		}
+		if (findindex>0)
+			instancesTable.setRowSelectionInterval(findindex, findindex);
 	}
 
     private void confirmDelete(final Instance instance) {

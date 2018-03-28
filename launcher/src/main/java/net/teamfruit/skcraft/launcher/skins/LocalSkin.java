@@ -45,8 +45,9 @@ public class LocalSkin {
 	public @Nonnull Skin getSkin() {
 		if (skinInfo==null)
 			skinInfo = getBackingSkin();
+		Skin defaultSkin = new DefaultSkin(launcher);
 		if (skinInfo!=null)
-			return new SkinData(launcher, skinInfo, getResourceDir());
-		return new DefaultSkin(launcher);
+			return new SkinData(launcher, defaultSkin, skinInfo, getResourceDir());
+		return defaultSkin;
 	}
 }

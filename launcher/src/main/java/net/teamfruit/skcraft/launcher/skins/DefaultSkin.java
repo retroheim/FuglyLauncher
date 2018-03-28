@@ -51,6 +51,16 @@ public class DefaultSkin implements Skin {
 	}
 
 	@Override
+	public boolean isShowList() {
+		return true;
+	}
+
+	@Override
+	public String getDefaultModPack() {
+		return null;
+	}
+
+	@Override
 	public void downloadResources() throws Exception {
 	}
 

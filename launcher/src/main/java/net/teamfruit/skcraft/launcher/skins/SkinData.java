@@ -25,9 +25,10 @@ import net.teamfruit.skcraft.launcher.model.skins.SkinInfo;
 
 @Log
 @RequiredArgsConstructor
-@EqualsAndHashCode(exclude = "launcher")
+@EqualsAndHashCode(doNotUseGetters = true, of = {"skinInfo", "resourceDir"})
 public class SkinData implements Skin {
 	private final Launcher launcher;
+	private final Skin defaultSkin;
 	@Nullable
 	private final SkinInfo skinInfo;
 	private final File resourceDir;
@@ -35,21 +36,21 @@ public class SkinData implements Skin {
 	@Override
 	public String getNewsURL() {
 		if (skinInfo==null)
-			return null;
+			return defaultSkin.getNewsURL();
 		return skinInfo.getNewsURL();
 	}
 
 	@Override
 	public String getTipsURL() {
 		if (skinInfo==null)
-			return null;
+			return defaultSkin.getTipsURL();
 		return skinInfo.getTipsURL();
 	}
 
 	@Override
 	public String getSupportURL() {
 		if (skinInfo==null)
-			return null;
+			return defaultSkin.getSupportURL();
 		return skinInfo.getSupportURL();
 	}
 
@@ -57,14 +58,15 @@ public class SkinData implements Skin {
 
 	@Override
 	public ResourceBundle getLang() {
-		if (skinInfo==null)
-			return null;
+		if (skinInfo!=null)
+			if (lang==null)
+		        try {
+					lang = new PropertyResourceBundle(new InputStreamReader(new FileInputStream(getLangFile()), "UTF-8"));
+				} catch (Exception e) {
+					log.log(Level.WARNING, "Could not load skin lang file: ", e);
+				}
 		if (lang==null)
-	        try {
-				lang = new PropertyResourceBundle(new InputStreamReader(new FileInputStream(getLangFile()), "UTF-8"));
-			} catch (Exception e) {
-				log.log(Level.WARNING, "Could not load skin lang file: ", e);
-			}
+			return defaultSkin.getLang();
 		return lang;
 	}
 
@@ -77,12 +79,31 @@ public class SkinData implements Skin {
 	@Override
 	public Image getBackgroundImage() {
 		if (skinInfo==null)
-			return null;
+			return defaultSkin.getBackgroundImage();
 		return getBackingBackgroundImage();
 	}
 
 	@Override
+	public boolean isShowList() {
+		if (skinInfo==null)
+			return defaultSkin.isShowList();
+		return skinInfo.isShowList();
+	}
+
+	@Override
+	public String getDefaultModPack() {
+		if (skinInfo==null)
+			return defaultSkin.getDefaultModPack();
+		return skinInfo.getSupportURL();
+	}
+
+	@Override
 	public void downloadResources() throws Exception {
+		if (skinInfo==null) {
+			defaultSkin.downloadResources();
+			return;
+		}
+
 		resourceDir.mkdirs();
 		byte[] bytes = HttpRequest
 				.get(HttpRequest.url(skinInfo.getLangURL()))

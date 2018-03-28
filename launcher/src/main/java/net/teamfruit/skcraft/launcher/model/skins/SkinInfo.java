@@ -12,4 +12,6 @@ public class SkinInfo {
 	private String supportURL;
 	private String langURL;
 	private String backgroundURL;
+	private boolean showList;
+	private String defaultModPack;
 }

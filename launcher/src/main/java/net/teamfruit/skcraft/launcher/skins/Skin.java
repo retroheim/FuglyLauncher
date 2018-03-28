@@ -14,5 +14,9 @@ public interface Skin {
 
 	Image getBackgroundImage();
 
+	boolean isShowList();
+
+	String getDefaultModPack();
+
 	void downloadResources() throws Exception;
 }
