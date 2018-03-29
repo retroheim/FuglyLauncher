@@ -15,6 +15,7 @@ import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.util.HttpRequest;
 import com.skcraft.launcher.util.SharedLocale;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import net.teamfruit.skcraft.launcher.model.skins.SkinInfo;
@@ -24,9 +25,9 @@ import net.teamfruit.skcraft.launcher.model.skins.SkinInfo;
 public class RemoteSkin {
 
 	private final Launcher launcher;
-	private final String name;
-	private final String url;
-	private LocalSkin localSkin;
+	@Getter private final String name;
+	@Getter private final String url;
+	@Getter @Nullable private LocalSkin localSkin;
 
 	/**
      * Get the remote URL.
@@ -41,15 +42,6 @@ public class RemoteSkin {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-	}
-
-	/**
-	 * Get the local skin
-	 *
-	 * @return the local skin list
-	 */
-	public @Nullable LocalSkin getLocalSkin() {
-		return localSkin;
 	}
 
 	/**

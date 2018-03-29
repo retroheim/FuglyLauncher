@@ -190,20 +190,19 @@ public class LauncherFrame extends JFrame {
 				if (remoteSkinList!=null) {
 					String skinname = launcher.getConfig().getSkin();
 					RemoteSkin remoteSkin = remoteSkinList.getRemoteSkin(skinname);
-					SkinUtils.loadSkin(LauncherFrame.this, launcher, new Predicate<RemoteSkin>() {
+					SkinUtils.loadSkin(LauncherFrame.this, launcher, remoteSkin, new Predicate<RemoteSkin>() {
 						@Override
 						public boolean apply(RemoteSkin remoteSkin) {
 							if (remoteSkin!=null) {
 								LocalSkin localSkin = remoteSkin.getLocalSkin();
 								if (localSkin!=null) {
 									Skin skin = localSkin.getSkin();
-									launcher.setSkin(skin);
 									updateSkin(skin);
 								}
 							}
 							return true;
 						}
-					}, remoteSkin);
+					});
 				}
 				return true;
 			}
@@ -212,13 +211,14 @@ public class LauncherFrame extends JFrame {
 
     public void updateSkin(Skin skin) {
 		if (skin!=null&&!skin.equals(launcher.getSkin())) {
+			launcher.setSkin(skin);
 			setExpand(launcher.getSkin().isShowList());
-			webView.browse(launcher.getNewsURL(), true);
-			container.repaint();
+			webView.browse(launcher.getNewsURL(), false);
 			loadTips();
 			String defaultModPack = skin.getDefaultModPack();
 			if (!StringUtils.isEmpty(defaultModPack))
 				selectInstance(defaultModPack);
+			repaint();
 		}
     }
 
@@ -653,10 +653,12 @@ public class LauncherFrame extends JFrame {
 		for (ListIterator<Instance> itr = instancesModel.getInstances().getInstances().listIterator(); itr.hasNext();) {
 			int index = itr.nextIndex();
 			Instance instance = itr.next();
-			if (StringUtils.equals(instance.getName(), instanceName))
+			if (StringUtils.equals(instance.getName(), instanceName)) {
 				findindex = index;
+				break;
+			}
 		}
-		if (findindex>0)
+		if (findindex>=0)
 			instancesTable.setRowSelectionInterval(findindex, findindex);
 	}
 

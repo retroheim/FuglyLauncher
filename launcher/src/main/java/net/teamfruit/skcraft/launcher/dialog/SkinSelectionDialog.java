@@ -73,7 +73,8 @@ public class SkinSelectionDialog extends JDialog {
 					return skinNames.get(i);
 				}
 			});
-			skins.setSelectedValue(StringUtils.defaultIfEmpty(launcher.getConfig().getSkin(), ""), true);
+			String skinName = targetText.getText();
+			skins.setSelectedValue(StringUtils.isEmpty(skinName)?DefaultSkinItem.instance:new DataSkinItem(skinName), true);
 		}
 
 		formpanel.addRow(skins);
@@ -106,37 +107,37 @@ public class SkinSelectionDialog extends JDialog {
 			return;
 		}
 		RemoteSkin remoteSkin = launcher.getRemoteSkins().getRemoteSkin(skinName.toString());
-		SkinUtils.loadSkin(this, launcher, new Predicate<RemoteSkin>() {
+		SkinUtils.loadSkin(this, launcher, remoteSkin, new Predicate<RemoteSkin>() {
 			@Override
 			public boolean apply(RemoteSkin input) {
 				targetText.setText(skinName.toString());
 				dispose();
 				return true;
 			}
-		}, remoteSkin);
+		});
 	}
-	
+
 	private static interface SkinItem {
 		String toString();
 	}
-	
+
 	private static class DefaultSkinItem implements SkinItem {
 		public static final SkinItem instance = new DefaultSkinItem();
-		
+
 		private DefaultSkinItem() {
 		}
-		
+
 		@Override
 		public String toString() {
 			return SharedLocale.tr("options.selectSkinDefault");
 		}
 	}
-	
+
 	@RequiredArgsConstructor
 	@Data
 	private static class DataSkinItem implements SkinItem {
 		private final String name;
-		
+
 		@Override
 		public String toString() {
 			return name;

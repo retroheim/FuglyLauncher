@@ -57,6 +57,7 @@ import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
+import net.teamfruit.skcraft.launcher.skins.DefaultSkin;
 import net.teamfruit.skcraft.launcher.skins.LocalSkin;
 import net.teamfruit.skcraft.launcher.skins.Skin;
 
@@ -354,16 +355,16 @@ public class ConfigurationDialog extends JDialog {
 
 				if (!StringUtils.equals(oldskin, config.getSkin())) {
 					LocalSkin localSkin = launcher.getLocalSkins().getLocalSkin(newskin);
-					if (localSkin!=null&&localSkin.exists()) {
-						Skin skin = localSkin.getSkin();
-						launcher.setSkin(skin);
+					Skin skin = new DefaultSkin(launcher);
+					if (localSkin!=null&&localSkin.exists())
+						skin = localSkin.getSkin();
 
-						Window owner = getOwner();
-						if (owner instanceof LauncherFrame) {
-							final LauncherFrame frame = (LauncherFrame) owner;
-							frame.updateSkin(skin);
-						}
-					}
+					Window owner = getOwner();
+					if (owner instanceof LauncherFrame) {
+						final LauncherFrame frame = (LauncherFrame) owner;
+						frame.updateSkin(skin);
+					} else
+						launcher.setSkin(skin);
 				}
 
 				Persistence.commitAndForget(config);

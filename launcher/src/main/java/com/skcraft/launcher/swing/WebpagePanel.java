@@ -6,18 +6,11 @@
 
 package com.skcraft.launcher.swing;
 
-import com.skcraft.launcher.LauncherUtils;
+import static com.skcraft.launcher.LauncherUtils.*;
 
-import lombok.Getter;
-import lombok.extern.java.Log;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -28,7 +21,26 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.logging.Level;
 
-import static com.skcraft.launcher.LauncherUtils.checkInterrupted;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
+
+import com.skcraft.launcher.LauncherUtils;
+
+import lombok.Getter;
+import lombok.extern.java.Log;
 
 @Log
 public final class WebpagePanel extends JPanel {
@@ -286,7 +298,7 @@ public final class WebpagePanel extends JPanel {
                     return;
                 }
 
-                log.log(Level.WARNING, "Failed to fetch page", e);
+                log.log(Level.WARNING, "Failed to fetch page "+url, e);
                 setError("Failed to fetch page: " + e.getMessage());
             } catch (InterruptedException e) {
             } finally {
