@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileFilter;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +32,7 @@ import com.skcraft.launcher.util.SharedLocale;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import net.teamfruit.skcraft.launcher.skins.LocalSkin;
 import net.teamfruit.skcraft.launcher.skins.RemoteSkin;
 import net.teamfruit.skcraft.launcher.skins.SkinUtils;
 
@@ -63,7 +66,17 @@ public class SkinSelectionDialog extends JDialog {
 		if (prop!=null) {
 			final List<SkinItem> skinNames = Lists.newArrayList(autoSkinItem, defaultSkinItem);
 			for (Entry<String, RemoteSkin> entry : prop.entrySet())
-				skinNames.add(new DataSkinItem(entry.getKey(), entry.getValue()));
+				skinNames.add(new RemoteSkinItem(entry.getKey(), entry.getValue()));
+			for (File local : launcher.getSkinDir().listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+					return pathname.isDirectory()&&new File(pathname, "skin.json").isFile();
+				}
+			})) {
+				String localname = local.getName();
+				if (!prop.containsKey(localname))
+					skinNames.add(new LocalSkinItem(localname, new LocalSkin(launcher, localname)));
+			}
 
 			skins.setModel(new AbstractListModel<SkinItem>() {
 				public int getSize() {
@@ -132,7 +145,8 @@ public class SkinSelectionDialog extends JDialog {
 			return autoSkinItem;
 		if (StringUtils.equals(name, "-"))
 			return defaultSkinItem;
-		return new DataSkinItem(name, launcher.getRemoteSkins().getRemoteSkin(name));
+		RemoteSkin remoteSkin = launcher.getRemoteSkins().getRemoteSkin(name);
+		return new RemoteSkinItem(name, remoteSkin);
 	}
 
 	@Data
@@ -159,10 +173,44 @@ public class SkinSelectionDialog extends JDialog {
 
 	@Data
 	@EqualsAndHashCode(callSuper = true, of = {})
-	private class DataSkinItem extends AbstractSkinItem {
+	private class RemoteSkinItem extends AbstractSkinItem {
 		private final RemoteSkin skin;
 
-		public DataSkinItem(String name, RemoteSkin skin) {
+		public RemoteSkinItem(String name, RemoteSkin skin) {
+			super(name);
+			this.skin = skin;
+		}
+
+		@Override
+		public String toString() {
+			RemoteSkin remoteSkin = getSkin();
+			if (remoteSkin!=null)
+				return remoteSkin.getTitle();
+			return getName();
+		}
+
+		public void apply() {
+			final String name = getName();
+			RemoteSkin remoteSkin = getSkin();
+			if (remoteSkin!=null)
+				SkinUtils.loadSkin(SkinSelectionDialog.this, launcher, true, remoteSkin, new Predicate<RemoteSkin>() {
+					@Override
+					public boolean apply(RemoteSkin input) {
+						targetText.setText(name);
+						dispose();
+						return true;
+					}
+				});
+		}
+	}
+
+
+	@Data
+	@EqualsAndHashCode(callSuper = true, of = {})
+	private class LocalSkinItem extends AbstractSkinItem {
+		private final LocalSkin skin;
+
+		public LocalSkinItem(String name, LocalSkin skin) {
 			super(name);
 			this.skin = skin;
 		}
@@ -173,16 +221,8 @@ public class SkinSelectionDialog extends JDialog {
 		}
 
 		public void apply() {
-			final String name = getName();
-			RemoteSkin remoteSkin = getSkin();
-			SkinUtils.loadSkin(SkinSelectionDialog.this, launcher, true, remoteSkin, new Predicate<RemoteSkin>() {
-				@Override
-				public boolean apply(RemoteSkin input) {
-					targetText.setText(name);
-					dispose();
-					return true;
-				}
-			});
+			targetText.setText(getName());
+			dispose();
 		}
 	}
 }

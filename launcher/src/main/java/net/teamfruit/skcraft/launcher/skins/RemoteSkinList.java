@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringUtils;
 
 import com.beust.jcommander.internal.Maps;
@@ -49,7 +51,7 @@ public class RemoteSkinList {
 		return Collections.unmodifiableMap(this.skins);
 	}
 
-	public RemoteSkin getRemoteSkin(String name) {
+	public @Nullable RemoteSkin getRemoteSkin(String name) {
 		if (StringUtils.isEmpty(name)||skins==null)
 			return null;
 		RemoteSkin url = skins.get(name);
