@@ -90,14 +90,16 @@ public class TipList {
 				if (tipInfos.getMinimumVersion()>TipInfoList.MIN_VERSION)
 					throw new LauncherException("Update required", SharedLocale.tr("errors.updateRequiredError"));
 
-                for (final TipInfo tipInfo : tipInfos.getTips()) {
-					final Tip tip = new Tip();
-					tip.setDesc(tipInfo.getDesc());
-					tip.setThumb(tipInfo.getThumb());
-					tip.setThumbImage(SwingHelper.createImage(tipInfo.getThumb()));
-					if (tip.getDesc()!=null&&tip.getThumb()!=null&&tip.getThumbImage()!=null)
-						remote.add(tip);
-                }
+				List<TipInfo> tipsInfo = tipInfos.getTips();
+				if (tipsInfo!=null)
+					for (final TipInfo tipInfo : tipsInfo) {
+						final Tip tip = new Tip();
+						tip.setDesc(tipInfo.getDesc());
+						tip.setThumb(tipInfo.getThumb());
+						tip.setThumbImage(SwingHelper.createImage(tipInfo.getThumb()));
+						if (tip.getDesc()!=null&&tip.getThumb()!=null&&tip.getThumbImage()!=null)
+							remote.add(tip);
+					}
 
 			} catch (final IOException e) {
 				log.log(Level.WARNING, "The list of tips could not be downloaded.", e);

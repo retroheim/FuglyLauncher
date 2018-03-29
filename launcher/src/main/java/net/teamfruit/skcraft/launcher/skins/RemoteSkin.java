@@ -26,6 +26,7 @@ public class RemoteSkin {
 
 	private final Launcher launcher;
 	@Getter private final String name;
+	@Getter private final String title;
 	@Getter private final String url;
 	@Getter @Nullable private LocalSkin localSkin;
 

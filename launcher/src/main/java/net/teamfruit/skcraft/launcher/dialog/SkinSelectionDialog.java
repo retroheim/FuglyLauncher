@@ -6,7 +6,8 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
@@ -58,12 +59,11 @@ public class SkinSelectionDialog extends JDialog {
 	}
 
 	private void initComponents() {
-		Properties prop = launcher.getRemoteSkins().getSkinProperties();
+		Map<String, RemoteSkin> prop = launcher.getRemoteSkins().getSkinMap();
 		if (prop!=null) {
 			final List<SkinItem> skinNames = Lists.newArrayList(autoSkinItem, defaultSkinItem);
-			for (Object oname : prop.keySet())
-				if (oname instanceof String)
-					skinNames.add(new DataSkinItem((String) oname));
+			for (Entry<String, RemoteSkin> entry : prop.entrySet())
+				skinNames.add(new DataSkinItem(entry.getKey(), entry.getValue()));
 
 			skins.setModel(new AbstractListModel<SkinItem>() {
 				public int getSize() {
@@ -132,7 +132,7 @@ public class SkinSelectionDialog extends JDialog {
 			return autoSkinItem;
 		if (StringUtils.equals(name, "-"))
 			return defaultSkinItem;
-		return new DataSkinItem(name);
+		return new DataSkinItem(name, launcher.getRemoteSkins().getRemoteSkin(name));
 	}
 
 	@Data
@@ -157,9 +157,14 @@ public class SkinSelectionDialog extends JDialog {
 		}
 	}
 
+	@Data
+	@EqualsAndHashCode(callSuper = true, of = {})
 	private class DataSkinItem extends AbstractSkinItem {
-		public DataSkinItem(String name) {
+		private final RemoteSkin skin;
+
+		public DataSkinItem(String name, RemoteSkin skin) {
 			super(name);
+			this.skin = skin;
 		}
 
 		@Override
@@ -169,7 +174,7 @@ public class SkinSelectionDialog extends JDialog {
 
 		public void apply() {
 			final String name = getName();
-			RemoteSkin remoteSkin = launcher.getRemoteSkins().getRemoteSkin(name);
+			RemoteSkin remoteSkin = getSkin();
 			SkinUtils.loadSkin(SkinSelectionDialog.this, launcher, true, remoteSkin, new Predicate<RemoteSkin>() {
 				@Override
 				public boolean apply(RemoteSkin input) {
