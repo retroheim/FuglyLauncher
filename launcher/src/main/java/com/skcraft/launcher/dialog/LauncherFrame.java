@@ -30,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.ListIterator;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -96,6 +95,7 @@ import net.teamfruit.skcraft.launcher.swing.InstanceCellPanel;
 import net.teamfruit.skcraft.launcher.swing.ServerInfoStyle;
 import net.teamfruit.skcraft.launcher.swing.TipsPanel;
 import net.teamfruit.skcraft.launcher.swing.WebpageScrollBarUI;
+import net.teamfruit.skcraft.launcher.util.SharedLocaleUpdater;
 
 /**
  * The main launcher frame.
@@ -104,6 +104,8 @@ import net.teamfruit.skcraft.launcher.swing.WebpageScrollBarUI;
 public class LauncherFrame extends JFrame {
 
     private final Launcher launcher;
+
+    private final SharedLocaleUpdater localeUpdater = SharedLocaleUpdater.create();
 
     private JPanel container;
 
@@ -115,11 +117,11 @@ public class LauncherFrame extends JFrame {
     private WebpagePanel webView;
     private BoardPanel<InstanceCellPanel> selectedPane;
     private JPanel splitPane;
-    private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
-    private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
-    private final JButton optionsButton = new JButton(SharedLocale.tr("launcher.options"));
-    //private final JButton selfUpdateButton = new JButton(SharedLocale.tr("launcher.updateLauncher"));
-    private final JCheckBox updateCheck = new JCheckBox(SharedLocale.tr("launcher.downloadUpdates"));
+    private final JButton launchButton = localeUpdater.tr(new JButton(), "launcher.launch");
+    private final JButton refreshButton = localeUpdater.tr(new JButton(), "launcher.checkForUpdates");
+    private final JButton optionsButton = localeUpdater.tr(new JButton(), "launcher.options");
+    //private final JButton selfUpdateButton = localeUpdater.tr(new JButton(), "launcher.updateLauncher");
+    private final JCheckBox updateCheck = localeUpdater.tr(new JCheckBox(), "launcher.downloadUpdates");
 
     /**
      * Create a new frame.
@@ -127,7 +129,7 @@ public class LauncherFrame extends JFrame {
      * @param launcher the launcher
      */
     public LauncherFrame(@NonNull final Launcher launcher) {
-        super(tr("launcher.title", launcher.getVersion()));
+    	localeUpdater.tr(this, "launcher.title", launcher.getVersion());
 
         this.launcher = launcher;
         this.instancesModel = new InstanceTableModel(launcher.getInstances());
@@ -215,9 +217,11 @@ public class LauncherFrame extends JFrame {
 			setExpand(launcher.getSkin().isShowList());
 			webView.browse(launcher.getNewsURL(), false);
 			loadTips();
+			localeUpdater.update();
 			String defaultModPack = skin.getDefaultModPack();
-			if (!StringUtils.isEmpty(defaultModPack))
-				selectInstance(defaultModPack);
+			if (instancesModel.getInstances().unlock(defaultModPack))
+				loadInstances();
+			selectInstance(defaultModPack);
 			repaint();
 		}
     }
@@ -242,7 +246,7 @@ public class LauncherFrame extends JFrame {
         this.selectedPane = new BoardPanel<InstanceCellPanel>();
         this.selectedPane.setOpaque(false);
         this.selectedPane.setPreferredSize(new Dimension(250, 60));
-        this.selectedPane.setToolTipText(tr("launcher.launchButton"));
+        localeUpdater.trTooltip(selectedPane, "launcher.launchButton");
 
         //this.selfUpdateButton.setVisible(this.launcher.getUpdateManager().getPendingUpdate());
 
@@ -280,23 +284,23 @@ public class LauncherFrame extends JFrame {
         final JButton expandButton = new JButton(">");
         final JPanel buttons = new JPanel(new GridLayout(3, 1));
         this.refreshButton.setIcon(SwingHelper.createIcon(Launcher.class, "refresh_icon.png", 20, 20));
-        this.refreshButton.setToolTipText(tr("launcher.refreshButton"));
+        localeUpdater.trTooltip(refreshButton, "launcher.refreshButton");
         this.refreshButton.setText(null);
         buttons.add(this.refreshButton);
         // buttons.add(this.updateCheck);
         // buttons.add(this.selfUpdateButton);
         this.optionsButton.setIcon(SwingHelper.createIcon(Launcher.class, "settings_icon.png", 20, 20));
-        this.optionsButton.setToolTipText(tr("launcher.optionButton"));
+        localeUpdater.trTooltip(optionsButton, "launcher.optionButton");
         this.optionsButton.setText(null);
         buttons.add(this.optionsButton);
         // buttons.add(this.launchButton);
         expandButton.setIcon(SwingHelper.createIcon(Launcher.class, "expand_icon.png", 20, 20));
-        expandButton.setToolTipText(tr("launcher.expandButton"));
+        localeUpdater.trTooltip(expandButton, "launcher.expandButton");
         expandButton.setText(null);
         buttons.add(expandButton);
         SwingHelper.removeOpaqueness(buttons);
         final JPanel leftBottomTopPanel = new JPanel(new GridBagLayout());
-        final JLabel leftBottomTopText = new JLabel(tr("launcher.launchTitle"));
+        final JLabel leftBottomTopText = localeUpdater.tr(new JLabel(), "launcher.launchTitle");
         leftBottomTopText.setFont(new Font(leftBottomTopText.getFont().getName(), Font.PLAIN, 16));
         leftBottomTopText.setForeground(Color.WHITE);
         leftBottomTopPanel.add(leftBottomTopText);
@@ -311,7 +315,7 @@ public class LauncherFrame extends JFrame {
         leftPane.add(this.webView, BorderLayout.CENTER);
         leftPane.add(leftBottomPane, BorderLayout.SOUTH);
         leftPane.setOpaque(false);
-        final JLabel instanceLabel = new JLabel(tr("launcher.instance"),SwingHelper.createIcon(Launcher.class, "package_icon.png", 20, 20),SwingConstants.LEFT);
+        final JLabel instanceLabel = localeUpdater.tr(new JLabel(SwingHelper.createIcon(Launcher.class, "package_icon.png", 20, 20),SwingConstants.LEFT), "launcher.instance");
         instanceLabel.setFont(new Font(instanceLabel.getFont().getName(), Font.PLAIN, 16));
         instanceLabel.setBorder(new EmptyBorder(3, 3, 3, 3));
         instanceLabel.setForeground(Color.WHITE);
@@ -420,8 +424,7 @@ public class LauncherFrame extends JFrame {
 		});
 
 		String defaultModPack = launcher.getSkin().getDefaultModPack();
-		if (!StringUtils.isEmpty(defaultModPack))
-			selectInstance(defaultModPack);
+		selectInstance(defaultModPack);
 
         this.refreshButton.addActionListener(new ActionListener() {
             @Override
@@ -649,17 +652,21 @@ public class LauncherFrame extends JFrame {
 	}
 
 	private void selectInstance(String instanceName) {
-		int findindex = -1;
-		for (ListIterator<Instance> itr = instancesModel.getInstances().getInstances().listIterator(); itr.hasNext();) {
-			int index = itr.nextIndex();
-			Instance instance = itr.next();
-			if (StringUtils.equals(instance.getName(), instanceName)) {
-				findindex = index;
-				break;
+		InstanceList list = instancesModel.getInstances();
+		if (list.size()>0) {
+			int findindex = 0;
+			if (!StringUtils.isEmpty(instanceName)) {
+					for (int index = 0; index<list.size(); index++) {
+						Instance instance = list.get(index);
+						if (StringUtils.equals(instance.getName(), instanceName)) {
+							findindex = index;
+							break;
+						}
+					}
 			}
+			if (findindex>=0)
+				instancesTable.setRowSelectionInterval(findindex, findindex);
 		}
-		if (findindex>=0)
-			instancesTable.setRowSelectionInterval(findindex, findindex);
 	}
 
     private void confirmDelete(final Instance instance) {
@@ -701,8 +708,9 @@ public class LauncherFrame extends JFrame {
             @Override
             public void run() {
                 instancesModel.update();
-                if (instancesTable.getRowCount() > 0)
-					instancesTable.setRowSelectionInterval(0, 0);
+    			String defaultModPack = launcher.getSkin().getDefaultModPack();
+    			if (!StringUtils.isEmpty(defaultModPack))
+    				selectInstance(defaultModPack);
             	onInstanceReady();
                 requestFocus();
             }

@@ -67,16 +67,18 @@ public class SkinSelectionDialog extends JDialog {
 			final List<SkinItem> skinNames = Lists.newArrayList(autoSkinItem, defaultSkinItem);
 			for (Entry<String, RemoteSkin> entry : prop.entrySet())
 				skinNames.add(new RemoteSkinItem(entry.getKey(), entry.getValue()));
-			for (File local : launcher.getSkinDir().listFiles(new FileFilter() {
+			File[] files = launcher.getSkinDir().listFiles(new FileFilter() {
 				@Override
 				public boolean accept(File pathname) {
 					return pathname.isDirectory()&&new File(pathname, "skin.json").isFile();
 				}
-			})) {
-				String localname = local.getName();
-				if (!prop.containsKey(localname))
-					skinNames.add(new LocalSkinItem(localname, new LocalSkin(launcher, localname)));
-			}
+			});
+			if (files!=null)
+				for (File local : files) {
+					String localname = local.getName();
+					if (!prop.containsKey(localname))
+						skinNames.add(new LocalSkinItem(localname, new LocalSkin(launcher, localname)));
+				}
 
 			skins.setModel(new AbstractListModel<SkinItem>() {
 				public int getSize() {

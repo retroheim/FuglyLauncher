@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -92,6 +93,25 @@ public class InstanceList {
 				selected.add(instance);
 
         return selected;
+    }
+
+    /**
+     * Unlock instances.
+     *
+     * @return true if successful
+     */
+    public synchronized boolean unlock(String name) {
+    	List<Instance> src = getInstancesSecret();
+    	List<Instance> dest = getInstancesSecret();
+        for (final Iterator<Instance> itr = src.iterator(); itr.hasNext();) {
+        	Instance instance = itr.next();
+			if (StringUtils.equalsIgnoreCase(name, instance.getName())||StringUtils.equalsIgnoreCase(name, instance.getKey())) {
+				itr.remove();
+				dest.add(instance);
+				return true;
+			}
+        }
+        return false;
     }
 
     /**
