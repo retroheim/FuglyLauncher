@@ -39,7 +39,7 @@ public class LocalSkin {
 	}
 
 	@Getter(lazy = true, value = AccessLevel.PRIVATE)
-	private final SkinInfo backingSkin = Persistence.load(getFile(), SkinInfo.class, true);
+	private final SkinInfo backingSkin = loadSkin();
 
 	@Setter
 	private SkinInfo skinInfo;
@@ -52,5 +52,9 @@ public class LocalSkin {
 		if (skinInfo!=null)
 			return new SkinData(launcher, defaultSkin, skinInfo, getResourceDir());
 		return defaultSkin;
+	}
+
+	private SkinInfo loadSkin() {
+		return Persistence.load(getFile(), SkinInfo.class, true);
 	}
 }

@@ -4,10 +4,13 @@ import java.awt.Image;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -15,7 +18,6 @@ import com.beust.jcommander.internal.Nullable;
 import com.google.common.io.Closer;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.LauncherUtils;
-import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.HttpRequest;
 
 import lombok.AccessLevel;
@@ -91,27 +93,36 @@ public class SkinData implements Skin {
 	}
 
 	private File getLangFile() {
-		return new File(resourceDir, "lang.properties");
+		return new File(resourceDir, "lang");
 	}
 
+	private Image backgroundImage;
 	@Getter(lazy = true, value = AccessLevel.PRIVATE)
 	private final Image backingBackgroundImage = loadBackgroundImage();
 
 	@Override
 	public Image getBackgroundImage() {
-		Image data = null;
 		if (skinInfo!=null)
-			data = getBackingBackgroundImage();
-		if (data==null)
-			data = defaultSkin.getBackgroundImage();
-		return data;
+			if (backgroundImage==null)
+				backgroundImage = getBackingBackgroundImage();
+		if (backgroundImage==null)
+			backgroundImage = defaultSkin.getBackgroundImage();
+		return backgroundImage;
 	}
 
 	private Image loadBackgroundImage() {
-		String url = skinInfo.getBackgroundURL();
-		if (!StringUtils.isEmpty(url))
-			return SwingHelper.createImage(url);
+		File backgroundImageFile = getBackgroundImageFile();
+		if (backgroundImageFile.isFile())
+			try {
+				return ImageIO.read(backgroundImageFile);
+			} catch (Exception e) {
+				log.log(Level.WARNING, "Could not load skin background image file: ", e);
+			}
 		return null;
+	}
+
+	private File getBackgroundImageFile() {
+		return new File(resourceDir, "background");
 	}
 
 	@Override
@@ -140,21 +151,47 @@ public class SkinData implements Skin {
 		}
 
 		resourceDir.mkdirs();
-		String langURL = skinInfo.getLangURL();
-		if (!StringUtils.isEmpty(langURL)) {
-			byte[] bytes = HttpRequest
-					.get(HttpRequest.url(langURL))
-					.execute()
-					.expectResponseCode(200)
-					.returnContent()
-					.saveContent(getLangFile())
-					.asBytes();
-			Closer closer = Closer.create();
-			try {
-				lang = new PropertyResourceBundle(closer.register(new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")));
-			} finally {
-				LauncherUtils.closeQuietly(closer);
+
+		try {
+			String langURL = skinInfo.getLangURL();
+			if (!StringUtils.isEmpty(langURL)) {
+				byte[] bytes = HttpRequest
+						.get(HttpRequest.url(langURL))
+						.execute()
+						.expectResponseCode(200)
+						.returnContent()
+						.saveContent(getLangFile())
+						.asBytes();
+				Closer closer = Closer.create();
+				try {
+					lang = new PropertyResourceBundle(closer.register(new InputStreamReader(new ByteArrayInputStream(bytes), "UTF-8")));
+				} finally {
+					LauncherUtils.closeQuietly(closer);
+				}
 			}
+		} catch (IOException e) {
+			log.log(Level.WARNING, "The skin resource (lang file) could not be downloaded.", e);
+		}
+
+		try {
+			String backgroundImageURL = skinInfo.getBackgroundURL();
+			if (!StringUtils.isEmpty(backgroundImageURL)) {
+				byte[] bytes = HttpRequest
+						.get(HttpRequest.url(backgroundImageURL))
+						.execute()
+						.expectResponseCode(200)
+						.returnContent()
+						.saveContent(getBackgroundImageFile())
+						.asBytes();
+				Closer closer = Closer.create();
+				try {
+					backgroundImage = ImageIO.read(new ByteArrayInputStream(bytes));
+				} finally {
+					LauncherUtils.closeQuietly(closer);
+				}
+			}
+		} catch (IOException e) {
+			log.log(Level.WARNING, "The skin resource (background image file) could not be downloaded.", e);
 		}
 	}
 
