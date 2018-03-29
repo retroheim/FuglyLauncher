@@ -70,7 +70,7 @@ public class RemoteSkin {
 
 			LocalSkin localSkin = new LocalSkin(launcher, name);
 
-			this.progress = new DefaultProgress(0.3, SharedLocale.tr("skinLoader.checkingRemote"));
+			this.progress = new DefaultProgress(0.3, SharedLocale.tr("skins.checkingRemote"));
 
 			try {
 				localSkin.getDir().mkdirs();

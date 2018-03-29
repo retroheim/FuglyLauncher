@@ -57,7 +57,6 @@ import net.teamfruit.skcraft.launcher.discordrpc.LauncherDiscord;
 import net.teamfruit.skcraft.launcher.integration.UriScheme;
 import net.teamfruit.skcraft.launcher.skins.DefaultSkin;
 import net.teamfruit.skcraft.launcher.skins.LocalSkin;
-import net.teamfruit.skcraft.launcher.skins.LocalSkinList;
 import net.teamfruit.skcraft.launcher.skins.RemoteSkinList;
 import net.teamfruit.skcraft.launcher.skins.Skin;
 
@@ -83,7 +82,6 @@ public final class Launcher {
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
     @Getter final private RemoteSkinList remoteSkins;
-    @Getter final private LocalSkinList localSkins;
     @Getter @Setter private Skin skin = new DefaultSkin(this);
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
     @Getter private final UpdateManager updateManager = new UpdateManager(this);
@@ -134,11 +132,9 @@ public final class Launcher {
         setDefaultConfig();
 
         remoteSkins = new RemoteSkinList(this);
-        localSkins = new LocalSkinList(this);
 
-        LocalSkin localSkin = localSkins.getLocalSkin(config.getSkin());
-        if (localSkin!=null)
-        	skin = localSkin.getSkin();
+        LocalSkin localSkin = new LocalSkin(this, config.getSkin());
+    	setSkin(localSkin.getSkin());
 
         SharedLocale.setBundleSupplier(new Supplier<ResourceBundle>() {
 			@Override
@@ -206,8 +202,11 @@ public final class Launcher {
         }
 
         String edition = options.getEdition();
-        if (!StringUtils.isEmpty(edition)&&!StringUtils.isEmpty(config.getSkin()))
-        	config.setSkin(edition);
+        if (StringUtils.isEmpty(config.getSkin()))
+        	if (!StringUtils.isEmpty(edition))
+        		config.setSkin(edition);
+        	else
+        		config.setSkin("-");
     }
 
     /**

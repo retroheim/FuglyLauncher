@@ -184,13 +184,13 @@ public class LauncherFrame extends JFrame {
     }
 
     private void loadSkinList() {
-    	SkinUtils.loadSkinList(this, launcher, new Predicate<RemoteSkinList>() {
+    	SkinUtils.loadSkinList(this, launcher, false, new Predicate<RemoteSkinList>() {
 			@Override
 			public boolean apply(RemoteSkinList remoteSkinList) {
 				if (remoteSkinList!=null) {
 					String skinname = launcher.getConfig().getSkin();
 					RemoteSkin remoteSkin = remoteSkinList.getRemoteSkin(skinname);
-					SkinUtils.loadSkin(LauncherFrame.this, launcher, remoteSkin, new Predicate<RemoteSkin>() {
+					SkinUtils.loadSkin(LauncherFrame.this, launcher, false, remoteSkin, new Predicate<RemoteSkin>() {
 						@Override
 						public boolean apply(RemoteSkin remoteSkin) {
 							if (remoteSkin!=null) {

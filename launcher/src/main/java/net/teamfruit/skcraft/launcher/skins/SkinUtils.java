@@ -17,7 +17,7 @@ import lombok.extern.java.Log;
 
 @Log
 public class SkinUtils {
-	public static void loadSkinList(final Window window, final Launcher launcher, final Predicate<RemoteSkinList> callback) {
+	public static void loadSkinList(final Window window, final Launcher launcher, boolean showProgress, final Predicate<RemoteSkinList> callback) {
 		RemoteSkinList.Enumerator remoteSkinListEnumerator = launcher.getRemoteSkins().createEnumerator();
 		ObservableFuture<RemoteSkinList> skinListFuture = new ObservableFuture<RemoteSkinList>(launcher.getExecutor().submit(remoteSkinListEnumerator), remoteSkinListEnumerator);
 		Futures.addCallback(skinListFuture, new FutureCallback<RemoteSkinList>() {
@@ -31,11 +31,12 @@ public class SkinUtils {
 				log.log(Level.WARNING, "Failed to load skin list: ", t);
 			}
 		}, SwingExecutor.INSTANCE);
-		ProgressDialog.showProgress(window, skinListFuture, SharedLocale.tr("skins.loadingListTitle"), SharedLocale.tr("skins.loadingList"));
+		if (showProgress)
+			ProgressDialog.showProgress(window, skinListFuture, SharedLocale.tr("skins.loadingListTitle"), SharedLocale.tr("skins.loadingList"));
         SwingHelper.addErrorDialogCallback(window, skinListFuture);
 	}
 
-	public static void loadSkin(final Window window, final Launcher launcher, final RemoteSkin remoteSkin, final Predicate<RemoteSkin> callback) {
+	public static void loadSkin(final Window window, final Launcher launcher, boolean showProgress, final RemoteSkin remoteSkin, final Predicate<RemoteSkin> callback) {
 		if (remoteSkin!=null) {
 			RemoteSkin.Enumerator remoteSkinEnumerator = remoteSkin.createEnumerator();
 			ObservableFuture<RemoteSkin> skinFuture = new ObservableFuture<RemoteSkin>(launcher.getExecutor().submit(remoteSkinEnumerator), remoteSkinEnumerator);
@@ -49,8 +50,9 @@ public class SkinUtils {
 				public void onFailure(Throwable t) {
 					log.log(Level.WARNING, "Failed to load skin "+remoteSkin.getName()+": ", t);
 				}
-			});
-			ProgressDialog.showProgress(window, skinFuture, SharedLocale.tr("skins.loadingTitle"), SharedLocale.tr("skins.loading"));
+			}, SwingExecutor.INSTANCE);
+			if (showProgress)
+				ProgressDialog.showProgress(window, skinFuture, SharedLocale.tr("skins.loadingTitle"), SharedLocale.tr("skins.loading"));
 	        SwingHelper.addErrorDialogCallback(window, skinFuture);
 		}
 	}

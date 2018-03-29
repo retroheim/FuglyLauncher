@@ -4,6 +4,8 @@ import java.io.File;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.persistence.Persistence;
 
@@ -43,8 +45,9 @@ public class LocalSkin {
 	private SkinInfo skinInfo;
 
 	public @Nonnull Skin getSkin() {
-		if (skinInfo==null)
-			skinInfo = getBackingSkin();
+		if (!StringUtils.isEmpty(name)&&!StringUtils.equals(name, "-"))
+			if (skinInfo==null&&exists())
+				skinInfo = getBackingSkin();
 		Skin defaultSkin = new DefaultSkin(launcher);
 		if (skinInfo!=null)
 			return new SkinData(launcher, defaultSkin, skinInfo, getResourceDir());

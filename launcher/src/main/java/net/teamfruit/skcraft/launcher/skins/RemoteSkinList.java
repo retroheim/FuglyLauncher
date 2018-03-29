@@ -62,7 +62,7 @@ public class RemoteSkinList {
 
 			Properties skinsProp = new Properties();
 
-			this.progress = new DefaultProgress(0.3, SharedLocale.tr("skinLoader.checkingRemote"));
+			this.progress = new DefaultProgress(0.3, SharedLocale.tr("skins.checkingListRemote"));
 
 			try {
 				final URL skinsURL = RemoteSkinList.this.launcher.getSkinsURL();

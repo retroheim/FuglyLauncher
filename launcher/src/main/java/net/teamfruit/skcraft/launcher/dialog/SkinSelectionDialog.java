@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.swing.AbstractListModel;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import org.apache.commons.lang.StringUtils;
@@ -20,14 +22,13 @@ import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Predicate;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.swing.ActionListeners;
-import com.skcraft.launcher.swing.FormPanel;
 import com.skcraft.launcher.swing.LinedBoxPanel;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SharedLocale;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import net.teamfruit.skcraft.launcher.skins.RemoteSkin;
 import net.teamfruit.skcraft.launcher.skins.SkinUtils;
 
@@ -36,8 +37,8 @@ public class SkinSelectionDialog extends JDialog {
 
 	private final JTextField targetText;
 
-	private final FormPanel formpanel = new FormPanel();
 	private final JList<SkinItem> skins = new JList<SkinItem>();
+	private final JScrollPane scrollpanel = new JScrollPane(skins);
 
 	private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
 	private final JButton okButton = new JButton(SharedLocale.tr("button.ok"));
@@ -49,17 +50,17 @@ public class SkinSelectionDialog extends JDialog {
 		this.launcher = launcher;
 		this.targetText = pathDirText;
 
-		setTitle(SharedLocale.tr("options.selectSkinTitle"));
+		setTitle(SharedLocale.tr("options.skinSelectTitle"));
 		initComponents();
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setSize(new Dimension(350, 350));
+		setSize(new Dimension(250, 350));
 		setLocationRelativeTo(owner);
 	}
 
 	private void initComponents() {
 		Properties prop = launcher.getRemoteSkins().getSkinProperties();
 		if (prop!=null) {
-			final List<SkinItem> skinNames = Lists.newArrayList(DefaultSkinItem.instance);
+			final List<SkinItem> skinNames = Lists.newArrayList(autoSkinItem, defaultSkinItem);
 			for (Object oname : prop.keySet())
 				if (oname instanceof String)
 					skinNames.add(new DataSkinItem((String) oname));
@@ -74,12 +75,12 @@ public class SkinSelectionDialog extends JDialog {
 				}
 			});
 			String skinName = targetText.getText();
-			skins.setSelectedValue(StringUtils.isEmpty(skinName)?DefaultSkinItem.instance:new DataSkinItem(skinName), true);
+			skins.setSelectedValue(skinOf(skinName), true);
 		}
 
-		formpanel.addRow(skins);
-		SwingHelper.removeOpaqueness(formpanel);
-		add(SwingHelper.alignTabbedPane(formpanel), BorderLayout.CENTER);
+		SwingHelper.removeOpaqueness(scrollpanel);
+		scrollpanel.setBorder(BorderFactory.createEmptyBorder());
+		add(scrollpanel, BorderLayout.CENTER);
 
 		buttonsPanel.addElement(okButton);
 		buttonsPanel.addElement(cancelButton);
@@ -100,47 +101,82 @@ public class SkinSelectionDialog extends JDialog {
 	 * Save the configuration and close the dialog.
 	 */
 	public void save() {
-		final SkinItem skinName = skins.getSelectedValue();
-		if (skinName==null||skinName==DefaultSkinItem.instance) {
-			targetText.setText("");
-			dispose();
-			return;
-		}
-		RemoteSkin remoteSkin = launcher.getRemoteSkins().getRemoteSkin(skinName.toString());
-		SkinUtils.loadSkin(this, launcher, remoteSkin, new Predicate<RemoteSkin>() {
-			@Override
-			public boolean apply(RemoteSkin input) {
-				targetText.setText(skinName.toString());
-				dispose();
-				return true;
-			}
-		});
+		SkinItem skinName = skins.getSelectedValue();
+		if (skinName==null)
+			skinName = defaultSkinItem;
+		skinName.apply();
 	}
 
 	private static interface SkinItem {
 		String toString();
+
+		void apply();
 	}
 
-	private static class DefaultSkinItem implements SkinItem {
-		public static final SkinItem instance = new DefaultSkinItem();
-
-		private DefaultSkinItem() {
-		}
-
-		@Override
-		public String toString() {
-			return SharedLocale.tr("options.selectSkinDefault");
-		}
-	}
-
-	@RequiredArgsConstructor
 	@Data
-	private static class DataSkinItem implements SkinItem {
+	private static abstract class AbstractSkinItem implements SkinItem {
 		private final String name;
 
 		@Override
 		public String toString() {
 			return name;
+		}
+	}
+
+	private final SkinItem autoSkinItem = new DefaultSkinItem("", SharedLocale.tr("options.skinSelectAuto"));
+	private final SkinItem defaultSkinItem = new DefaultSkinItem("-", SharedLocale.tr("options.skinSelectDefault"));
+
+	private SkinItem skinOf(String name) {
+		if (StringUtils.isEmpty(name))
+			return autoSkinItem;
+		if (StringUtils.equals(name, "-"))
+			return defaultSkinItem;
+		return new DataSkinItem(name);
+	}
+
+	@Data
+	@EqualsAndHashCode(callSuper = true, of = {})
+	private class DefaultSkinItem extends AbstractSkinItem {
+		private final String localization;
+
+		private DefaultSkinItem(String name, String localization) {
+			super(name);
+			this.localization = localization;
+		}
+
+		@Override
+		public String toString() {
+			return localization;
+		}
+
+		@Override
+		public void apply() {
+			targetText.setText(getName());
+			dispose();
+		}
+	}
+
+	private class DataSkinItem extends AbstractSkinItem {
+		public DataSkinItem(String name) {
+			super(name);
+		}
+
+		@Override
+		public String toString() {
+			return getName();
+		}
+
+		public void apply() {
+			final String name = getName();
+			RemoteSkin remoteSkin = launcher.getRemoteSkins().getRemoteSkin(name);
+			SkinUtils.loadSkin(SkinSelectionDialog.this, launcher, true, remoteSkin, new Predicate<RemoteSkin>() {
+				@Override
+				public boolean apply(RemoteSkin input) {
+					targetText.setText(name);
+					dispose();
+					return true;
+				}
+			});
 		}
 	}
 }

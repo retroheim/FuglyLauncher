@@ -75,7 +75,6 @@ public class ProgressDialog extends JDialog {
         setCompactSize();
         pack();
         setLocationRelativeTo(owner);
-        pack();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -93,7 +92,6 @@ public class ProgressDialog extends JDialog {
         detailsButton.setText(SharedLocale.tr("progress.details"));
         logButton.setVisible(false);
         revalidate();
-        pack();
     }
 
     private void setDetailsSize() {

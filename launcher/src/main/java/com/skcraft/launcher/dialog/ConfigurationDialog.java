@@ -57,7 +57,6 @@ import net.teamfruit.skcraft.launcher.dirs.OptionLauncherDirectories;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.WindowDisablable;
-import net.teamfruit.skcraft.launcher.skins.DefaultSkin;
 import net.teamfruit.skcraft.launcher.skins.LocalSkin;
 import net.teamfruit.skcraft.launcher.skins.Skin;
 
@@ -292,14 +291,14 @@ public class ConfigurationDialog extends JDialog {
 		pathCommonDataDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDir.settingsTitle"), launcherDirs.getDefaultCommonDataDir(), null).setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathCommonDataDirText, SharedLocale.tr("options.pathCommonDataDirTitle"), launcherDirs.getDefaultCommonDataDir(), null).setVisible(true);
 			}
 		});
 
 		pathInstancesDirButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDir.settingsTitle"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
+				new DirectorySelectionDialog(ConfigurationDialog.this, launcher.getDirectories(), pathInstancesDirText, SharedLocale.tr("options.pathInstancesDirTitle"), launcherDirs.getDefaultInstancesDir(), "instances").setVisible(true);
 			}
 		});
 
@@ -354,10 +353,8 @@ public class ConfigurationDialog extends JDialog {
 				String newskin = config.getSkin();
 
 				if (!StringUtils.equals(oldskin, config.getSkin())) {
-					LocalSkin localSkin = launcher.getLocalSkins().getLocalSkin(newskin);
-					Skin skin = new DefaultSkin(launcher);
-					if (localSkin!=null&&localSkin.exists())
-						skin = localSkin.getSkin();
+					LocalSkin localSkin = new LocalSkin(launcher, newskin);
+					Skin skin = localSkin.getSkin();
 
 					Window owner = getOwner();
 					if (owner instanceof LauncherFrame) {
