@@ -214,16 +214,17 @@ public class LauncherFrame extends JFrame {
     public void updateSkin(Skin skin) {
 		if (skin!=null&&!skin.equals(launcher.getSkin())) {
 			launcher.setSkin(skin);
-			setExpand(launcher.getSkin().isShowList());
-			webView.browse(launcher.getNewsURL(), false);
 			loadTips();
 			localeUpdater.update();
-			String defaultModPack = skin.getDefaultModPack();
-			if (instancesModel.getInstances().unlock(defaultModPack))
-				loadInstances();
-			selectInstance(defaultModPack);
+			webView.browse(launcher.getNewsURL(), false);
+			initSkin(skin);
 			repaint();
 		}
+    }
+
+    public void initSkin(Skin skin) {
+		setExpand(skin.isShowList());
+		loadInstances();
     }
 
     private void initComponents() {
@@ -345,8 +346,6 @@ public class LauncherFrame extends JFrame {
         this.splitPane.add(rightPane, BorderLayout.EAST);
         this.splitPane.setOpaque(false);
 
-        setExpand(launcher.getSkin().isShowList());
-
         expandButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(final ActionEvent e) {
@@ -423,8 +422,7 @@ public class LauncherFrame extends JFrame {
 			}
 		});
 
-		String defaultModPack = launcher.getSkin().getDefaultModPack();
-		selectInstance(defaultModPack);
+		initSkin(launcher.getSkin());
 
         this.refreshButton.addActionListener(new ActionListener() {
             @Override
@@ -656,13 +654,13 @@ public class LauncherFrame extends JFrame {
 		if (list.size()>0) {
 			int findindex = 0;
 			if (!StringUtils.isEmpty(instanceName)) {
-					for (int index = 0; index<list.size(); index++) {
-						Instance instance = list.get(index);
-						if (StringUtils.equals(instance.getName(), instanceName)) {
-							findindex = index;
-							break;
-						}
+				for (int index = 0; index<list.size(); index++) {
+					Instance instance = list.get(index);
+					if (StringUtils.equals(instance.getName(), instanceName)) {
+						findindex = index;
+						break;
 					}
+				}
 			}
 			if (findindex>=0)
 				instancesTable.setRowSelectionInterval(findindex, findindex);
@@ -707,10 +705,13 @@ public class LauncherFrame extends JFrame {
         future.addListener(new Runnable() {
             @Override
             public void run() {
+        		String defaultModPack = launcher.getSkin().getDefaultModPack();
+        		instancesModel.getInstances().unlock(defaultModPack);
+
                 instancesModel.update();
-    			String defaultModPack = launcher.getSkin().getDefaultModPack();
-    			if (!StringUtils.isEmpty(defaultModPack))
-    				selectInstance(defaultModPack);
+
+        		selectInstance(defaultModPack);
+
             	onInstanceReady();
                 requestFocus();
             }

@@ -102,7 +102,7 @@ public class InstanceList {
      */
     public synchronized boolean unlock(String name) {
     	List<Instance> src = getInstancesSecret();
-    	List<Instance> dest = getInstancesSecret();
+    	List<Instance> dest = getInstances();
         for (final Iterator<Instance> itr = src.iterator(); itr.hasNext();) {
         	Instance instance = itr.next();
 			if (StringUtils.equalsIgnoreCase(name, instance.getName())||StringUtils.equalsIgnoreCase(name, instance.getKey())) {
