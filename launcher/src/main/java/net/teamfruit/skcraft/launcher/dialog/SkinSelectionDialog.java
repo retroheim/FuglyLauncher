@@ -82,6 +82,7 @@ public class SkinSelectionDialog extends JDialog {
 		scrollpanel.setBorder(BorderFactory.createEmptyBorder());
 		add(scrollpanel, BorderLayout.CENTER);
 
+		buttonsPanel.addGlue();
 		buttonsPanel.addElement(okButton);
 		buttonsPanel.addElement(cancelButton);
 

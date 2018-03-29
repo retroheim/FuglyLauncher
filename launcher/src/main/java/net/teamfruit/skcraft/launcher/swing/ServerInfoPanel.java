@@ -77,8 +77,7 @@ public class ServerInfoPanel {
 					lastStatus = status;
 				}
 			if (style==ServerInfoStyle.DETAILS)
-				if (instancePanel!=null)
-					instancePanel.setToolTipText(StringUtils.isEmpty(details) ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
+				instancePanel.setToolTipText(StringUtils.isEmpty(details) ? null : "<html>"+details.replace("\n", "<br>")+"</html>");
 		}
 	}
 
