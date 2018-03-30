@@ -41,7 +41,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -144,17 +143,6 @@ public class LauncherFrame extends JFrame {
 
         AppIcon.setFrameIconSet(this, AppIcon.getSwingIconSet(AppIcon.getAppIconSet()));
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-            	loadTips();
-
-            	loadSkinList();
-
-                loadInstances();
-            }
-        });
-
         addWindowListener(new WindowAdapter() {
         	@Override
         	public void windowActivated(WindowEvent e) {
@@ -214,7 +202,7 @@ public class LauncherFrame extends JFrame {
     public void updateSkin(Skin skin) {
 		if (skin!=null&&!skin.equals(launcher.getSkin())) {
 			launcher.setSkin(skin);
-			loadTips();
+			//loadTips();
 			localeUpdater.update();
 			webView.browse(launcher.getNewsURL(), false);
 			initSkin(skin);
@@ -224,6 +212,7 @@ public class LauncherFrame extends JFrame {
 
     public void initSkin(Skin skin) {
 		setExpand(skin.isShowList());
+    	loadTips();
 		loadInstances();
     }
 
@@ -422,8 +411,6 @@ public class LauncherFrame extends JFrame {
 			}
 		});
 
-		initSkin(launcher.getSkin());
-
         this.refreshButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -468,6 +455,9 @@ public class LauncherFrame extends JFrame {
                 popupInstanceMenu(e.getComponent(), e.getX(), e.getY(), selected);
             }
         });
+
+    	loadSkinList();
+		initSkin(launcher.getSkin());
     }
 
     protected JPanel createContainerPanel() {
@@ -599,13 +589,13 @@ public class LauncherFrame extends JFrame {
 
     }
 
-    @Getter private boolean first_loaded = true;
+    @Getter private boolean firstLoaded = true;
 
 	private JPanel rightPane;
 
 	private void onInstanceReady() {
-        if (first_loaded) {
-        	first_loaded = false;
+        if (firstLoaded) {
+        	firstLoaded = false;
             LauncherStatus.instance.open(DiscordStatus.MENU, new WindowDisablable(this), ImmutableMap.<String, String>of());
         	processRun();
         }
@@ -620,6 +610,16 @@ public class LauncherFrame extends JFrame {
 	public boolean processRun() {
 		launcher.getOptions().processURI();
 		String runid = launcher.getOptions().getRun();
+		String runkey = launcher.getOptions().getKey();
+		if (launchFromID(runid, runkey, true))
+			return true;
+		String skinrunid = launcher.getSkin().getLoginModPack();
+		if (launchFromID(skinrunid, null, false))
+			return true;
+    	return false;
+	}
+
+	private boolean launchFromID(String runid, String runkey, boolean keyRequired) {
 		if (!StringUtils.isEmpty(runid)) {
 			log.info("Trying to launch "+runid);
 			Instance runinstance = null;
@@ -630,13 +630,15 @@ public class LauncherFrame extends JFrame {
 				}
 			if (runinstance==null)
 				for (Instance instance: launcher.getInstances().getInstancesSecret())
-					if (StringUtils.equalsIgnoreCase(runid, instance.getKey())) {
+					if (StringUtils.equalsIgnoreCase(runid, instance.getKey())||
+							(StringUtils.equalsIgnoreCase(runid, instance.getName())&&(!keyRequired||StringUtils.equalsIgnoreCase(runkey, instance.getKey())))) {
 						runinstance = instance;
 						break;
 					}
 			if (runinstance!=null) {
 				log.info("Launching "+runinstance.getName());
 				launch(runinstance);
+				//loadInstances();
 				return true;
 			} else {
 				log.warning("Unable to find "+runid);
@@ -645,8 +647,7 @@ public class LauncherFrame extends JFrame {
 						SharedLocale.tr("errors.missingInstanceTitle", runid));
 			}
 		}
-
-    	return false;
+		return false;
 	}
 
 	private void selectInstance(String instanceName) {
@@ -705,7 +706,7 @@ public class LauncherFrame extends JFrame {
         future.addListener(new Runnable() {
             @Override
             public void run() {
-        		String defaultModPack = launcher.getSkin().getDefaultModPack();
+        		String defaultModPack = launcher.getSkin().getSelectModPack();
         		instancesModel.getInstances().unlock(defaultModPack);
 
                 instancesModel.update();

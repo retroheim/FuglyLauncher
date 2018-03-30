@@ -56,7 +56,12 @@ public class DefaultSkin implements Skin {
 	}
 
 	@Override
-	public String getDefaultModPack() {
+	public String getSelectModPack() {
+		return null;
+	}
+
+	@Override
+	public String getLoginModPack() {
 		return null;
 	}
 

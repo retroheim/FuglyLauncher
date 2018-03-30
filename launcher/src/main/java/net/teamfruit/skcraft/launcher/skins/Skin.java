@@ -16,7 +16,9 @@ public interface Skin {
 
 	boolean isShowList();
 
-	String getDefaultModPack();
+	String getSelectModPack();
+
+	String getLoginModPack();
 
 	void downloadResources() throws Exception;
 }

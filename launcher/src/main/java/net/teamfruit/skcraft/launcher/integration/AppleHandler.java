@@ -42,7 +42,7 @@ public class AppleHandler {
 		@Override
 		public void openURI(AppEvent.OpenURIEvent oue) {
 			launcher.getOptions().setUriPath(oue.getURI().toString());
-			if (!launcherFrame.isFirst_loaded()&&launcherFrame.isVisible())
+			if (!launcherFrame.isFirstLoaded()&&launcherFrame.isVisible())
 				launcherFrame.processRun();
 		}
 

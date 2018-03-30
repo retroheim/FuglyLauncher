@@ -7,6 +7,8 @@
 package com.skcraft.launcher;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -38,25 +40,40 @@ public class LauncherArguments {
 	@Parameter(names = "--run")
 	private String run;
 
+	@Parameter(names = "--key")
+	private String key;
+
 	public void processURI() {
 		String uripath = getUriPath();
 		if (!StringUtils.isEmpty(uripath)) {
-			if (StringUtils.startsWith(uripath, "'")&&StringUtils.endsWith(uripath, "'"))
-				uripath = StringUtils.substringBetween(uripath, "'");
-			if (StringUtils.contains(uripath, "://"))
-				uripath = StringUtils.substringAfter(uripath, "://");
-			if (!StringUtils.isEmpty(uripath)) {
-				String[] uripaths = StringUtils.split(uripath, "/");
-
-				if (uripaths.length>0) {
-					String type = uripaths[0];
-					if (type.equals("run")) {
-						if (uripaths.length>1) {
-							String runid = uripaths[1];
-							setRun(runid);
+			try {
+				if (StringUtils.startsWith(uripath, "'")&&StringUtils.endsWith(uripath, "'"))
+					uripath = StringUtils.substringBetween(uripath, "'");
+				URI uri = new URI(uripath);
+				String scheme = uri.getScheme();
+				if (StringUtils.isEmpty(scheme)||StringUtils.equalsIgnoreCase(scheme, "fruitlauncher")) {
+					String host = uri.getHost();
+					String path = uri.getPath();
+					if (!StringUtils.isEmpty(path))
+						if (StringUtils.equalsIgnoreCase(host, "run")) {
+							String[] uripaths = StringUtils.split(path, "/");
+							if (uripaths.length>0) {
+								String runid = uripaths[0];
+								setRun(runid);
+							}
+						}
+					String query = uri.getQuery();
+					if (!StringUtils.isEmpty(query)) {
+						String[] qStrings = StringUtils.split(query, "&");
+						for (String qString : qStrings) {
+							String key = StringUtils.substringBefore(qString, "=");
+							String value = StringUtils.substringAfter(qString, "=");
+							if (StringUtils.equalsIgnoreCase(key, "key")&&!StringUtils.isEmpty(value))
+								setKey(value);
 						}
 					}
 				}
+			} catch (URISyntaxException e) {
 			}
 		}
 	}

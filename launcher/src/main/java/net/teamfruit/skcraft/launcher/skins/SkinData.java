@@ -134,12 +134,22 @@ public class SkinData implements Skin {
 	}
 
 	@Override
-	public String getDefaultModPack() {
+	public String getSelectModPack() {
 		String data = null;
 		if (skinInfo!=null)
-			data = skinInfo.getDefaultModPack();
+			data = skinInfo.getSelectModPack();
 		if (data==null)
-			data = defaultSkin.getDefaultModPack();
+			data = defaultSkin.getSelectModPack();
+		return data;
+	}
+
+	@Override
+	public String getLoginModPack() {
+		String data = null;
+		if (skinInfo!=null)
+			data = skinInfo.getLoginModPack();
+		if (data==null)
+			data = defaultSkin.getLoginModPack();
 		return data;
 	}
 
