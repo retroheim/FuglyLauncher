@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Class: com.skcraft.launcher.Bootstrap
+SplashScreen-Image: com/skcraft/launcher/splashscreen.png
+
