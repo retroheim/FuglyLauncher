@@ -125,7 +125,7 @@ public class UriScheme {
 
 					File file = new File(launcher.getTemporaryDir(), "fruitlauncher.desktop");
 					String content = "[Desktop Entry]\n"+
-							"Name=FuglyNetwork Launcher\n"+
+							"Name=FruitLauncher\n"+
 							"Exec="+joinCommand(builder.buildCommand())/*.replace("\\", "\\\\").replace("\"", "\\\"")*/ +"\n"+
 							"Icon=fruitlauncher\n"+
 							"Type=Application\n"+
