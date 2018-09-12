@@ -49,7 +49,7 @@ import com.sun.jna.ptr.NativeLongByReference;
 import com.sun.jna.ptr.PointerByReference;
 
 public class WMCtrl {
-	private static final X11 x11;
+	public static final X11 x11;
 	private static X11Ext x11Ext = null;
 	private static Xmu xmu = null;
 
