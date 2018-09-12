@@ -1,40 +1,33 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
+ * 
+ * Could not load the following classes:
+ *  lombok.NonNull
  */
-
 package com.skcraft.launcher.auth;
 
-import lombok.Getter;
-import lombok.NonNull;
-
+import com.skcraft.launcher.auth.Session;
+import com.skcraft.launcher.auth.UserType;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import lombok.NonNull;
 
-/**
- * An offline session.
- */
-public class OfflineSession implements Session {
-
+public class OfflineSession
+implements Session {
     private static Map<String, String> dummyProperties = Collections.emptyMap();
-
-    @Getter
     private final String name;
 
-    /**
-     * Create a new offline session using the given player name.
-     *
-     * @param name the player name
-     */
     public OfflineSession(@NonNull String name) {
+        if (name == null) {
+            throw new NullPointerException("name");
+        }
         this.name = name;
     }
 
     @Override
     public String getUuid() {
-        return (new UUID(0, 0)).toString();
+        return new UUID(0L, 0L).toString();
     }
 
     @Override
@@ -67,4 +60,9 @@ public class OfflineSession implements Session {
         return false;
     }
 
+    @Override
+    public String getName() {
+        return this.name;
+    }
 }
+

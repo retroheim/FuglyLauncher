@@ -1,18 +1,12 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
  */
-
 package com.skcraft.launcher.auth;
 
 import com.skcraft.launcher.LauncherException;
 
-/**
- * Thrown on authentication error.
- */
-public class AuthenticationException extends LauncherException {
-
+public class AuthenticationException
+extends LauncherException {
     public AuthenticationException(String message, String localizedMessage) {
         super(message, localizedMessage);
     }
@@ -21,3 +15,4 @@ public class AuthenticationException extends LauncherException {
         super(cause, localizedMessage);
     }
 }
+

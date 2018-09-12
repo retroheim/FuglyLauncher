@@ -1,74 +1,26 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
  */
-
 package com.skcraft.launcher.auth;
 
+import com.skcraft.launcher.auth.UserType;
 import java.util.Map;
 
-/**
- * Represents an authenticated (or virtual) session.
- */
 public interface Session {
+    public String getUuid();
 
-    /**
-     * Get the user's UUID.
-     *
-     * @return the user's UUID
-     */
-    String getUuid();
+    public String getName();
 
-    /**
-     * Get the user's game username.
-     *
-     * @return the username
-     */
-    String getName();
+    public String getClientToken();
 
-    /**
-     * Get the client token.
-     *
-     * @return client token
-     */
-    String getClientToken();
+    public String getAccessToken();
 
-    /**
-     * Get the access token.
-     *
-     * @return the access token
-     */
-    String getAccessToken();
+    public Map<String, String> getUserProperties();
 
-    /**
-     * Get a map of user properties.
-     *
-     * @return the map of user properties
-     */
-    Map<String, String> getUserProperties();
+    public String getSessionToken();
 
-    /**
-     * Get the session token string, which is in the form of
-     * <code>token:accessToken:uuid</code> for authenticated players, and
-     * simply <code>-</code> for offline players.
-     *
-     * @return the session token
-     */
-    String getSessionToken();
+    public UserType getUserType();
 
-    /**
-     * Get the user type.
-     *
-     * @return the user type
-     */
-    UserType getUserType();
-
-    /**
-     * Return true if the user is in an online session.
-     *
-     * @return true if online
-     */
-    boolean isOnline();
-
+    public boolean isOnline();
 }
+

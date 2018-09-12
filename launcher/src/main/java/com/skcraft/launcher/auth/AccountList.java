@@ -1,95 +1,80 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
+ * 
+ * Could not load the following classes:
+ *  lombok.NonNull
  */
-
 package com.skcraft.launcher.auth;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.skcraft.launcher.auth.Account;
 import com.skcraft.launcher.persistence.Scrambled;
-import lombok.Getter;
-import lombok.NonNull;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
+import lombok.NonNull;
 
-/**
- * A list of accounts that can be stored to disk.
- */
-@Scrambled("ACCOUNT_LIST")
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonAutoDetect(
-        getterVisibility = JsonAutoDetect.Visibility.NONE,
-        setterVisibility = JsonAutoDetect.Visibility.NONE,
-        fieldVisibility = JsonAutoDetect.Visibility.NONE)
-public class AccountList extends AbstractListModel<Account> implements ComboBoxModel<Account> {
-
+@Scrambled(value="ACCOUNT_LIST")
+@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonAutoDetect(getterVisibility=JsonAutoDetect.Visibility.NONE, setterVisibility=JsonAutoDetect.Visibility.NONE, fieldVisibility=JsonAutoDetect.Visibility.NONE)
+public class AccountList
+extends AbstractListModel<Account>
+implements ComboBoxModel<Account> {
     @JsonProperty
-    @Getter
     private List<Account> accounts = new ArrayList<Account>();
     private transient Account selected;
 
-    /**
-     * Add a new account.
-     *
-     * <p>If there is already an existing account with the same ID, then the
-     * new account will not be added.</p>
-     *
-     * @param account the account to add
-     */
     public synchronized void add(@NonNull Account account) {
-        if (!accounts.contains(account)) {
-            accounts.add(account);
-            Collections.sort(accounts);
-            fireContentsChanged(this, 0, accounts.size());
+        if (account == null) {
+            throw new NullPointerException("account");
+        }
+        if (!this.accounts.contains(account)) {
+            this.accounts.add(account);
+            Collections.sort(this.accounts);
+            this.fireContentsChanged(this, 0, this.accounts.size());
         }
     }
 
-    /**
-     * Remove an account.
-     *
-     * @param account the account
-     */
     public synchronized void remove(@NonNull Account account) {
-        Iterator<Account> it = accounts.iterator();
+        if (account == null) {
+            throw new NullPointerException("account");
+        }
+        Iterator<Account> it = this.accounts.iterator();
         while (it.hasNext()) {
             Account other = it.next();
-            if (other.equals(account)) {
-                it.remove();
-                fireContentsChanged(this, 0, accounts.size() + 1);
-                break;
-            }
+            if (!other.equals(account)) continue;
+            it.remove();
+            this.fireContentsChanged(this, 0, this.accounts.size() + 1);
+            break;
         }
     }
 
-    /**
-     * Set the list of accounts.
-     *
-     * @param accounts the list of accounts
-     */
     public synchronized void setAccounts(@NonNull List<Account> accounts) {
+        if (accounts == null) {
+            throw new NullPointerException("accounts");
+        }
         this.accounts = accounts;
         Collections.sort(accounts);
     }
 
-    @Override
     @JsonIgnore
+    @Override
     public synchronized int getSize() {
-        return accounts.size();
+        return this.accounts.size();
     }
 
     @Override
     public synchronized Account getElementAt(int index) {
         try {
-            return accounts.get(index);
-        } catch (IndexOutOfBoundsException e) {
+            return this.accounts.get(index);
+        }
+        catch (IndexOutOfBoundsException e) {
             return null;
         }
     }
@@ -97,38 +82,40 @@ public class AccountList extends AbstractListModel<Account> implements ComboBoxM
     @Override
     public void setSelectedItem(Object item) {
         if (item == null) {
-            selected = null;
+            this.selected = null;
             return;
         }
-
         if (item instanceof Account) {
-            this.selected = (Account) item;
+            this.selected = (Account)item;
         } else {
             String id = String.valueOf(item).trim();
             Account account = new Account(id);
-            for (Account test : accounts) {
-                if (test.equals(account)) {
-                    account = test;
-                    break;
-                }
+            for (Account test : this.accounts) {
+                if (!test.equals(account)) continue;
+                account = test;
+                break;
             }
-            selected = account;
+            this.selected = account;
         }
-
-        if (selected.getId() == null || selected.getId().isEmpty()) {
-            selected = null;
+        if (this.selected.getId() == null || this.selected.getId().isEmpty()) {
+            this.selected = null;
         }
     }
 
-    @Override
     @JsonIgnore
+    @Override
     public Account getSelectedItem() {
-        return selected;
+        return this.selected;
     }
 
     public synchronized void forgetPasswords() {
-        for (Account account : accounts) {
+        for (Account account : this.accounts) {
             account.setPassword(null);
         }
     }
+
+    public List<Account> getAccounts() {
+        return this.accounts;
+    }
 }
+

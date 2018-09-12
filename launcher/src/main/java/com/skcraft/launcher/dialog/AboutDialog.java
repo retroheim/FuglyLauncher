@@ -1,78 +1,66 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
  */
-
 package com.skcraft.launcher.dialog;
 
-import java.awt.BorderLayout;
+import com.skcraft.launcher.swing.ActionListeners;
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.LayoutManager;
 import java.awt.Window;
-import java.awt.event.KeyEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
+import java.awt.event.WindowListener;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
-import javax.swing.WindowConstants;
-
-import com.skcraft.launcher.swing.ActionListeners;
-
 import net.miginfocom.swing.MigLayout;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 
-public class AboutDialog extends JDialog {
-
+public class AboutDialog
+extends JDialog {
     public AboutDialog(Window parent) {
-        super(parent, "About", ModalityType.DOCUMENT_MODAL);
-
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        initComponents();
-        setResizable(false);
-        pack();
-        setLocationRelativeTo(parent);
+        super(parent, "About", Dialog.ModalityType.DOCUMENT_MODAL);
+        this.setDefaultCloseOperation(2);
+        this.initComponents();
+        this.setResizable(false);
+        this.pack();
+        this.setLocationRelativeTo(parent);
     }
 
     private void initComponents() {
         JPanel container = new JPanel();
         container.setLayout(new MigLayout("insets dialog"));
-
-        container.add(new JLabel("<html>Licensed under GNU General Public License, version 3."), "wrap, gapbottom unrel");
-        container.add(new JLabel("<html>You are using SKCraft Launcher, an open-source customizable<br>" +
-                "launcher platform that anyone can use."), "wrap, gapbottom unrel");
-        container.add(new JLabel("<html>SKCraft does not necessarily endorse the version of<br>" +
-                "the launcher that you are using."), "wrap, gapbottom unrel");
-        container.add(new JLabel("<html>FuglyNetwork Launcher"), "wrap, gapbottom unrel");
-
+        container.add((Component)new JLabel("<html>Licensed under GNU General Public License, version 3."), "wrap, gapbottom unrel");
+        container.add((Component)new JLabel("<html>You are using SKCraft Launcher, an open-source customizable<br>launcher platform that anyone can use."), "wrap, gapbottom unrel");
+        container.add((Component)new JLabel("<html>SKCraft does not necessarily endorse the version of<br>the launcher that you are using."), "wrap, gapbottom unrel");
+        container.add((Component)new JLabel("<html>FuglyNetwork Launcher"), "wrap, gapbottom unrel");
         JButton okButton = new JButton("OK");
         JButton sourceCodeButton = new JButton("Website");
-
-        container.add(sourceCodeButton, "span, split 3, sizegroup bttn");
-        container.add(okButton, "tag ok, sizegroup bttn");
-
-        add(container, BorderLayout.CENTER);
-
-        getRootPane().setDefaultButton(okButton);
-        getRootPane().registerKeyboardAction(ActionListeners.dispose(this), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
-
+        container.add((Component)sourceCodeButton, "span, split 3, sizegroup bttn");
+        container.add((Component)okButton, "tag ok, sizegroup bttn");
+        this.add((Component)container, "Center");
+        this.getRootPane().setDefaultButton(okButton);
+        this.getRootPane().registerKeyboardAction(ActionListeners.dispose(this), KeyStroke.getKeyStroke(27, 0), 2);
         okButton.addActionListener(ActionListeners.dispose(this));
-        sourceCodeButton.addActionListener(ActionListeners.openURL(this, "https://github.com/SKCraft/Launcher"));
+        sourceCodeButton.addActionListener(ActionListeners.openURL(this, "https://github.com/Fugly-Network/FuglyLauncher"));
+        this.addWindowListener(new WindowAdapter(){
 
-        addWindowListener(new WindowAdapter() {
-        	@Override
-        	public void windowActivated(WindowEvent e) {
-        		LauncherStatus.instance.update();
-        	}
-		});
+            @Override
+            public void windowActivated(WindowEvent e) {
+                LauncherStatus.instance.update();
+            }
+        });
     }
 
     public static void showAboutDialog(Window parent) {
         AboutDialog dialog = new AboutDialog(parent);
         dialog.setVisible(true);
     }
+
 }
 
