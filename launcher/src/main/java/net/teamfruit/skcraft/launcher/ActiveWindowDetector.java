@@ -1,8 +1,6 @@
 package net.teamfruit.skcraft.launcher;
 
 import java.awt.BorderLayout;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -16,15 +14,11 @@ import javax.swing.JTextArea;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import com.sun.jna.Native;
 import com.sun.jna.Platform;
-import com.sun.jna.Pointer;
-import com.sun.jna.platform.WindowUtils;
 import com.sun.jna.platform.unix.X11;
-import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.ptr.IntByReference;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -37,23 +31,23 @@ import net.teamfruit.skcraft.launcher.ActiveWindowDetector.WindowResult.WindowRe
  * respecting https://stackoverflow.com/questions/5206633/find-out-what-application-window-is-in-focus-in-java
  */
 public class ActiveWindowDetector {
-	public interface Psapi extends StdCallLibrary {
-		WinDef.DWORD GetModuleBaseNameW(Pointer hProcess, Pointer hModule, byte[] lpBaseName, int nSize);
-	}
-
-	private static class PsapiLoader {
-		public static final Psapi INSTANCE;
-
-		static {
-			Psapi inst = null;
-			try {
-				inst = (Psapi) Native.loadLibrary("Psapi", Psapi.class);
-			} catch (Throwable t) {
-				Log.log.log(Level.WARNING, "could not detect active window: ", t);
-			}
-			INSTANCE = inst;
-		}
-	}
+//	public interface Psapi extends StdCallLibrary {
+//		WinDef.DWORD GetModuleBaseNameW(Pointer hProcess, Pointer hModule, byte[] lpBaseName, int nSize);
+//	}
+//
+//	private static class PsapiLoader {
+//		public static final Psapi INSTANCE;
+//
+//		static {
+//			Psapi inst = null;
+//			try {
+//				inst = (Psapi) Native.loadLibrary("Psapi", Psapi.class);
+//			} catch (Throwable t) {
+//				Log.log.log(Level.WARNING, "could not detect active window: ", t);
+//			}
+//			INSTANCE = inst;
+//		}
+//	}
 
 	@Builder
 	@Data
@@ -67,21 +61,22 @@ public class ActiveWindowDetector {
 	public static WindowResult detectWindow() {
 		WindowResultBuilder builder = WindowResult.builder();
 		if (Platform.isWindows()) {
-			final int PROCESS_VM_READ = 0x0010;
-			final int PROCESS_QUERY_INFORMATION = 0x0400;
+//			final int PROCESS_VM_READ = 0x0010;
+//			final int PROCESS_QUERY_INFORMATION = 0x0400;
 			final User32 user32 = User32.INSTANCE;
-			final Kernel32 kernel32 = Kernel32.INSTANCE;
+//			final Kernel32 kernel32 = Kernel32.INSTANCE;
 
 			WinDef.HWND windowHandle = user32.GetForegroundWindow();
 
 			char[] windowname = new char[512];
 			user32.GetWindowText(windowHandle, windowname, windowname.length);
-			builder.windowname(new String(windowname));
+//			builder.windowname(new String(windowname));
 
-			builder.filename(WindowUtils.getProcessFilePath(windowHandle));
+//			builder.filename(WindowUtils.getProcessFilePath(windowHandle));
 
-//			IntByReference pid = new IntByReference();
-//			user32.GetWindowThreadProcessId(windowHandle, pid);
+			IntByReference pid = new IntByReference();
+			user32.GetWindowThreadProcessId(windowHandle, pid);
+			builder.filename(""+pid.getValue());
 //			WinNT.HANDLE processHandle = kernel32.OpenProcess(PROCESS_VM_READ|PROCESS_QUERY_INFORMATION, true, pid.getValue());
 //
 //			if (processHandle!=null) {
@@ -95,17 +90,18 @@ public class ActiveWindowDetector {
 
 			X11.Window window = WMCtrl.get_active_window(display);
 
-			X11.XTextProperty windownameproperty = new X11.XTextProperty();
-			x11.XGetWMName(display, window, windownameproperty);
-			builder.windowname(windownameproperty.value);
+//			X11.XTextProperty windownameproperty = new X11.XTextProperty();
+//			x11.XGetWMName(display, window, windownameproperty);
+//			builder.windowname(windownameproperty.value);
 
 			int windowpid = WMCtrl.get_window_pid(display, window);
-			try {
-				String filename = Paths.get(String.format("/proc/%d/exe", windowpid)).toRealPath().toString();
-				builder.filename(filename);
-			} catch (IOException e) {
-				Log.log.log(Level.WARNING, "could not detect active window: ", e);
-			}
+			builder.filename(""+windowpid);
+//			try {
+//				String filename = Paths.get(String.format("/proc/%d/exe", windowpid)).toRealPath().toString();
+//				builder.filename(filename);
+//			} catch (IOException e) {
+//				Log.log.log(Level.WARNING, "could not detect active window: ", e);
+//			}
 
 			x11.XCloseDisplay(display);
 
@@ -146,26 +142,26 @@ public class ActiveWindowDetector {
 			}
 			*/
 		} else if (Platform.isMac()) {
-			final String scriptwindowname = "tell application \"System Events\"\n" +
-					"    # Get the frontmost app's *process* object.\n" +
-					"    set frontAppProcess to first application process whose frontmost is true\n" +
-					"end tell\n" +
-					"\n" +
-					"# Tell the *process* to count its windows and return its front window's name.\n" +
-					"tell frontAppProcess\n" +
-					"    set window_name to name of front window\n" +
-					"end tell";
+//			final String scriptwindowname = "tell application \"System Events\"\n" +
+//					"    # Get the frontmost app's *process* object.\n" +
+//					"    set frontAppProcess to first application process whose frontmost is true\n" +
+//					"end tell\n" +
+//					"\n" +
+//					"# Tell the *process* to count its windows and return its front window's name.\n" +
+//					"tell frontAppProcess\n" +
+//					"    set window_name to name of front window\n" +
+//					"end tell";
 			final String scriptfilename = "tell application \"System Events\"\n"+
-					"\tname of application processes whose frontmost is true\n"+
+					"\tunix id of application processes whose frontmost is true\n"+
 					"end";
 			if (appleScript==null)
 				Log.log.log(Level.WARNING, "could not detect active window: no engine");
 			else {
-				try {
-					builder.windowname((String) getAppleScript().eval(scriptwindowname));
-				} catch (ScriptException e) {
-					Log.log.log(Level.WARNING, "could not detect active window: ", e);
-				}
+//				try {
+//					builder.windowname((String) getAppleScript().eval(scriptwindowname));
+//				} catch (ScriptException e) {
+//					Log.log.log(Level.WARNING, "could not detect active window: ", e);
+//				}
 				try {
 					builder.filename((String) getAppleScript().eval(scriptfilename).toString());
 				} catch (ScriptException e) {
@@ -198,7 +194,7 @@ public class ActiveWindowDetector {
 					jl.setText(ExceptionUtils.getFullStackTrace(e));
 				}
 			}
-		}, 0, 2, TimeUnit.SECONDS);
+		}, 0, 500, TimeUnit.MILLISECONDS);
 
 		jp.add(jl, BorderLayout.CENTER);
 		jf.add(jp);
