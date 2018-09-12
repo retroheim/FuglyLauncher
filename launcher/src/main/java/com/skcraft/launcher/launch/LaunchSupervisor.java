@@ -42,6 +42,8 @@ import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.extern.java.Log;
+import net.teamfruit.skcraft.launcher.ActiveWindowDetector;
+import net.teamfruit.skcraft.launcher.ProcessUtils;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.NullDisablable;
@@ -146,10 +148,11 @@ public class LaunchSupervisor {
 		// If the process is started, get rid of this window
 		Futures.addCallback(processFuture, new FutureCallback<Process>() {
 			@Override
-			public void onSuccess(Process result) {
+			public void onSuccess(final Process result) {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
+						ActiveWindowDetector.setCurrentPID(ProcessUtils.getProcessID(result));
 						listener.gameStarted();
 						Map<String, String> status = Maps.newHashMap();
 						status.put("instance", instance.getTitle());
@@ -178,6 +181,7 @@ public class LaunchSupervisor {
 		Futures.addCallback(future, new FutureCallback<ProcessConsoleFrame>() {
 			@Override
 			public void onSuccess(final ProcessConsoleFrame consoleFrame) {
+				ActiveWindowDetector.setCurrentPID(-1);
 				LauncherStatus.instance.close(DiscordStatus.LAUNCHING);
 				LauncherStatus.instance.close(DiscordStatus.PLAYING);
 				try {
