@@ -1,18 +1,15 @@
 /*
- * SKCraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
  */
-
 package com.skcraft.launcher;
 
 import com.google.common.base.Supplier;
+import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.dialog.LauncherFrame;
+import java.awt.Window;
 
-import java.awt.*;
-
-public class DefaultLauncherSupplier implements Supplier<Window> {
-
+public class DefaultLauncherSupplier
+implements Supplier<Window> {
     private final Launcher launcher;
 
     public DefaultLauncherSupplier(Launcher launcher) {
@@ -21,7 +18,7 @@ public class DefaultLauncherSupplier implements Supplier<Window> {
 
     @Override
     public Window get() {
-        return new LauncherFrame(launcher);
+        return new LauncherFrame(this.launcher);
     }
-
 }
+
