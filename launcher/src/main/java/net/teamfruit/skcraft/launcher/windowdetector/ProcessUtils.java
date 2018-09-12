@@ -1,4 +1,4 @@
-package net.teamfruit.skcraft.launcher;
+package net.teamfruit.skcraft.launcher.windowdetector;
 
 import java.lang.reflect.Field;
 

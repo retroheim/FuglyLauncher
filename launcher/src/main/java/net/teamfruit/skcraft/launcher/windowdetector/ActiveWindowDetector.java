@@ -1,4 +1,4 @@
-package net.teamfruit.skcraft.launcher;
+package net.teamfruit.skcraft.launcher.windowdetector;
 
 import java.util.logging.Level;
 
@@ -19,6 +19,7 @@ import com.sun.jna.ptr.IntByReference;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.teamfruit.skcraft.launcher.Log;
 
 public class ActiveWindowDetector {
 	@Getter(lazy = true, value = AccessLevel.PRIVATE)

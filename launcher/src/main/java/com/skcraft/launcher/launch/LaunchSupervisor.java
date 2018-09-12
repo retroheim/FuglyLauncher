@@ -42,13 +42,13 @@ import com.skcraft.launcher.util.SharedLocale;
 import com.skcraft.launcher.util.SwingExecutor;
 
 import lombok.extern.java.Log;
-import net.teamfruit.skcraft.launcher.ActiveWindowDetector;
-import net.teamfruit.skcraft.launcher.ProcessUtils;
 import net.teamfruit.skcraft.launcher.discordrpc.DiscordStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus;
 import net.teamfruit.skcraft.launcher.discordrpc.LauncherStatus.NullDisablable;
 import net.teamfruit.skcraft.launcher.launch.ExitHandler;
 import net.teamfruit.skcraft.launcher.model.modpack.ConnectServerInfo;
+import net.teamfruit.skcraft.launcher.windowdetector.ActiveWindowDetector;
+import net.teamfruit.skcraft.launcher.windowdetector.ProcessUtils;
 
 @Log
 public class LaunchSupervisor {
