@@ -14,18 +14,19 @@ import com.jagrosh.discordipc.IPCListener;
 import com.jagrosh.discordipc.entities.Callback;
 import com.jagrosh.discordipc.entities.pipe.PipeStatus;
 import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
+import com.skcraft.launcher.Configuration;
 
 import lombok.extern.java.Log;
-import net.teamfruit.skcraft.launcher.dirs.LauncherDirectories;
+import net.teamfruit.skcraft.launcher.windowdetector.ActiveWindowDetector;
 
 @Log
 public class LauncherDiscord {
 	@Nullable
 	private static LauncherDiscord instance;
 
-	public static void init(LauncherDirectories dirs) {
+	public static void init(Configuration config) {
 		try {
-			instance = new LauncherDiscord();
+			instance = new LauncherDiscord(config);
 		} catch (Exception e) {
 			log.log(Level.WARNING, "[DiscordRPC] exception: ", e);
 		} catch (Throwable t) {
@@ -33,10 +34,14 @@ public class LauncherDiscord {
 		}
 	}
 
+	private final Configuration config;
 	private final IPCClient client;
+
 	private DiscordRichPresence lastPresence = DiscordStatus.DEFAULT.createRPC(new DiscordRichPresence(), ImmutableMap.<String, String> of());
 
-	private LauncherDiscord() throws Exception {
+	private LauncherDiscord(final Configuration config) throws Exception {
+		this.config = config;
+
 		log.info("[DiscordRPC] initializing.");
 		client = new IPCClient(425297966069317632L);
 
@@ -44,9 +49,9 @@ public class LauncherDiscord {
 			@Override
 			public void onReady(IPCClient client) {
 				log.info("[DiscordRPC] online.");
-				updateStatus(lastPresence);
+				updateStatusWithNoChange();
 			}
-			
+
 			@Override
 			public void onDisconnect(IPCClient client, Throwable t) {
 				log.info("[DiscordRPC] disconnected. reconnecting...");
@@ -80,11 +85,16 @@ public class LauncherDiscord {
 						else
 							log.log(Level.FINE, "[DiscordRPC] exception. continuing...: ", e);
 					}
+				} else {
+					if (LauncherDiscord.this.config.isDiscordPing()) {
+						if (ActiveWindowDetector.detectWindow())
+							updateStatusWithNoChange();
+					}
 				}
 			}
 		}, 0, 15, TimeUnit.SECONDS);
 	}
-	
+
 	private void disconnectDiscord() {
 		if (client.getStatus()!=PipeStatus.CONNECTED)
 			try {
@@ -94,35 +104,33 @@ public class LauncherDiscord {
 			}
 	}
 
-	public void updateStatusImpl(DiscordRichPresence presence) {
-		if (client.getStatus()==PipeStatus.CONNECTED) {
-			//log.info("[DiscordRPC] : "+presence.details+", "+presence.state);
-			//log.info("[DiscordRPC] : check: "+(client.getStatus()!=PipeStatus.DISCONNECTED&&client.getStatus()!=PipeStatus.CLOSED));
-			client.sendRichPresence(presence.toRichPresence(), new Callback(new Consumer<String>() {
-				@Override
-				public void accept(String t) {
-					log.info("[DiscordRPC] status update failed: "+t);
-				}
-			}));
+	public void updateStatusImpl(@Nullable DiscordRichPresence presence) {
+		lastPresence = presence;
+		try {
+			if (client.getStatus()==PipeStatus.CONNECTED) {
+				//log.info("[DiscordRPC] : "+presence.details+", "+presence.state);
+				//log.info("[DiscordRPC] : check: "+(client.getStatus()!=PipeStatus.DISCONNECTED&&client.getStatus()!=PipeStatus.CLOSED));
+				client.sendRichPresence(presence==null ? null : presence.toRichPresence(), new Callback(new Consumer<String>() {
+					@Override
+					public void accept(String t) {
+						log.info("[DiscordRPC] status update failed: "+t);
+					}
+				}));
+			}
+		} catch (Throwable t) {
+			log.log(Level.WARNING, "[DiscordRPC] status update error: ", t);
 		}
 	}
 
-	public void clearStatusImpl() {
-		client.sendRichPresence(null);
+	public static void updateStatusWithNoChange() {
+		final LauncherDiscord inst = instance;
+		if (inst!=null)
+			inst.updateStatusImpl(inst.lastPresence);
 	}
 
 	public static void updateStatus(DiscordRichPresence presence) {
 		final LauncherDiscord inst = instance;
-		if (inst!=null) {
-			inst.lastPresence = presence;
-			try {
-				if (presence!=null)
-					inst.updateStatusImpl(presence);
-				else
-					inst.clearStatusImpl();
-			} catch (Throwable t) {
-				log.log(Level.WARNING, "[DiscordRPC] status update error: ", t);
-			}
-		}
+		if (inst!=null)
+			inst.updateStatusImpl(presence);
 	}
 }

@@ -38,7 +38,7 @@ public class ActiveWindowDetector {
 
 			IntByReference pid = new IntByReference();
 			user32.GetWindowThreadProcessId(windowHandle, pid);
-			return (currentPID>=0 && currentPID == pid.getValue());
+			return (currentPID>=0&&currentPID==pid.getValue());
 		} else if (Platform.isLinux()) {
 			X11.Display display = getX11Display();
 			Window window = WMCtrl.get_active_window(display);
@@ -55,7 +55,7 @@ public class ActiveWindowDetector {
 					Object pidobj = engine.eval(scriptfilename);
 					if (pidobj!=null) {
 						int pid = (pidobj instanceof Number) ? ((Number) pidobj).intValue() : NumberUtils.toInt(pidobj.toString());
-						return (currentPID>=0 && currentPID == pid);
+						return (currentPID>=0&&currentPID==pid);
 					}
 				} catch (ScriptException e) {
 					Log.log.log(Level.WARNING, "could not detect active window: ", e);
