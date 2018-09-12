@@ -19,17 +19,18 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import com.sun.jna.Pointer;
+import com.sun.jna.platform.WindowUtils;
 import com.sun.jna.platform.unix.X11;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.User32;
 import com.sun.jna.platform.win32.WinDef;
-import com.sun.jna.platform.win32.WinNT;
-import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
 
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
+import lombok.Getter;
 import net.teamfruit.skcraft.launcher.ActiveWindowDetector.WindowResult.WindowResultBuilder;
 
 /**
@@ -63,8 +64,6 @@ public class ActiveWindowDetector {
 		private final String filename = "";
 	}
 
-	private static final int MAXSTR = 1000;
-
 	public static WindowResult detectWindow() {
 		WindowResultBuilder builder = WindowResult.builder();
 		if (Platform.isWindows()) {
@@ -79,17 +78,19 @@ public class ActiveWindowDetector {
 			user32.GetWindowText(windowHandle, windowname, windowname.length);
 			builder.windowname(new String(windowname));
 
-			IntByReference pid = new IntByReference();
-			user32.GetWindowThreadProcessId(windowHandle, pid);
-			WinNT.HANDLE processHandle = kernel32.OpenProcess(PROCESS_VM_READ|PROCESS_QUERY_INFORMATION, true, pid.getValue());
+			builder.filename(WindowUtils.getProcessFilePath(windowHandle));
 
-			if (processHandle!=null) {
-				byte[] filename = new byte[512];
-				PsapiLoader.INSTANCE.GetModuleBaseNameW(processHandle.getPointer(), Pointer.NULL, filename, filename.length);
-				builder.filename(new String(filename));
-			}
+//			IntByReference pid = new IntByReference();
+//			user32.GetWindowThreadProcessId(windowHandle, pid);
+//			WinNT.HANDLE processHandle = kernel32.OpenProcess(PROCESS_VM_READ|PROCESS_QUERY_INFORMATION, true, pid.getValue());
+//
+//			if (processHandle!=null) {
+//				byte[] filename = new byte[512];
+//				PsapiLoader.INSTANCE.GetModuleBaseNameW(processHandle.getPointer(), Pointer.NULL, filename, filename.length);
+//				builder.filename(new String(filename));
+//			}
 		} else if (Platform.isLinux()) {
-			final X11 x11 = X11.INSTANCE;
+			final X11 x11 = WMCtrl.x11;
 			X11.Display display = x11.XOpenDisplay(null);
 
 			X11.Window window = WMCtrl.get_active_window(display);
@@ -100,7 +101,7 @@ public class ActiveWindowDetector {
 
 			int windowpid = WMCtrl.get_window_pid(display, window);
 			try {
-				String filename = Paths.get(String.format("/proc/%d/exe", windowpid)).toRealPath().toFile().getName();
+				String filename = Paths.get(String.format("/proc/%d/exe", windowpid)).toRealPath().toString();
 				builder.filename(filename);
 			} catch (IOException e) {
 				Log.log.log(Level.WARNING, "could not detect active window: ", e);
@@ -108,6 +109,10 @@ public class ActiveWindowDetector {
 
 			x11.XCloseDisplay(display);
 
+			/*
+			xwininfo -id $(xprop -root | awk '/NET_ACTIVE_WINDOW/ { print $5; exit }') | awk -F\" '/xwininfo:/ { print $2; exit }'
+			readlink -e /proc/$(xprop -id $(xprop -root | awk '/NET_ACTIVE_WINDOW/ { print $5; exit }') _NET_WM_PID | awk '{ print $3; exit }')/exe | awk '{ print $NF; exit }'
+			 */
 			/*
 			try {
 				String[] command = { "bash", "-c", "xwininfo -id $(xprop -root | awk '/NET_ACTIVE_WINDOW/ { print $5; exit }') | awk -F\\\" '/xwininfo:/ { print $2; exit }'" };
@@ -141,32 +146,38 @@ public class ActiveWindowDetector {
 			}
 			*/
 		} else if (Platform.isMac()) {
-			final String scriptwindowname = "tell application \"System Events\"\n"+
-					"\tset frontAppProcess to first application process whose frontmost is true\n"+
-					"end tell\n"+
-					"\n"+
-					"tell frontAppProcess\n"+
-					"\tif count of windows > 0 then\n"+
-					"\t\tset window_name to name of front window\n"+
-					"\tend if\n"+
+			final String scriptwindowname = "tell application \"System Events\"\n" +
+					"    # Get the frontmost app's *process* object.\n" +
+					"    set frontAppProcess to first application process whose frontmost is true\n" +
+					"end tell\n" +
+					"\n" +
+					"# Tell the *process* to count its windows and return its front window's name.\n" +
+					"tell frontAppProcess\n" +
+					"    set window_name to name of front window\n" +
 					"end tell";
 			final String scriptfilename = "tell application \"System Events\"\n"+
 					"\tname of application processes whose frontmost is true\n"+
-					"end tell";
-			ScriptEngine appleScript = new ScriptEngineManager().getEngineByName("AppleScript");
-			try {
-				builder.windowname((String) appleScript.eval(scriptwindowname));
-			} catch (ScriptException e) {
-				Log.log.log(Level.WARNING, "could not detect active window: ", e);
-			}
-			try {
-				builder.filename((String) appleScript.eval(scriptfilename));
-			} catch (ScriptException e) {
-				Log.log.log(Level.WARNING, "could not detect active window: ", e);
+					"end";
+			if (appleScript==null)
+				Log.log.log(Level.WARNING, "could not detect active window: no engine");
+			else {
+				try {
+					builder.windowname((String) getAppleScript().eval(scriptwindowname));
+				} catch (ScriptException e) {
+					Log.log.log(Level.WARNING, "could not detect active window: ", e);
+				}
+				try {
+					builder.filename((String) getAppleScript().eval(scriptfilename).toString());
+				} catch (ScriptException e) {
+					Log.log.log(Level.WARNING, "could not detect active window: ", e);
+				}
 			}
 		}
 		return builder.build();
 	}
+
+	@Getter(lazy = true, value = AccessLevel.PRIVATE)
+	private static final ScriptEngine appleScript = new ScriptEngineManager().getEngineByName("AppleScriptEngine");
 
 	public static void main(String[] args) {
 		final JFrame jf = new JFrame("Test");
