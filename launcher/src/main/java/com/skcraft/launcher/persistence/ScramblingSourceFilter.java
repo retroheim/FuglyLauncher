@@ -1,20 +1,17 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
  */
-
 package com.skcraft.launcher.persistence;
 
 import com.google.common.io.ByteSource;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
+import com.skcraft.launcher.persistence.ScramblingSinkFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 
-class ScramblingSourceFilter extends ByteSource {
-
+class ScramblingSourceFilter
+extends ByteSource {
     private final ByteSource delegate;
     private final String key;
 
@@ -27,11 +24,12 @@ class ScramblingSourceFilter extends ByteSource {
     public InputStream openStream() throws IOException {
         Cipher cipher = null;
         try {
-            cipher = ScramblingSinkFilter.getCipher(Cipher.DECRYPT_MODE, key);
-        } catch (Throwable e) {
+            cipher = ScramblingSinkFilter.getCipher(2, this.key);
+        }
+        catch (Throwable e) {
             throw new IOException("Failed to create cipher", e);
         }
-        return new CipherInputStream(delegate.openStream(), cipher);
+        return new CipherInputStream(this.delegate.openStream(), cipher);
     }
-
 }
+

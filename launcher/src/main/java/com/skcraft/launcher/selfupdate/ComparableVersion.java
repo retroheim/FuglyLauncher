@@ -1,365 +1,304 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Decompiled with CFR 0_132.
  */
 package com.skcraft.launcher.selfupdate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.Stack;
 
-/**
- * Generic implementation of version comparison.
- * <p/>
- * NOTE: This class is a copy of r658725 of http://svn.apache.org/repos/asf/maven/artifact/trunk/src/main/java/org/apache/maven/artifact/versioning/ComparableVersion.java.
- *
- * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
- * @author <a href="mailto:hboutemy@apache.org">Herve Boutemy</a>
- * @version $Id$
- */
 public class ComparableVersion
-        implements Comparable<ComparableVersion> {
+implements Comparable<ComparableVersion> {
     private String value;
-
     private String canonical;
-
     private ListItem items;
 
-    private interface Item {
-        public static final int INTEGER_ITEM = 0;
-        public static final int STRING_ITEM = 1;
-        public static final int LIST_ITEM = 2;
-
-        public int compareTo(Item item);
-
-        public int getType();
-
-        public boolean isNull();
-    }
-
-    /**
-     * Represents a numeric item in the version item list.
-     */
-    private static class IntegerItem
-            implements Item {
-        private Integer value;
-
-        public IntegerItem(Integer i) {
-            this.value = i;
-        }
-
-        public int getType() {
-            return INTEGER_ITEM;
-        }
-
-        public boolean isNull() {
-            return (value == 0);
-        }
-
-        public int compareTo(Item item) {
-            if (item == null) {
-                return value == 0 ? 0 : 1; // 1.0 == 1, 1.1 > 1
-            }
-
-            switch (item.getType()) {
-                case INTEGER_ITEM:
-                    return value.compareTo(((IntegerItem) item).value);
-
-                case STRING_ITEM:
-                    return 1; // 1.1 > 1-sp
-
-                case LIST_ITEM:
-                    return 1; // 1.1 > 1-1
-
-                default:
-                    throw new RuntimeException("invalid item: " + item.getClass());
-            }
-        }
-
-        public String toString() {
-            return value.toString();
-        }
-    }
-
-    /**
-     * Represents a string in the version item list, usually a qualifier.
-     */
-    private static class StringItem
-            implements Item {
-        private final static String[] QUALIFIERS = {"snapshot", "alpha", "beta", "milestone", "rc", "", "sp"};
-
-        private final static List<String> _QUALIFIERS = Arrays.asList(QUALIFIERS);
-
-        private final static Properties ALIASES = new Properties();
-
-        static {
-            ALIASES.put("ga", "");
-            ALIASES.put("final", "");
-            ALIASES.put("cr", "rc");
-        }
-
-        /**
-         * A comparable for the empty-string qualifier. This one is used to determine if a given qualifier makes the
-         * version older than one without a qualifier, or more recent.
-         */
-        private static String RELEASE_VERSION_INDEX = String.valueOf(_QUALIFIERS.indexOf(""));
-
-        private String value;
-
-        public StringItem(String value, boolean followedByDigit) {
-            if (followedByDigit && value.length() == 1) {
-                // a1 = alpha-1, b1 = beta-1, m1 = milestone-1
-                switch (value.charAt(0)) {
-                    case 'a':
-                        value = "alpha";
-                        break;
-                    case 'b':
-                        value = "beta";
-                        break;
-                    case 'm':
-                        value = "milestone";
-                        break;
-                }
-            }
-            this.value = ALIASES.getProperty(value, value);
-        }
-
-        public int getType() {
-            return STRING_ITEM;
-        }
-
-        public boolean isNull() {
-            return (comparableQualifier(value).compareTo(RELEASE_VERSION_INDEX) == 0);
-        }
-
-        /**
-         * Returns a comparable for a qualifier.
-         * <p/>
-         * This method both takes into account the ordering of known qualifiers as well as lexical ordering for unknown
-         * qualifiers.
-         * <p/>
-         * just returning an Integer with the index here is faster, but requires a lot of if/then/else to check for -1
-         * or QUALIFIERS.size and then resort to lexical ordering. Most comparisons are decided by the first character,
-         * so this is still fast. If more characters are needed then it requires a lexical sort anyway.
-         *
-         * @param qualifier
-         * @return
-         */
-        public static String comparableQualifier(String qualifier) {
-            int i = _QUALIFIERS.indexOf(qualifier);
-
-            return i == -1 ? _QUALIFIERS.size() + "-" + qualifier : String.valueOf(i);
-        }
-
-        public int compareTo(Item item) {
-            if (item == null) {
-                // 1-rc < 1, 1-ga > 1
-                return comparableQualifier(value).compareTo(RELEASE_VERSION_INDEX);
-            }
-            switch (item.getType()) {
-                case INTEGER_ITEM:
-                    return -1; // 1.any < 1.1 ?
-
-                case STRING_ITEM:
-                    return comparableQualifier(value).compareTo(comparableQualifier(((StringItem) item).value));
-
-                case LIST_ITEM:
-                    return -1; // 1.any < 1-1
-
-                default:
-                    throw new RuntimeException("invalid item: " + item.getClass());
-            }
-        }
-
-        public String toString() {
-            return value;
-        }
-    }
-
-    /**
-     * Represents a version list item. This class is used both for the global item list and for sub-lists (which start
-     * with '-(number)' in the version specification).
-     */
-    private static class ListItem
-            extends ArrayList<Item>
-            implements Item {
-        public int getType() {
-            return LIST_ITEM;
-        }
-
-        public boolean isNull() {
-            return (size() == 0);
-        }
-
-        void normalize() {
-            for (ListIterator<Item> iterator = listIterator(size()); iterator.hasPrevious(); ) {
-                Item item = (Item) iterator.previous();
-                if (item.isNull()) {
-                    iterator.remove(); // remove null trailing items: 0, "", empty list
-                } else {
-                    break;
-                }
-            }
-        }
-
-        public int compareTo(Item item) {
-            if (item == null) {
-                if (size() == 0) {
-                    return 0; // 1-0 = 1- (normalize) = 1
-                }
-                Item first = (Item) get(0);
-                return first.compareTo(null);
-            }
-            switch (item.getType()) {
-                case INTEGER_ITEM:
-                    return -1; // 1-1 < 1.0.x
-
-                case STRING_ITEM:
-                    return 1; // 1-1 > 1-sp
-
-                case LIST_ITEM:
-                    Iterator<Item> left = iterator();
-                    Iterator<Item> right = ((ListItem) item).iterator();
-
-                    while (left.hasNext() || right.hasNext()) {
-                        Item l = left.hasNext() ? (Item) left.next() : null;
-                        Item r = right.hasNext() ? (Item) right.next() : null;
-
-                        // if this is shorter, then invert the compare and mul with -1
-                        int result = l == null ? -1 * r.compareTo(l) : l.compareTo(r);
-
-                        if (result != 0) {
-                            return result;
-                        }
-                    }
-
-                    return 0;
-
-                default:
-                    throw new RuntimeException("invalid item: " + item.getClass());
-            }
-        }
-
-        public String toString() {
-            StringBuffer buffer = new StringBuffer("(");
-            for (Iterator<Item> iter = iterator(); iter.hasNext(); ) {
-                buffer.append(iter.next());
-                if (iter.hasNext()) {
-                    buffer.append(',');
-                }
-            }
-            buffer.append(')');
-            return buffer.toString();
-        }
-    }
-
     public ComparableVersion(String version) {
-        parseVersion(version);
+        this.parseVersion(version);
     }
 
     public final void parseVersion(String version) {
         this.value = version;
-
-        items = new ListItem();
-
+        this.items = new ListItem();
         version = version.toLowerCase(Locale.ENGLISH);
-
-        ListItem list = items;
-
+        ListItem list = this.items;
         Stack<ListItem> stack = new Stack<ListItem>();
         stack.push(list);
-
         boolean isDigit = false;
-
         int startIndex = 0;
-
-        for (int i = 0; i < version.length(); i++) {
+        for (int i = 0; i < version.length(); ++i) {
             char c = version.charAt(i);
-
             if (c == '.') {
                 if (i == startIndex) {
                     list.add(new IntegerItem(0));
                 } else {
-                    list.add(parseItem(isDigit, version.substring(startIndex, i)));
+                    list.add(ComparableVersion.parseItem(isDigit, version.substring(startIndex, i)));
                 }
                 startIndex = i + 1;
-            } else if (c == '-') {
+                continue;
+            }
+            if (c == '-') {
                 if (i == startIndex) {
                     list.add(new IntegerItem(0));
                 } else {
-                    list.add(parseItem(isDigit, version.substring(startIndex, i)));
+                    list.add(ComparableVersion.parseItem(isDigit, version.substring(startIndex, i)));
                 }
                 startIndex = i + 1;
-
-                if (isDigit) {
-                    list.normalize(); // 1.0-* = 1-*
-
-                    if ((i + 1 < version.length()) && Character.isDigit(version.charAt(i + 1))) {
-                        // new ListItem only if previous were digits and new char is a digit,
-                        // ie need to differentiate only 1.1 from 1-1
-                        list.add(list = new ListItem());
-
-                        stack.push(list);
-                    }
-                }
-            } else if (Character.isDigit(c)) {
+                if (!isDigit) continue;
+                list.normalize();
+                if (i + 1 >= version.length() || !Character.isDigit(version.charAt(i + 1))) continue;
+                ListItem listItem = list;
+                list = new ListItem();
+                listItem.add(list);
+                stack.push(list);
+                continue;
+            }
+            if (Character.isDigit(c)) {
                 if (!isDigit && i > startIndex) {
                     list.add(new StringItem(version.substring(startIndex, i), true));
                     startIndex = i;
                 }
-
                 isDigit = true;
-            } else {
-                if (isDigit && i > startIndex) {
-                    list.add(parseItem(true, version.substring(startIndex, i)));
-                    startIndex = i;
-                }
-
-                isDigit = false;
+                continue;
             }
+            if (isDigit && i > startIndex) {
+                list.add(ComparableVersion.parseItem(true, version.substring(startIndex, i)));
+                startIndex = i;
+            }
+            isDigit = false;
         }
-
         if (version.length() > startIndex) {
-            list.add(parseItem(isDigit, version.substring(startIndex)));
+            list.add(ComparableVersion.parseItem(isDigit, version.substring(startIndex)));
         }
-
         while (!stack.isEmpty()) {
-            list = (ListItem) stack.pop();
+            list = (ListItem)stack.pop();
             list.normalize();
         }
-
-        canonical = items.toString();
+        this.canonical = this.items.toString();
     }
 
     private static Item parseItem(boolean isDigit, String buf) {
         return isDigit ? new IntegerItem(new Integer(buf)) : new StringItem(buf, false);
     }
 
+    @Override
     public int compareTo(ComparableVersion o) {
-        return items.compareTo(o.items);
+        return this.items.compareTo(o.items);
     }
 
     public String toString() {
-        return value;
+        return this.value;
     }
 
     public boolean equals(Object o) {
-        return (o instanceof ComparableVersion) && canonical.equals(((ComparableVersion) o).canonical);
+        return o instanceof ComparableVersion && this.canonical.equals(((ComparableVersion)o).canonical);
     }
 
     public int hashCode() {
-        return canonical.hashCode();
+        return this.canonical.hashCode();
     }
+
+    private static class ListItem
+    extends ArrayList<Item>
+    implements Item {
+        private ListItem() {
+        }
+
+        @Override
+        public int getType() {
+            return 2;
+        }
+
+        @Override
+        public boolean isNull() {
+            return this.size() == 0;
+        }
+
+        void normalize() {
+            Item item;
+            ListIterator iterator = this.listIterator(this.size());
+            while (iterator.hasPrevious() && (item = (Item)iterator.previous()).isNull()) {
+                iterator.remove();
+            }
+        }
+
+        @Override
+        public int compareTo(Item item) {
+            if (item == null) {
+                if (this.size() == 0) {
+                    return 0;
+                }
+                Item first = (Item)this.get(0);
+                return first.compareTo(null);
+            }
+            switch (item.getType()) {
+                case 0: {
+                    return -1;
+                }
+                case 1: {
+                    return 1;
+                }
+                case 2: {
+                    Iterator left = this.iterator();
+                    Iterator right = ((ListItem)item).iterator();
+                    while (left.hasNext() || right.hasNext()) {
+                        Item l = left.hasNext() ? (Item)left.next() : null;
+                        Item r = right.hasNext() ? (Item)right.next() : null;
+                        int result = l == null ? -1 * r.compareTo(l) : l.compareTo(r);
+                        if (result == 0) continue;
+                        return result;
+                    }
+                    return 0;
+                }
+            }
+            throw new RuntimeException("invalid item: " + item.getClass());
+        }
+
+        @Override
+        public String toString() {
+            StringBuffer buffer = new StringBuffer("(");
+            Iterator iter = this.iterator();
+            while (iter.hasNext()) {
+                buffer.append(iter.next());
+                if (!iter.hasNext()) continue;
+                buffer.append(',');
+            }
+            buffer.append(')');
+            return buffer.toString();
+        }
+    }
+
+    private static class StringItem
+    implements Item {
+        private static final String[] QUALIFIERS = new String[]{"snapshot", "alpha", "beta", "milestone", "rc", "", "sp"};
+        private static final List<String> _QUALIFIERS = Arrays.asList(QUALIFIERS);
+        private static final Properties ALIASES = new Properties();
+        private static String RELEASE_VERSION_INDEX;
+        private String value;
+
+        public StringItem(String value, boolean followedByDigit) {
+            if (followedByDigit && value.length() == 1) {
+                switch (value.charAt(0)) {
+                    case 'a': {
+                        value = "alpha";
+                        break;
+                    }
+                    case 'b': {
+                        value = "beta";
+                        break;
+                    }
+                    case 'm': {
+                        value = "milestone";
+                    }
+                }
+            }
+            this.value = ALIASES.getProperty(value, value);
+        }
+
+        @Override
+        public int getType() {
+            return 1;
+        }
+
+        @Override
+        public boolean isNull() {
+            return StringItem.comparableQualifier(this.value).compareTo(RELEASE_VERSION_INDEX) == 0;
+        }
+
+        public static String comparableQualifier(String qualifier) {
+            int i = _QUALIFIERS.indexOf(qualifier);
+            return i == -1 ? "" + _QUALIFIERS.size() + "-" + qualifier : String.valueOf(i);
+        }
+
+        @Override
+        public int compareTo(Item item) {
+            if (item == null) {
+                return StringItem.comparableQualifier(this.value).compareTo(RELEASE_VERSION_INDEX);
+            }
+            switch (item.getType()) {
+                case 0: {
+                    return -1;
+                }
+                case 1: {
+                    return StringItem.comparableQualifier(this.value).compareTo(StringItem.comparableQualifier(((StringItem)item).value));
+                }
+                case 2: {
+                    return -1;
+                }
+            }
+            throw new RuntimeException("invalid item: " + item.getClass());
+        }
+
+        public String toString() {
+            return this.value;
+        }
+
+        static {
+            ALIASES.put("ga", "");
+            ALIASES.put("final", "");
+            ALIASES.put("cr", "rc");
+            RELEASE_VERSION_INDEX = String.valueOf(_QUALIFIERS.indexOf(""));
+        }
+    }
+
+    private static class IntegerItem
+    implements Item {
+        private Integer value;
+
+        public IntegerItem(Integer i) {
+            this.value = i;
+        }
+
+        @Override
+        public int getType() {
+            return 0;
+        }
+
+        @Override
+        public boolean isNull() {
+            return this.value == 0;
+        }
+
+        @Override
+        public int compareTo(Item item) {
+            if (item == null) {
+                return this.value == 0 ? 0 : 1;
+            }
+            switch (item.getType()) {
+                case 0: {
+                    return this.value.compareTo(((IntegerItem)item).value);
+                }
+                case 1: {
+                    return 1;
+                }
+                case 2: {
+                    return 1;
+                }
+            }
+            throw new RuntimeException("invalid item: " + item.getClass());
+        }
+
+        public String toString() {
+            return this.value.toString();
+        }
+    }
+
+    private static interface Item {
+        public static final int INTEGER_ITEM = 0;
+        public static final int STRING_ITEM = 1;
+        public static final int LIST_ITEM = 2;
+
+        public int compareTo(Item var1);
+
+        public int getType();
+
+        public boolean isNull();
+    }
+
 }
+

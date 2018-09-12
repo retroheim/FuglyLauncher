@@ -1,19 +1,15 @@
 /*
- * SK's Minecraft Launcher
- * Copyright (C) 2010-2014 Albert Pham <http://www.sk89q.com> and contributors
- * Please see LICENSE.txt for license information.
+ * Decompiled with CFR 0_132.
  */
-
 package com.skcraft.launcher.persistence;
 
 import com.google.common.io.ByteSink;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-class MkdirByteSink extends ByteSink {
-
+class MkdirByteSink
+extends ByteSink {
     private final ByteSink delegate;
     private final File dir;
 
@@ -24,8 +20,8 @@ class MkdirByteSink extends ByteSink {
 
     @Override
     public OutputStream openStream() throws IOException {
-        dir.mkdirs();
-        return delegate.openStream();
+        this.dir.mkdirs();
+        return this.delegate.openStream();
     }
-
 }
+
