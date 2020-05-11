@@ -11,7 +11,7 @@ buildscript {
 
 plugins {
     id "com.github.johnrengelman.shadow" version "5.2.0"
-    id 'io.franzbecker.gradle-lombok' version '3.3.0'
+    id 'io.franzbecker.gradle-lombok' version '4.0.0'
 }
 
  println """
